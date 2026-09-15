@@ -3,7 +3,7 @@
   "displayName": "Nexss Flow",
   "description": "Syntax highlighting, snippets, and LSP stub support for Nexss Flow .flow files",
   "version": "0.1.0",
-  "publisher": "nexss",
+  "publisher": "nexssp",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
