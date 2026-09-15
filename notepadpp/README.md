@@ -1,5 +1,7 @@
 # Notepad++ formatting
 
+The package includes the Nexss logo as `nexss-logo.png` for local documentation and distribution branding.
+
 Formatting is provided on a best-effort basis through the NppExec plugin.
 
 1. Install Node.js and the **NppExec** plugin.

@@ -1,4 +1,6 @@
-# Nexss Flow Editor Support
+# Nexss Flow editor support
+
+![Nexss logo](assets/nexss-logo.png)
 
 Editor support for the **Nexss Flow** language built around `nexssp/kernel` and the Nexss Flow Arrow DSL. The repository is intentionally editor-only: it does not attempt to parse or execute Flow. It provides a shared syntax vocabulary for:
 
@@ -51,6 +53,8 @@ bash scripts/package-release.sh dist
 ```
 
 The output directory contains `nexss-flow-vscode.vsix`, `nexss-flow-zed.zip`, `nexss-flow-notepadpp.zip`, `nexss-flow-source.zip`, and `SHA256SUMS`.
+
+The supplied Nexss logo is included in the source bundle and adapted for each editor: VS Code uses `vscode/icon.png` in its extension manifest, while the Zed and Notepad++ bundles include `logo.png`/`nexss-logo.png` for repository, package, and documentation branding. Zed's official publishing flow does not currently use an extension-manifest icon field, so its logo is shipped as an asset rather than added as unsupported TOML.
 
 To create a GitHub release, push a version tag whose commit already contains `.github/workflows/release.yml`:
 

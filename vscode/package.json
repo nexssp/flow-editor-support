@@ -4,6 +4,7 @@
   "description": "Syntax highlighting, snippets, and LSP stub support for Nexss Flow .flow files",
   "version": "0.1.0",
   "publisher": "nexssp",
+  "icon": "icon.png",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

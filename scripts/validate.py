@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """Dependency-free smoke tests for the Nexss Flow editor-support bundle."""
 from pathlib import Path
-import json, xml.etree.ElementTree as ET
+import json, tomllib, xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 required = [
-    'README.md', 'LICENSE', 'package.json', 'examples/complete.flow', 'fmt/index.js', 'fmt/cli.js',
+    'README.md', 'LICENSE', 'package.json', 'assets/nexss-logo.png', 'examples/complete.flow', 'fmt/index.js', 'fmt/cli.js',
     'fmt/test/formatter.test.js', 'fmt/test/fixtures/pipeline.flow', 'fmt/test/fixtures/pipeline.expected.flow',
     'zed/extension.toml', 'zed/grammars/flow.js', 'zed/languages/flow/config.toml',
     'zed/languages/flow/highlights.scm', 'zed/languages/flow/brackets.scm',
-    'zed/lsp/flow-language-server.js', 'zed/lsp/nexss-flow-language-server', 'zed/fmt/index.js',
-    'vscode/package.json', 'vscode/extension.js', 'vscode/lsp/flow-language-server.js', 'vscode/fmt/index.js', 'vscode/language-configuration.json', 'vscode/syntaxes/flow.tmLanguage.json',
+    'zed/lsp/flow-language-server.js', 'zed/lsp/nexss-flow-language-server', 'zed/fmt/index.js', 'zed/logo.png',
+    'vscode/package.json', 'vscode/icon.png', 'vscode/extension.js', 'vscode/lsp/flow-language-server.js', 'vscode/fmt/index.js', 'vscode/language-configuration.json', 'vscode/syntaxes/flow.tmLanguage.json',
     'vscode/snippets/flow.code-snippets', '.zed/snippets/nexss-flow.json',
-    'notepadpp/flow-udl.xml', 'notepadpp/README.md', 'notepadpp/flowfmt.cmd', 'notepadpp/nppexec/Format-Flow.npes',
+    'notepadpp/flow-udl.xml', 'notepadpp/README.md', 'notepadpp/nexss-logo.png', 'notepadpp/flowfmt.cmd', 'notepadpp/nppexec/Format-Flow.npes',
     'lsp/flow-language-server.js', 'lsp/nexss-flow-language-server',
     '.github/workflows/release.yml', 'scripts/package-release.sh',
 ]
@@ -29,9 +29,16 @@ ET.parse(ROOT/'notepadpp/flow-udl.xml')
 package = json.load(open(ROOT/'vscode/package.json'))
 assert any(x.get('path') == './snippets/flow.code-snippets' for x in package['contributes']['snippets'])
 assert package.get('main') == './extension.js'
+assert package.get('icon') == 'icon.png'
+assert package.get('publisher') == 'nexssp'
 assert package['contributes']['configuration']['properties']['nexssFlow.languageServer.command']['default'] == ''
 assert 'language_servers' in (ROOT/'zed/languages/flow/config.toml').read_text()
 assert 'line_comments = ["//"]' in (ROOT/'zed/languages/flow/config.toml').read_text()
+zed_manifest_data = tomllib.loads((ROOT/'zed/extension.toml').read_text())
+zed_language_data = tomllib.loads((ROOT/'zed/languages/flow/config.toml').read_text())
+assert 'languages' not in zed_manifest_data
+assert zed_manifest_data['language_servers']['nexss-flow-language-server']['languages'] == ['Nexss Flow']
+assert zed_language_data['name'] == 'Nexss Flow' and zed_language_data['grammar'] == 'flow'
 lsp = (ROOT/'lsp/flow-language-server.js').read_text()
 for token in ['initialize', 'textDocument/completion', 'textDocument/hover', 'Content-Length']:
     assert token in lsp, f'LSP stub lacks {token}'
@@ -62,7 +69,7 @@ zed_highlights = (ROOT/'zed/languages/flow/highlights.scm').read_text()
 assert zed_highlights.index('(identifier) @variable') < zed_highlights.index('(atom (identifier) @function)')
 assert zed_highlights.count('(loop "until" @keyword.control)') == 1
 assert 'modifier_value' in zed_highlights
-assert 'line_comments = ["//"]' in (ROOT/'zed/extension.toml').read_text()
+assert 'line_comments = ["//"]' in (ROOT/'zed/languages/flow/config.toml').read_text()
 assert 'const vscode = require(\'vscode\')' in (ROOT/'vscode/extension.js').read_text()
 extension = (ROOT/'vscode/extension.js').read_text()
 assert 'parts = configured ? configured.split' in extension

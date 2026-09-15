@@ -19,7 +19,7 @@ mkdir -p "$ROOT/vscode/fmt" "$ROOT/zed/fmt"
 cp "$ROOT/fmt/index.js" "$ROOT/vscode/fmt/index.js"
 cp "$ROOT/fmt/index.js" "$ROOT/zed/fmt/index.js"
 
-(cd "$ROOT" && zip -qr "$OUT_DIR/nexss-flow-source.zip" README.md LICENSE examples fmt lsp zed vscode notepadpp package.json scripts/validate.py .zed .github)
+(cd "$ROOT" && zip -qr "$OUT_DIR/nexss-flow-source.zip" README.md LICENSE assets examples fmt lsp zed vscode notepadpp package.json scripts/validate.py .zed .github)
 (cd "$ROOT/zed" && zip -qr "$OUT_DIR/nexss-flow-zed.zip" .)
 (cd "$ROOT/notepadpp" && zip -qr "$OUT_DIR/nexss-flow-notepadpp.zip" .)
 
