@@ -10,6 +10,7 @@ fi
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 chmod +x "$ROOT/lsp/nexss-flow-language-server" "$ROOT/zed/lsp/nexss-flow-language-server" "$ROOT/scripts/package-release.sh"
+chmod +x "$ROOT/zed-legacy-0.230.2/lsp/nexss-flow-language-server"
 cp "$ROOT/LICENSE" "$ROOT/vscode/LICENSE"
 mkdir -p "$ROOT/vscode/lsp"
 cp "$ROOT/lsp/flow-language-server.js" "$ROOT/vscode/lsp/flow-language-server.js"
@@ -18,9 +19,13 @@ cp "$ROOT/lsp/flow-language-server.js" "$ROOT/zed/lsp/flow-language-server.js"
 mkdir -p "$ROOT/vscode/fmt" "$ROOT/zed/fmt"
 cp "$ROOT/fmt/index.js" "$ROOT/vscode/fmt/index.js"
 cp "$ROOT/fmt/index.js" "$ROOT/zed/fmt/index.js"
+mkdir -p "$ROOT/zed-legacy-0.230.2/lsp" "$ROOT/zed-legacy-0.230.2/fmt"
+cp "$ROOT/lsp/flow-language-server.js" "$ROOT/zed-legacy-0.230.2/lsp/flow-language-server.js"
+cp "$ROOT/fmt/index.js" "$ROOT/zed-legacy-0.230.2/fmt/index.js"
 
-(cd "$ROOT" && zip -qr "$OUT_DIR/nexss-flow-source.zip" README.md LICENSE assets examples fmt lsp zed vscode notepadpp package.json scripts/validate.py .zed .github)
+(cd "$ROOT" && zip -qr "$OUT_DIR/nexss-flow-source.zip" README.md LICENSE assets examples fmt lsp zed zed-legacy-0.230.2 vscode notepadpp package.json scripts/validate.py .zed .github)
 (cd "$ROOT/zed" && zip -qr "$OUT_DIR/nexss-flow-zed.zip" .)
+(cd "$ROOT/zed-legacy-0.230.2" && zip -qr "$OUT_DIR/nexss-flow-zed-legacy-0.230.2.zip" .)
 (cd "$ROOT/notepadpp" && zip -qr "$OUT_DIR/nexss-flow-notepadpp.zip" .)
 
 if command -v npx >/dev/null 2>&1; then

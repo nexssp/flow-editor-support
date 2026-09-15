@@ -1,0 +1,5 @@
+name = "Nexss Flow"
+grammar = "flow"
+path_suffixes = ["flow"]
+line_comments = ["//"]
+language_servers = ["nexss-flow-language-server"]

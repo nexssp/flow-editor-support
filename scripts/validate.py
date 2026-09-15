@@ -10,6 +10,7 @@ required = [
     'zed/extension.toml', 'zed/grammars/flow.js', 'zed/languages/flow/config.toml',
     'zed/languages/flow/highlights.scm', 'zed/languages/flow/brackets.scm',
     'zed/lsp/flow-language-server.js', 'zed/lsp/nexss-flow-language-server', 'zed/fmt/index.js', 'zed/logo.png',
+    'zed-legacy-0.230.2/extension.toml', 'zed-legacy-0.230.2/lsp/flow-language-server.js', 'zed-legacy-0.230.2/lsp/nexss-flow-language-server', 'zed-legacy-0.230.2/fmt/index.js', 'zed-legacy-0.230.2/logo.png',
     'vscode/package.json', 'vscode/icon.png', 'vscode/extension.js', 'vscode/lsp/flow-language-server.js', 'vscode/fmt/index.js', 'vscode/language-configuration.json', 'vscode/syntaxes/flow.tmLanguage.json',
     'vscode/snippets/flow.code-snippets', '.zed/snippets/nexss-flow.json',
     'notepadpp/flow-udl.xml', 'notepadpp/README.md', 'notepadpp/nexss-logo.png', 'notepadpp/flowfmt.cmd', 'notepadpp/nppexec/Format-Flow.npes',
@@ -39,6 +40,10 @@ zed_language_data = tomllib.loads((ROOT/'zed/languages/flow/config.toml').read_t
 assert 'languages' not in zed_manifest_data
 assert zed_manifest_data['language_servers']['nexss-flow-language-server']['languages'] == ['Nexss Flow']
 assert zed_language_data['name'] == 'Nexss Flow' and zed_language_data['grammar'] == 'flow'
+legacy_manifest_data = tomllib.loads((ROOT/'zed-legacy-0.230.2/extension.toml').read_text())
+assert 'schema_version' not in legacy_manifest_data
+assert 'capabilities' not in legacy_manifest_data
+assert legacy_manifest_data['id'] == 'nexss-flow-legacy'
 lsp = (ROOT/'lsp/flow-language-server.js').read_text()
 for token in ['initialize', 'textDocument/completion', 'textDocument/hover', 'Content-Length']:
     assert token in lsp, f'LSP stub lacks {token}'
@@ -78,6 +83,8 @@ assert 'registerDocumentFormattingEditProvider' in extension
 assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'vscode/lsp/flow-language-server.js').read_bytes()
 assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'zed/lsp/flow-language-server.js').read_bytes()
 assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'vscode/fmt/index.js').read_bytes() == (ROOT/'zed/fmt/index.js').read_bytes()
+assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/fmt/index.js').read_bytes()
+assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/lsp/flow-language-server.js').read_bytes()
 assert 'documentFormattingProvider' in lsp
 assert 'textDocument/formatting' in lsp and 'textDocument/didOpen' in lsp
 assert 'command = "lsp/nexss-flow-language-server"' in zed_extension

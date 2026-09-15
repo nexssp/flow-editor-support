@@ -56,6 +56,8 @@ The output directory contains `nexss-flow-vscode.vsix`, `nexss-flow-zed.zip`, `n
 
 The supplied Nexss logo is included in the source bundle and adapted for each editor: VS Code uses `vscode/icon.png` in its extension manifest, while the Zed and Notepad++ bundles include `logo.png`/`nexss-logo.png` for repository, package, and documentation branding. Zed's official publishing flow does not currently use an extension-manifest icon field, so its logo is shipped as an asset rather than added as unsupported TOML.
 
+Two Zed packages are produced. Use `nexss-flow-zed.zip` for current Zed versions; its manifest uses `schema_version = 1` and declares the `process:exec` capability. Use `nexss-flow-zed-legacy-0.230.2.zip` for Zed 0.230.2; its manifest intentionally omits the newer schema and capability fields. For **Install Dev Extension**, select the extracted folder containing `extension.toml` directly.
+
 To create a GitHub release, push a version tag whose commit already contains `.github/workflows/release.yml`:
 
 ```bash
