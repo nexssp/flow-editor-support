@@ -1,0 +1,8 @@
+# LSP stub metadata for local development and extension wiring.
+# The executable is intentionally dependency-free and speaks JSON-RPC over stdio.
+name = "nexss-flow-language-server"
+command = "lsp/nexss-flow-language-server"
+
+[language]
+name = "Nexss Flow"
+path_suffixes = ["flow"]

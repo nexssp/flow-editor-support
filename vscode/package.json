@@ -1,0 +1,43 @@
+{
+  "name": "nexss-flow-syntax",
+  "displayName": "Nexss Flow",
+  "description": "Syntax highlighting, snippets, and LSP stub support for Nexss Flow .flow files",
+  "version": "0.1.0",
+  "publisher": "nexss",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nexssp/flow-editor-support"
+  },
+  "engines": { "vscode": ">=1.80.0" },
+  "main": "./extension.js",
+  "activationEvents": ["onLanguage:nexss-flow"],
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [{
+      "id": "nexss-flow",
+      "aliases": ["Nexss Flow", "Flow"],
+      "extensions": [".flow"],
+      "configuration": "./language-configuration.json"
+    }],
+    "snippets": [{
+      "language": "nexss-flow",
+      "path": "./snippets/flow.code-snippets"
+    }],
+    "grammars": [{
+      "language": "nexss-flow",
+      "scopeName": "source.flow",
+      "path": "./syntaxes/flow.tmLanguage.json"
+    }],
+    "configuration": {
+      "title": "Nexss Flow",
+      "properties": {
+        "nexssFlow.languageServer.command": {
+          "type": "string",
+          "default": "",
+          "description": "Command for the Nexss Flow stdio LSP stub. Use a dedicated LSP client to launch it."
+        }
+      }
+    }
+  }
+}

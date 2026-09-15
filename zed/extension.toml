@@ -1,0 +1,22 @@
+id = "nexss-flow"
+name = "Nexss Flow"
+version = "0.1.0"
+authors = ["Nexss Flow contributors"]
+description = "Syntax highlighting for Nexss Flow Arrow DSL files"
+repository = "https://github.com/nexssp/flow"
+
+[grammars.flow]
+repository = "https://github.com/nexssp/flow-editor-support"
+rev = "main"
+path = "zed/grammars/flow.js"
+
+[language_servers.nexss-flow-language-server]
+name = "Nexss Flow Language Server"
+command = "lsp/nexss-flow-language-server"
+languages = ["Nexss Flow"]
+
+[[languages]]
+name = "Nexss Flow"
+grammar = "flow"
+path_suffixes = ["flow"]
+line_comments = ["//"]

@@ -1,0 +1,42 @@
+{
+  "flow-pipe": {
+    "prefix": "flow-pipe",
+    "body": ["${1:source.node}", "-> ${2:target.node}", ""],
+    "description": "Sequential Flow pipeline"
+  },
+  "flow-parallel": {
+    "prefix": "flow-parallel",
+    "body": ["( ${1:first.node} & ${2:second.node} )"],
+    "description": "Parallel Flow fan-out"
+  },
+  "flow-fallback": {
+    "prefix": "flow-fallback",
+    "body": ["( ${1:primary.node} || ${2:fallback.node} )"],
+    "description": "Fallback chain"
+  },
+  "flow-if": {
+    "prefix": "flow-if",
+    "body": ["${1:gate} ? ${2:target.node}"],
+    "description": "Conditional node"
+  },
+  "flow-projection": {
+    "prefix": "flow-projection",
+    "body": ["{ ${1:field}: ${2:.input} }"],
+    "description": "Inline projection"
+  },
+  "flow-loop": {
+    "prefix": "flow-loop",
+    "body": ["loop(", "  ${1:body.node}", ") until( ${2:condition} )"],
+    "description": "Bounded loop"
+  },
+  "flow-node": {
+    "prefix": "flow-node",
+    "body": ["${1:namespace.node}:timeout=${2:10s}:retry=${3:2}:cache=${4:5m}"],
+    "description": "Configured action node"
+  },
+  "flow-pipeline": {
+    "prefix": "flow-pipeline",
+    "body": ["@pipeline ${1:name}", "  ${2:source.node}", "  -> ${3:target.node}", "@end"],
+    "description": "Named reusable pipeline"
+  }
+}

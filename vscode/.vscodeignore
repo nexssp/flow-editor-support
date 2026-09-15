@@ -1,0 +1,4 @@
+*.vsix
+.vscodeignore
+node_modules/
+*.log
