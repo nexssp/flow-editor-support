@@ -14,7 +14,6 @@ args = ["**"]
 [grammars.flow]
 repository = "https://github.com/nexssp/flow-editor-support"
 rev = "main"
-path = "zed/grammars/flow.js"
 
 [language_servers.nexss-flow-language-server]
 name = "Nexss Flow Language Server"

@@ -6,6 +6,7 @@ module.exports = grammar({
   name: 'flow',
   extras: $ => [/\s/, $.comment],
   word: $ => $.identifier,
+  conflicts: $ => [[$.atom], [$.expression, $.conditional], [$.projection_field], [$.modifier_value]],
   rules: {
     source_file: $ => repeat(choice($.directive, $.expression)),
     directive: $ => seq('@', $.directive_name, /[^\n]+/),

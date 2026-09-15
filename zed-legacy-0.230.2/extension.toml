@@ -1,14 +1,19 @@
 id = "nexss-flow-legacy"
 name = "Nexss Flow (Legacy Zed)"
 version = "0.1.0"
+schema_version = 1
 authors = ["Nexss Flow contributors"]
 description = "Syntax highlighting for Nexss Flow Arrow DSL files on older Zed versions"
 repository = "https://github.com/nexssp/flow-editor-support"
 
+[[capabilities]]
+kind = "process:exec"
+command = "*"
+args = ["**"]
+
 [grammars.flow]
 repository = "https://github.com/nexssp/flow-editor-support"
 rev = "main"
-path = "zed/grammars/flow.js"
 
 [language_servers.nexss-flow-language-server]
 name = "Nexss Flow Language Server"

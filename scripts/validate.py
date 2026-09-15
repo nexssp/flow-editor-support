@@ -5,7 +5,7 @@ import json, tomllib, xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 required = [
-    'README.md', 'LICENSE', 'package.json', 'assets/nexss-logo.png', 'examples/complete.flow', 'fmt/index.js', 'fmt/cli.js',
+    'README.md', 'LICENSE', 'package.json', 'grammar.js', 'src/parser.c', 'src/node-types.json', 'assets/nexss-logo.png', 'examples/complete.flow', 'fmt/index.js', 'fmt/cli.js',
     'fmt/test/formatter.test.js', 'fmt/test/fixtures/pipeline.flow', 'fmt/test/fixtures/pipeline.expected.flow',
     'zed/extension.toml', 'zed/grammars/flow.js', 'zed/languages/flow/config.toml',
     'zed/languages/flow/highlights.scm', 'zed/languages/flow/brackets.scm',
@@ -41,8 +41,8 @@ assert 'languages' not in zed_manifest_data
 assert zed_manifest_data['language_servers']['nexss-flow-language-server']['languages'] == ['Nexss Flow']
 assert zed_language_data['name'] == 'Nexss Flow' and zed_language_data['grammar'] == 'flow'
 legacy_manifest_data = tomllib.loads((ROOT/'zed-legacy-0.230.2/extension.toml').read_text())
-assert 'schema_version' not in legacy_manifest_data
-assert 'capabilities' not in legacy_manifest_data
+assert legacy_manifest_data['schema_version'] == 1
+assert legacy_manifest_data['capabilities'][0]['kind'] == 'process:exec'
 assert legacy_manifest_data['id'] == 'nexss-flow-legacy'
 lsp = (ROOT/'lsp/flow-language-server.js').read_text()
 for token in ['initialize', 'textDocument/completion', 'textDocument/hover', 'Content-Length']:
@@ -59,7 +59,8 @@ for token in ['@operator', '@function', '@property', '@keyword.control', '@strin
 zed_grammar = (ROOT/'zed/grammars/flow.js').read_text()
 assert "token(seq('#'" not in zed_grammar, 'Tree-sitter must not consume target selectors as comments'
 zed_extension = (ROOT/'zed/extension.toml').read_text()
-assert 'path = "zed/grammars/flow.js"' in zed_extension
+assert 'path = ' not in zed_extension
+assert 'repository = "https://github.com/nexssp/flow-editor-support"' in zed_extension
 assert '[language_servers.nexss-flow-language-server]' in zed_extension
 assert '("(" @open ")" @close)' in (ROOT/'zed/languages/flow/brackets.scm').read_text()
 tm_text = (ROOT/'vscode/syntaxes/flow.tmLanguage.json').read_text()
@@ -85,6 +86,8 @@ assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'zed/lsp/flow-
 assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'vscode/fmt/index.js').read_bytes() == (ROOT/'zed/fmt/index.js').read_bytes()
 assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/fmt/index.js').read_bytes()
 assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/lsp/flow-language-server.js').read_bytes()
+assert (ROOT/'grammar.js').read_bytes() == (ROOT/'zed/grammars/flow.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/grammar.js').read_bytes()
+assert (ROOT/'grammar.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/grammars/flow.js').read_bytes()
 assert 'documentFormattingProvider' in lsp
 assert 'textDocument/formatting' in lsp and 'textDocument/didOpen' in lsp
 assert 'command = "lsp/nexss-flow-language-server"' in zed_extension

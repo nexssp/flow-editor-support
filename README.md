@@ -56,7 +56,7 @@ The output directory contains `nexss-flow-vscode.vsix`, `nexss-flow-zed.zip`, `n
 
 The supplied Nexss logo is included in the source bundle and adapted for each editor: VS Code uses `vscode/icon.png` in its extension manifest, while the Zed and Notepad++ bundles include `logo.png`/`nexss-logo.png` for repository, package, and documentation branding. Zed's official publishing flow does not currently use an extension-manifest icon field, so its logo is shipped as an asset rather than added as unsupported TOML.
 
-Two Zed packages are produced. Use `nexss-flow-zed.zip` for current Zed versions; its manifest uses `schema_version = 1` and declares the `process:exec` capability. Use `nexss-flow-zed-legacy-0.230.2.zip` for Zed 0.230.2; its manifest intentionally omits the newer schema and capability fields. For **Install Dev Extension**, select the extracted folder containing `extension.toml` directly.
+Two separate Zed packages are produced. Use `nexss-flow-zed.zip` for current Zed versions and `nexss-flow-zed-legacy-0.230.2.zip` for Zed 0.230.2. Both manifests use the working `schema_version = 1` format and declare the `process:exec` capability; they remain separate so future Zed-specific changes cannot break the older package. For **Install Dev Extension**, select the extracted folder containing `extension.toml` directly.
 
 To create a GitHub release, push a version tag whose commit already contains `.github/workflows/release.yml`:
 
@@ -70,6 +70,8 @@ The workflow validates and packages every pushed `v*` tag, then creates the GitH
 ## Formatting
 
 The repository includes a conservative, dependency-free `flowfmt` implementation. It normalizes operator spacing, indentation, blank lines, line endings, and UTF-8 BOM handling without changing strings or modifier ordering. It is intentionally a syntax formatter rather than a semantic validator; malformed Flow should be rejected by the canonical Flow compiler.
+
+The canonical Tree-sitter source is `grammar.js` at the repository root. It now generates successfully with `npx --yes tree-sitter-cli generate grammar.js`, producing `src/parser.c` and `src/node-types.json`. The Zed manifests reference this repository-root grammar project rather than a nested `zed/grammars/flow.js` path, which avoids the indefinite “Installing” state caused by the previous layout. The current LSP remains a Node development implementation; a production Zed LSP extension would additionally need a Rust/WASM wrapper like the attached `srcpack` extension.
 
 ```bash
 node fmt/cli.js examples/complete.flow
