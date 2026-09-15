@@ -14,6 +14,8 @@ required = [
     'vscode/package.json', 'vscode/icon.png', 'vscode/extension.js', 'vscode/lsp/flow-language-server.js', 'vscode/fmt/index.js', 'vscode/language-configuration.json', 'vscode/syntaxes/flow.tmLanguage.json',
     'vscode/snippets/flow.code-snippets', '.zed/snippets/nexss-flow.json',
     'notepadpp/flow-udl.xml', 'notepadpp/README.md', 'notepadpp/nexss-logo.png', 'notepadpp/flowfmt.cmd', 'notepadpp/nppexec/Format-Flow.npes',
+    'claude/.claude-plugin/plugin.json', 'claude/.lsp.json', 'claude/commands/flowfmt.md', 'claude/lsp/flow-language-server.js', 'claude/fmt/index.js', 'claude/fmt/cli.js', 'claude/README.md',
+    'jetbrains/textmate/nexss-flow.tmLanguage.json', 'jetbrains/README.md',
     'lsp/flow-language-server.js', 'lsp/nexss-flow-language-server',
     '.github/workflows/release.yml', 'scripts/package-release.sh',
 ]
@@ -24,6 +26,9 @@ json.load(open(ROOT/'vscode/package.json'))
 json.load(open(ROOT/'vscode/language-configuration.json'))
 json.load(open(ROOT/'vscode/snippets/flow.code-snippets'))
 json.load(open(ROOT/'.zed/snippets/nexss-flow.json'))
+claude_plugin = json.load(open(ROOT/'claude/.claude-plugin/plugin.json'))
+claude_lsp = json.load(open(ROOT/'claude/.lsp.json'))
+json.load(open(ROOT/'jetbrains/textmate/nexss-flow.tmLanguage.json'))
 tm = json.load(open(ROOT/'vscode/syntaxes/flow.tmLanguage.json'))
 assert tm['scopeName'] == 'source.flow'
 ET.parse(ROOT/'notepadpp/flow-udl.xml')
@@ -86,6 +91,10 @@ assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'zed/lsp/flow-
 assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'vscode/fmt/index.js').read_bytes() == (ROOT/'zed/fmt/index.js').read_bytes()
 assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/fmt/index.js').read_bytes()
 assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/lsp/flow-language-server.js').read_bytes()
+assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'claude/lsp/flow-language-server.js').read_bytes()
+assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'claude/fmt/index.js').read_bytes()
+assert claude_plugin['name'] == 'nexss-flow'
+assert claude_lsp['nexss-flow']['extensionToLanguage']['.flow'] == 'nexss-flow'
 assert (ROOT/'grammar.js').read_bytes() == (ROOT/'zed/grammars/flow.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/grammar.js').read_bytes()
 assert (ROOT/'grammar.js').read_bytes() == (ROOT/'zed-legacy-0.230.2/grammars/flow.js').read_bytes()
 assert 'documentFormattingProvider' in lsp

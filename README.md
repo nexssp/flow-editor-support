@@ -44,7 +44,7 @@ Zed snippets are in `.zed/snippets/nexss-flow.json`; this is the repository/proj
 
 ## CI/CD and releases
 
-`.github/workflows/release.yml` validates every pull request, builds the VS Code VSIX, creates ZIP artifacts for the source/Zed/Notepad++ integrations, and publishes tagged GitHub releases for tags matching `vX.Y.Z`. The same workflow includes an **opt-in** marketplace job: set the repository variable `PUBLISH_MARKETPLACES=true` and configure `VSCE_PAT` plus the Zed marketplace credential before enabling publication. Credentials are never stored in the repository, and marketplace publishing is not attempted by default.
+`.github/workflows/release.yml` validates every pull request, builds the VS Code VSIX, creates ZIP artifacts for the source/Zed/Notepad++ integrations, and publishes tagged GitHub releases for tags matching `vX.Y.Z`. Marketplace publishing is deferred; no marketplace credentials are required by this workflow.
 
 To reproduce packaging locally:
 
@@ -52,11 +52,13 @@ To reproduce packaging locally:
 bash scripts/package-release.sh dist
 ```
 
-The output directory contains `nexss-flow-vscode.vsix`, `nexss-flow-zed.zip`, `nexss-flow-notepadpp.zip`, `nexss-flow-source.zip`, and `SHA256SUMS`.
+The output directory contains `nexss-flow-vscode.vsix`, `nexss-flow-zed.zip`, `nexss-flow-zed-legacy-0.230.2.zip`, `nexss-flow-notepadpp.zip`, `nexss-flow-source.zip`, and `SHA256SUMS`.
 
 The supplied Nexss logo is included in the source bundle and adapted for each editor: VS Code uses `vscode/icon.png` in its extension manifest, while the Zed and Notepad++ bundles include `logo.png`/`nexss-logo.png` for repository, package, and documentation branding. Zed's official publishing flow does not currently use an extension-manifest icon field, so its logo is shipped as an asset rather than added as unsupported TOML.
 
 Two separate Zed packages are produced. Use `nexss-flow-zed.zip` for current Zed versions and `nexss-flow-zed-legacy-0.230.2.zip` for Zed 0.230.2. Both manifests use the working `schema_version = 1` format and declare the `process:exec` capability; they remain separate so future Zed-specific changes cannot break the older package. For **Install Dev Extension**, select the extracted folder containing `extension.toml` directly.
+
+Additional integrations are included for other developer tools. `claude/` is a Claude Code plugin package with `.lsp.json` code intelligence and a `/flowfmt` command; Claude Code itself does not render editor syntax colors. `jetbrains/` contains an importable TextMate grammar for IntelliJ-based IDEs, plus instructions for invoking `flowfmt` as an External Tool. Native JetBrains formatting and refactoring would require a dedicated IntelliJ Platform plugin; the TextMate bundle is coloring-only.
 
 To create a GitHub release, push a version tag whose commit already contains `.github/workflows/release.yml`:
 

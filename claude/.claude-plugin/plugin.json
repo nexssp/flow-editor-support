@@ -1,0 +1,6 @@
+{
+  "name": "nexss-flow",
+  "version": "0.1.0",
+  "description": "Nexss Flow code intelligence and formatting for Claude Code",
+  "author": { "name": "Nexss Flow contributors" }
+}
