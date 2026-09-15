@@ -45,10 +45,6 @@
         {
           "name": "comment.line.flow",
           "match": "^(\\s*)//.*$"
-        },
-        {
-          "name": "comment.line.double-slash.flow",
-          "match": "//.*$"
         }
       ]
     },

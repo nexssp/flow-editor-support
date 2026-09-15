@@ -1,6 +1,15 @@
 #!/usr/bin/env node
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+const formatterPath = [
+  path.join(__dirname, '..', 'fmt', 'index.js'),
+  path.join(__dirname, '..', '..', 'fmt', 'index.js'),
+].find(file => fs.existsSync(file));
+if (!formatterPath) throw new Error('flowfmt formatter module not found');
+const { format } = require(formatterPath);
+
 // Minimal LSP stub for editor integration. It is intentionally dependency-free.
 // It provides initialize, shutdown, textDocument/completion, and hover. A future
 // implementation can replace the completion/hover tables with kernel registry data.
@@ -17,6 +26,7 @@ const snippets = [
 ];
 let buffer = Buffer.alloc(0);
 let shutdown = false;
+const documents = new Map();
 
 function send(id, result, error) {
   const payload = JSON.stringify(error ? { jsonrpc: '2.0', id, error } : { jsonrpc: '2.0', id, result });
@@ -28,10 +38,21 @@ function completionItems(position = { line: 0, character: 0 }) {
     textEdit: { newText: insertText, range: { start: position, end: position } }
   }));
 }
+function endPosition(text) {
+  const lines = text.split(/\r?\n/);
+  return { line: Math.max(0, lines.length - 1), character: [...(lines[lines.length - 1] || '')].length };
+}
+function documentText(uri) { return documents.get(uri) || ''; }
+function extractText(params) {
+  if (params.textDocument && typeof params.textDocument.text === 'string') return params.textDocument.text;
+  const changes = params.contentChanges || [];
+  return changes.length && typeof changes[changes.length - 1].text === 'string' ? changes[changes.length - 1].text : '';
+}
 function handle(msg) {
   const { id, method, params = {} } = msg;
   if (method === 'initialize') return send(id, { capabilities: {
     textDocumentSync: 1,
+    documentFormattingProvider: true,
     completionProvider: { triggerCharacters: ['@', ':', '.', ' ', '-', '|', '&', '?', '{'] },
     hoverProvider: true,
     definitionProvider: false,
@@ -40,6 +61,25 @@ function handle(msg) {
   if (method === 'exit') { process.exit(shutdown ? 0 : 1); }
   if (method === 'textDocument/completion') return send(id, { isIncomplete: false, items: completionItems(params.position || { line: 0, character: 0 }) });
   if (method === 'textDocument/hover') return send(id, { contents: { kind: 'markdown', value: '**Nexss Flow** node or DSL construct.\n\nThe stub is ready to be replaced by registry-aware analysis.' } });
+  if (method === 'textDocument/didOpen' || method === 'textDocument/didChange') {
+    const uri = params.textDocument && params.textDocument.uri;
+    if (uri) documents.set(uri, extractText(params));
+    return;
+  }
+  if (method === 'textDocument/didClose') {
+    const uri = params.textDocument && params.textDocument.uri;
+    if (uri) documents.delete(uri);
+    return;
+  }
+  if (method === 'textDocument/formatting') {
+    const uri = params.textDocument && params.textDocument.uri;
+    const text = documentText(uri);
+    const formatted = format(text, {
+      indentWidth: params.options && params.options.tabSize,
+      insertSpaces: params.options ? params.options.insertSpaces !== false : true,
+    });
+    return send(id, [{ range: { start: { line: 0, character: 0 }, end: endPosition(text) }, newText: formatted }]);
+  }
   if (id !== undefined) return send(id, null);
 }
 function consume() {

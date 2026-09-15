@@ -1,0 +1,4 @@
+// formatter fixture
+@config:budget_usd=1.00
+
+users.solve:route="POST /api/users/solve":retry=2-> {user:.input,note:"hello"}->(users.audit&users.notify)

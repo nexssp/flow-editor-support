@@ -1,0 +1,12 @@
+{
+  "name": "nexss-flow-tooling",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Editor tooling and formatter for Nexss Flow",
+  "license": "Apache-2.0",
+  "bin": { "flowfmt": "./fmt/cli.js" },
+  "scripts": {
+    "test": "node --test fmt/test/*.test.js",
+    "format:check": "node fmt/cli.js --check examples/complete.flow"
+  }
+}

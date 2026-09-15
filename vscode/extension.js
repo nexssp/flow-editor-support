@@ -15,6 +15,10 @@ function send(method, params) {
     server.stdin.write(`Content-Length: ${Buffer.byteLength(body, 'utf8')}\r\n\r\n${body}`);
   });
 }
+function notify(method, params) {
+  const body = JSON.stringify({ jsonrpc: '2.0', method, params });
+  server.stdin.write(`Content-Length: ${Buffer.byteLength(body, 'utf8')}\r\n\r\n${body}`);
+}
 function consume() {
   while (true) {
     const separator = buffer.indexOf(Buffer.from('\r\n\r\n'));
@@ -43,6 +47,12 @@ function activate(context) {
   server = cp.spawn(command, args, { cwd: context.extensionPath, stdio: ['pipe', 'pipe', 'pipe'] });
   server.stdout.on('data', chunk => { buffer = Buffer.concat([buffer, chunk]); consume(); });
   server.stderr.on('data', chunk => console.error(`[nexss-flow-lsp] ${chunk}`));
+  server.on('exit', (code, signal) => {
+    const error = new Error(`Nexss Flow LSP exited (${code ?? 'null'}${signal ? `, ${signal}` : ''})`);
+    for (const { reject } of pending.values()) reject(error);
+    pending.clear();
+    if (server && server.exitCode !== null) server = undefined;
+  });
   send('initialize', { processId: process.pid, rootUri: vscode.workspace.workspaceFolders?.[0]?.uri.toString() || null, capabilities: {} }).catch(console.error);
 
   const provider = vscode.languages.registerCompletionItemProvider('nexss-flow', {
@@ -76,11 +86,42 @@ function activate(context) {
     }
   });
   context.subscriptions.push(hover);
+  const formatter = vscode.languages.registerDocumentFormattingEditProvider('nexss-flow', {
+    async provideDocumentFormattingEdits(document) {
+      try {
+        notify('textDocument/didOpen', {
+          textDocument: { uri: document.uri.toString(), languageId: 'nexss-flow', version: 1, text: document.getText() }
+        });
+        const editor = vscode.window.activeTextEditor;
+        const result = await send('textDocument/formatting', {
+          textDocument: { uri: document.uri.toString() },
+          options: {
+            tabSize: editor?.options.tabSize || 2,
+            insertSpaces: editor?.options.insertSpaces !== false,
+          }
+        });
+        return (result || []).map(edit => new vscode.TextEdit(
+          new vscode.Range(edit.range.start.line, edit.range.start.character, edit.range.end.line, edit.range.end.character),
+          edit.newText
+        ));
+      } catch (error) {
+        vscode.window.showErrorMessage(`Flowfmt: ${error.message}`);
+        return [];
+      }
+    }
+  });
+  context.subscriptions.push(formatter);
 }
 async function deactivate() {
   if (!server) return undefined;
-  try { await send('shutdown', {}); } catch (_) { /* best effort */ }
-  server.kill();
+  const child = server;
+  try {
+    await Promise.race([
+      send('shutdown', {}),
+      new Promise(resolve => setTimeout(resolve, 500))
+    ]);
+  } catch (_) { /* best effort */ }
+  child.kill();
   server = undefined;
 }
 module.exports = { activate, deactivate };

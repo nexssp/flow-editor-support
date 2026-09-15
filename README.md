@@ -7,6 +7,7 @@ Editor support for the **Nexss Flow** language built around `nexssp/kernel` and 
 - **Notepad++** through a User Defined Language XML profile.
 - **Completion snippets** for common pipelines, projections, directives, loops, and node modifiers.
 - **LSP stubs** for VS Code/Zed integration, exposing initialize, hover, and structural completion responses.
+- **`flowfmt` autoformatting** through the CLI, LSP, VS Code, and a best-effort Notepad++ NppExec wrapper.
 
 The syntax is designed to be forgiving while a flow is being edited. Unknown action names remain highlighted as nodes, so newly registered kernel actions appear automatically without changing the grammar.
 
@@ -37,7 +38,7 @@ Import `notepadpp/flow-udl.xml` using **Language > Define your language > Import
 
 ### Zed snippets and LSP
 
-Zed snippets are in `.zed/snippets/nexss-flow.json`; this is the repository/project-local snippet location and may need to be copied into a user Zed snippets directory for a published extension. The Zed language configuration registers `nexss-flow-language-server`; the executable wrapper is `lsp/nexss-flow-language-server`. The companion metadata in `zed/language-servers/` documents the local command used by an extension host.
+Zed snippets are in `.zed/snippets/nexss-flow.json`; this is the repository/project-local snippet location and may need to be copied into a user Zed snippets directory for a published extension. The Zed language configuration registers `nexss-flow-language-server`; the executable wrapper is `zed/lsp/nexss-flow-language-server`, and the packaged Zed archive includes both the wrapper and its embedded server. The companion metadata in `zed/language-servers/` documents the local command used by an extension host.
 
 ## CI/CD and releases
 
@@ -50,6 +51,36 @@ bash scripts/package-release.sh dist
 ```
 
 The output directory contains `nexss-flow-vscode.vsix`, `nexss-flow-zed.zip`, `nexss-flow-notepadpp.zip`, `nexss-flow-source.zip`, and `SHA256SUMS`.
+
+To create a GitHub release, push a version tag whose commit already contains `.github/workflows/release.yml`:
+
+```bash
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
+
+The workflow validates and packages every pushed `v*` tag, then creates the GitHub release. Marketplace publishing remains opt-in through the `PUBLISH_MARKETPLACES` repository variable and marketplace credentials.
+
+## Formatting
+
+The repository includes a conservative, dependency-free `flowfmt` implementation. It normalizes operator spacing, indentation, blank lines, line endings, and UTF-8 BOM handling without changing strings or modifier ordering. It is intentionally a syntax formatter rather than a semantic validator; malformed Flow should be rejected by the canonical Flow compiler.
+
+```bash
+node fmt/cli.js examples/complete.flow
+node fmt/cli.js --check examples/complete.flow
+node fmt/cli.js --write examples/complete.flow
+cat examples/complete.flow | node fmt/cli.js --stdin
+```
+
+VS Code formatting is available through **Format Document**. To enable format-on-save, add:
+
+```json
+"[nexss-flow]": {
+  "editor.formatOnSave": true
+}
+```
+
+Zed uses the registered LSP formatter; enable `format_on_save` in Zed settings if desired. Notepad++ support is best-effort through `notepadpp/nppexec/Format-Flow.npes`; see `notepadpp/README.md`.
 
 ## Syntax covered
 

@@ -1,0 +1,4 @@
+NPP_SAVE
+cd "$(CURRENT_DIRECTORY)"
+"$(NPP_DIRECTORY)\plugins\Config\flowfmt.cmd" "$(FULL_CURRENT_PATH)"
+NPP_OPEN "$(FULL_CURRENT_PATH)"

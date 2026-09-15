@@ -1,7 +1,7 @@
 // Nexss Flow editor fixture: all primary language constructs.
 @config:budget_usd=1.00
 @config:approval=danger
-@assert: success == true
+@assert:success == true
 @description "A searchable example of a Flow pipeline"
 @require ./text
 @require github.com/acme/text-tools v1.0.0
@@ -12,15 +12,15 @@
 @end
 
 users.solve:route="POST /api/users/solve":status=200:retry=2:cache=5m:auth
-  -> { user: .input, note: "hello" }
-  -> users.enrich
-  -> ( users.audit & users.notify )
-  -> ( redis.get || postgres.query || legacy.rest_api )
-  -> approved ? users.persist
+-> { user: .input, note: "hello" }
+-> users.enrich
+-> (users.audit & users.notify)
+-> (redis.get || postgres.query || legacy.rest_api)
+-> approved ? users.persist
 
 loop(
-  agent.critic:model="deepseek-flash":timeout=10s @review #security,quality ~slow
+  agent.critic:model="deepseek-flash":timeout=10s @review #security, quality ~slow
   -> log.info
-) until( attempts >= 3 )
+) until(attempts >= 3)
 
 { name: "world" } -> greet

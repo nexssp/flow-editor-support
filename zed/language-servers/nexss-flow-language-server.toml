@@ -1,4 +1,5 @@
 # LSP stub metadata for local development and extension wiring.
+# The canonical published-extension declaration is in ../extension.toml.
 # The executable is intentionally dependency-free and speaks JSON-RPC over stdio.
 name = "nexss-flow-language-server"
 command = "lsp/nexss-flow-language-server"

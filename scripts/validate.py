@@ -5,12 +5,15 @@ import json, xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 required = [
-    'README.md', 'LICENSE', 'examples/complete.flow',
+    'README.md', 'LICENSE', 'package.json', 'examples/complete.flow', 'fmt/index.js', 'fmt/cli.js',
+    'fmt/test/formatter.test.js', 'fmt/test/fixtures/pipeline.flow', 'fmt/test/fixtures/pipeline.expected.flow',
     'zed/extension.toml', 'zed/grammars/flow.js', 'zed/languages/flow/config.toml',
     'zed/languages/flow/highlights.scm', 'zed/languages/flow/brackets.scm',
-    'vscode/package.json', 'vscode/extension.js', 'vscode/lsp/flow-language-server.js', 'vscode/language-configuration.json', 'vscode/syntaxes/flow.tmLanguage.json',
+    'zed/lsp/flow-language-server.js', 'zed/lsp/nexss-flow-language-server', 'zed/fmt/index.js',
+    'vscode/package.json', 'vscode/extension.js', 'vscode/lsp/flow-language-server.js', 'vscode/fmt/index.js', 'vscode/language-configuration.json', 'vscode/syntaxes/flow.tmLanguage.json',
     'vscode/snippets/flow.code-snippets', '.zed/snippets/nexss-flow.json',
-    'notepadpp/flow-udl.xml', 'lsp/flow-language-server.js', 'lsp/nexss-flow-language-server',
+    'notepadpp/flow-udl.xml', 'notepadpp/README.md', 'notepadpp/flowfmt.cmd', 'notepadpp/nppexec/Format-Flow.npes',
+    'lsp/flow-language-server.js', 'lsp/nexss-flow-language-server',
     '.github/workflows/release.yml', 'scripts/package-release.sh',
 ]
 for rel in required:
@@ -64,7 +67,14 @@ assert 'const vscode = require(\'vscode\')' in (ROOT/'vscode/extension.js').read
 extension = (ROOT/'vscode/extension.js').read_text()
 assert 'parts = configured ? configured.split' in extension
 assert 'registerHoverProvider' in extension
+assert 'registerDocumentFormattingEditProvider' in extension
 assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'vscode/lsp/flow-language-server.js').read_bytes()
+assert (ROOT/'lsp/flow-language-server.js').read_bytes() == (ROOT/'zed/lsp/flow-language-server.js').read_bytes()
+assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'vscode/fmt/index.js').read_bytes() == (ROOT/'zed/fmt/index.js').read_bytes()
+assert 'documentFormattingProvider' in lsp
+assert 'textDocument/formatting' in lsp and 'textDocument/didOpen' in lsp
+assert 'command = "lsp/nexss-flow-language-server"' in zed_extension
+assert (ROOT/'zed/lsp/nexss-flow-language-server').stat().st_mode & 0o111
 assert tm['repository']['comments']['patterns'][0]['match'] == r'^(\s*)//.*$'
 assert not example.startswith('#')
 assert 'Version 2.0' in (ROOT/'LICENSE').read_text() and len((ROOT/'LICENSE').read_text()) > 10000

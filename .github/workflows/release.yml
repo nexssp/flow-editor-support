@@ -2,7 +2,8 @@ name: Validate, package, and release editor extensions
 
 on:
   push:
-    tags: ['v*.*.*']
+    tags:
+      - 'v*'
   pull_request:
   workflow_dispatch:
 
@@ -21,6 +22,10 @@ jobs:
         run: python3 scripts/validate.py
       - name: Check LSP stub syntax
         run: node --check lsp/flow-language-server.js
+      - name: Test formatter
+        run: node --test fmt/test/*.test.js
+      - name: Check formatted example
+        run: node fmt/cli.js --check examples/complete.flow
       - name: Package artifacts
         run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist"
       - uses: actions/upload-artifact@v4
@@ -29,7 +34,7 @@ jobs:
           path: dist/*
 
   github-release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: validate
     runs-on: ubuntu-latest
     steps:
@@ -43,7 +48,7 @@ jobs:
           files: dist/*
 
   marketplace-publish:
-    if: startsWith(github.ref, 'refs/tags/v') && vars.PUBLISH_MARKETPLACES == 'true'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && vars.PUBLISH_MARKETPLACES == 'true'
     needs: validate
     runs-on: ubuntu-latest
     steps:
