@@ -47,27 +47,6 @@ jobs:
           generate_release_notes: true
           files: dist/*
 
-  marketplace-publish:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && vars.PUBLISH_MARKETPLACES == 'true'
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Package VS Code extension
-        run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist"
-      - name: Publish VS Code extension when credentials are configured
-        if: ${{ secrets.VSCE_PAT != '' }}
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx --yes @vscode/vsce publish --packagePath dist/nexss-flow-vscode.vsix --pat "$VSCE_PAT"
-      - name: Publish Zed extension source archive when credentials are configured
-        if: ${{ secrets.ZED_MARKETPLACE_TOKEN != '' }}
-        env:
-          ZED_MARKETPLACE_TOKEN: ${{ secrets.ZED_MARKETPLACE_TOKEN }}
-        run: echo "Zed publishing hook enabled; submit the tagged source through the configured Zed marketplace action."
-
-# Marketplace publishing is deliberately opt-in. Set repository variable
-# PUBLISH_MARKETPLACES=true and configure secrets; builds remain safe by default.
+# Marketplace publishing is intentionally not part of this workflow yet.
+# Add a separate marketplace workflow later when marketplace credentials and
+# publisher accounts are ready; GitHub Releases require no marketplace setup.

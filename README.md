@@ -59,7 +59,7 @@ git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
 
-The workflow validates and packages every pushed `v*` tag, then creates the GitHub release. Marketplace publishing remains opt-in through the `PUBLISH_MARKETPLACES` repository variable and marketplace credentials.
+The workflow validates and packages every pushed `v*` tag, then creates the GitHub release. Marketplace publishing is deliberately deferred; no marketplace accounts, variables, or secrets are required for the current release process.
 
 ## Formatting
 

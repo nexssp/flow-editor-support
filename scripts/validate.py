@@ -36,7 +36,7 @@ lsp = (ROOT/'lsp/flow-language-server.js').read_text()
 for token in ['initialize', 'textDocument/completion', 'textDocument/hover', 'Content-Length']:
     assert token in lsp, f'LSP stub lacks {token}'
 workflow = (ROOT/'.github/workflows/release.yml').read_text()
-for token in ['validate', 'package-release.sh', 'softprops/action-gh-release', 'PUBLISH_MARKETPLACES']:
+for token in ['validate', 'package-release.sh', 'softprops/action-gh-release', 'Marketplace publishing is intentionally not part']:
     assert token in workflow, f'workflow lacks {token}'
 example = (ROOT/'examples/complete.flow').read_text()
 for token in ['@config:', '@pipeline', '->', '||', '&', '?', 'loop(', 'until(', '{', '}', ':retry=', '#security', '~slow']:
@@ -56,7 +56,7 @@ assert 'variable.parameter.exclude.flow' in tm_text
 assert '"include": "#atoms"' in tm_text
 udl = (ROOT/'notepadpp/flow-udl.xml').read_text()
 assert '<Keywords name="Comments">00//' in udl and ' ? ~</Keywords>' in udl
-assert 'secrets.VSCE_PAT !=' in workflow and 'secrets.ZED_MARKETPLACE_TOKEN !=' in workflow
+assert 'secrets.' not in workflow
 assert 'params.position' in lsp and "'source.node\\n-> target.node'" in lsp
 zed_highlights = (ROOT/'zed/languages/flow/highlights.scm').read_text()
 assert zed_highlights.index('(identifier) @variable') < zed_highlights.index('(atom (identifier) @function)')
