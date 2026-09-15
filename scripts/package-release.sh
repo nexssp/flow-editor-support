@@ -9,6 +9,7 @@ else
 fi
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
+chmod +x "$ROOT/lsp/nexss-flow-language-server" "$ROOT/zed/lsp/nexss-flow-language-server" "$ROOT/scripts/package-release.sh"
 cp "$ROOT/LICENSE" "$ROOT/vscode/LICENSE"
 mkdir -p "$ROOT/vscode/lsp"
 cp "$ROOT/lsp/flow-language-server.js" "$ROOT/vscode/lsp/flow-language-server.js"

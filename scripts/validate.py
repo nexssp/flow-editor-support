@@ -74,7 +74,8 @@ assert (ROOT/'fmt/index.js').read_bytes() == (ROOT/'vscode/fmt/index.js').read_b
 assert 'documentFormattingProvider' in lsp
 assert 'textDocument/formatting' in lsp and 'textDocument/didOpen' in lsp
 assert 'command = "lsp/nexss-flow-language-server"' in zed_extension
-assert (ROOT/'zed/lsp/nexss-flow-language-server').stat().st_mode & 0o111
+zed_wrapper = (ROOT/'zed/lsp/nexss-flow-language-server').read_text()
+assert zed_wrapper.startswith('#!/usr/bin/env sh') and 'flow-language-server.js' in zed_wrapper
 assert tm['repository']['comments']['patterns'][0]['match'] == r'^(\s*)//.*$'
 assert not example.startswith('#')
 assert 'Version 2.0' in (ROOT/'LICENSE').read_text() and len((ROOT/'LICENSE').read_text()) > 10000
