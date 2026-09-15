@@ -1,0 +1,11 @@
+[package]
+name = "zed_nexss_flow_legacy"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/flow_extension.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+zed_extension_api = "0.7.0"

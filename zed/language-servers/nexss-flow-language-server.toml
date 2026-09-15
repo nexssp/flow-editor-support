@@ -2,7 +2,7 @@
 # The canonical published-extension declaration is in ../extension.toml.
 # The executable is intentionally dependency-free and speaks JSON-RPC over stdio.
 name = "nexss-flow-language-server"
-command = "lsp/nexss-flow-language-server"
+command = "node lsp/flow-language-server.js"
 
 [language]
 name = "Nexss Flow"

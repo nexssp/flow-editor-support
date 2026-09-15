@@ -17,5 +17,4 @@ rev = "main"
 
 [language_servers.nexss-flow-language-server]
 name = "Nexss Flow Language Server"
-command = "lsp/nexss-flow-language-server"
 languages = ["Nexss Flow"]
