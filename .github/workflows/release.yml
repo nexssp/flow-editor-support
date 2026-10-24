@@ -18,14 +18,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Validate repository
-        run: python3 scripts/validate.py
-      - name: Check LSP stub syntax
-        run: node --check lsp/flow-language-server.js
-      - name: Test formatter
-        run: node --test fmt/test/*.test.js
-      - name: Check formatted example
-        run: node fmt/cli.js --check examples/complete.flow
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Validate editor tooling
+        run: npm run validate
+      - name: Check JavaScript syntax
+        run: |
+          node --check fmt/cli.js
+          node --check lsp/flow-language-server.js
+          node --check vscode/extension.js
+      - name: Compile-check current and legacy Zed wrappers
+        run: |
+          cargo check --manifest-path zed/Cargo.toml
+          cargo check --manifest-path zed-legacy-0.230.2/Cargo.toml
       - name: Package artifacts
         run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist"
       - uses: actions/upload-artifact@v4
@@ -39,6 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Package release assets
         run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist"
       - name: Publish GitHub release

@@ -2,14 +2,14 @@
 
 ## Syntax highlighting
 
-JetBrains IDEs can import TextMate bundles. Use **Settings/Preferences → Editor → TextMate Bundles → Add** and select the `jetbrains/textmate` directory. Associate `*.flow` with the imported Nexss Flow grammar if the IDE does not do so automatically.
+In **Settings/Preferences → Editor → TextMate Bundles → Add**, select the `jetbrains/textmate` directory. The grammar declares the `nflow` file type; associate `*.nflow` manually if the IDE does not do so automatically.
 
 ## Formatting
 
-The current portable integration is an External Tool or File Watcher invoking:
+The standalone JetBrains ZIP includes `fmt/cli.js` and `fmt/index.js`; the complete source archive includes the same formatter at its root. Run it as an External Tool or File Watcher:
 
 ```text
-node <repository>/fmt/cli.js --write $FilePath$
+node "<standalone-package-or-source-root>/fmt/cli.js" --write "$FilePath$"
 ```
 
-For native **Reformat Code**, code-style panels, inspections, and PSI-aware refactorings, Flow needs a dedicated IntelliJ Platform plugin with a lexer/parser and `FormattingModelBuilder`. The TextMate bundle provides coloring only and does not provide native JetBrains formatting.
+This invokes the shared canonical two-space formatter. The TextMate bundle provides coloring only; native **Reformat Code**, code-style panels, inspections, and PSI-aware refactorings require a dedicated IntelliJ Platform plugin and are not included here.

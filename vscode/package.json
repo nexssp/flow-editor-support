@@ -1,7 +1,7 @@
 {
   "name": "nexss-flow-syntax",
   "displayName": "Nexss Flow",
-  "description": "Syntax highlighting, snippets, and LSP stub support for Nexss Flow .flow files",
+  "description": "Syntax highlighting, snippets, and LSP stub support for Nexss Flow .nflow files",
   "version": "0.1.0",
   "publisher": "nexssp",
   "icon": "icon.png",
@@ -18,7 +18,7 @@
     "languages": [{
       "id": "nexss-flow",
       "aliases": ["Nexss Flow", "Flow"],
-      "extensions": [".flow"],
+      "extensions": [".nflow"],
       "configuration": "./language-configuration.json"
     }],
     "snippets": [{
@@ -27,7 +27,7 @@
     }],
     "grammars": [{
       "language": "nexss-flow",
-      "scopeName": "source.flow",
+      "scopeName": "source.nflow",
       "path": "./syntaxes/flow.tmLanguage.json"
     }],
     "configuration": {
@@ -36,7 +36,13 @@
         "nexssFlow.languageServer.command": {
           "type": "string",
           "default": "",
-          "description": "Command for the Nexss Flow stdio LSP stub. Use a dedicated LSP client to launch it."
+          "description": "Optional executable for a compatible stdio language server. Leave blank to use the bundled Flow server."
+        },
+        "nexssFlow.languageServer.args": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Arguments passed to the custom language-server executable."
         }
       }
     }

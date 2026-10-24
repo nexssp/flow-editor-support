@@ -6,4 +6,4 @@ command = "node lsp/flow-language-server.js"
 
 [language]
 name = "Nexss Flow"
-path_suffixes = ["flow"]
+path_suffixes = ["nflow"]

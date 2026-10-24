@@ -1,42 +1,57 @@
 {
   "flow-pipe": {
     "prefix": "flow-pipe",
-    "body": ["${1:source.node}", "-> ${2:target.node}", ""],
+    "body": ["${1:source.node}", "-> ${2:target.node}"],
     "description": "Sequential Flow pipeline"
+  },
+  "flow-args": {
+    "prefix": "flow-args",
+    "body": ["${1:action.node} @{ ${2:value}: ${3:.input} }"],
+    "description": "Structured action arguments"
   },
   "flow-parallel": {
     "prefix": "flow-parallel",
-    "body": ["( ${1:first.node} & ${2:second.node} )"],
-    "description": "Parallel Flow fan-out"
+    "body": ["parallel {", "  ${1:profile}: ${2:profile.action},", "  ${3:metrics}: ${4:metrics.action},", "}"],
+    "description": "Named concurrent branches"
   },
-  "flow-fallback": {
-    "prefix": "flow-fallback",
-    "body": ["( ${1:primary.node} || ${2:fallback.node} )"],
-    "description": "Fallback chain"
+  "flow-race": {
+    "prefix": "flow-race",
+    "body": ["race {", "  ${1:first.action},", "  ${2:second.action},", "}"],
+    "description": "First successful branch"
   },
-  "flow-if": {
-    "prefix": "flow-if",
-    "body": ["${1:gate} ? ${2:target.node}"],
-    "description": "Conditional node"
+  "flow-match": {
+    "prefix": "flow-match",
+    "body": ["match {", "  ${1:.condition} -> ${2:action.one},", "  _ -> ${3:action.other}", "}"],
+    "description": "Ordered match arms"
   },
-  "flow-projection": {
-    "prefix": "flow-projection",
-    "body": ["{ ${1:field}: ${2:.input} }"],
-    "description": "Inline projection"
+  "flow-assert": {
+    "prefix": "flow-assert",
+    "body": ["@assert {", "  ${1:result.ok == true}", "}"],
+    "description": "Post-run assertion block"
   },
-  "flow-loop": {
-    "prefix": "flow-loop",
-    "body": ["loop(", "  ${1:body.node}", ") until( ${2:condition} )"],
-    "description": "Bounded loop"
+  "flow-assert-expression": {
+    "prefix": "flow-assert-expression",
+    "body": ["@assert: ${1:result.ok == true}"],
+    "description": "Flow v0.42.0 post-run assertion"
+  },
+  "flow-assert-inline": {
+    "prefix": "flow-assert-inline",
+    "body": ["@assert: { ${1:result.ok == true}, ${2:result.count > 0} }"],
+    "description": "Flow v0.42.0 comma-separated assertions"
+  },
+  "flow-assert-call": {
+    "prefix": "flow-assert-call",
+    "body": ["assert(${1:condition}, \"${2:failure message}\")"],
+    "description": "Assert a condition while the pipeline runs"
   },
   "flow-node": {
     "prefix": "flow-node",
-    "body": ["${1:namespace.node}:timeout=${2:10s}:retry=${3:2}:cache=${4:5m}"],
+    "body": ["${1:namespace.node}:timeout=${2:10s}:retry=${3:2}"],
     "description": "Configured action node"
   },
   "flow-pipeline": {
     "prefix": "flow-pipeline",
-    "body": ["@pipeline ${1:name}", "  ${2:source.node}", "  -> ${3:target.node}", "@end"],
+    "body": ["@pipeline ${1:name}", "  :timeout=10s", "  ${2:source.node}", "@end"],
     "description": "Named reusable pipeline"
   }
 }

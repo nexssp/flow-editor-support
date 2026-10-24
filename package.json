@@ -6,7 +6,9 @@
   "license": "Apache-2.0",
   "bin": { "flowfmt": "./fmt/cli.js" },
   "scripts": {
-    "test": "node --test fmt/test/*.test.js",
-    "format:check": "node fmt/cli.js --check examples/complete.flow"
+    "test": "node --test fmt/test/*.test.js vscode/test/*.test.js",
+    "format:check": "node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow",
+    "grammar:check": "bash scripts/check-grammar.sh",
+    "validate": "npm test && npm run format:check && npm run grammar:check && python3 scripts/validate.py"
   }
 }

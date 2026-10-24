@@ -1,5 +1,63 @@
 [
   {
+    "type": "argument_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "projection",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "array",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "argument_block",
+          "named": true
+        },
+        {
+          "type": "directive",
+          "named": true
+        },
+        {
+          "type": "directive_block",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "operator",
+          "named": true
+        },
+        {
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "atom",
     "named": true,
     "fields": {},
@@ -7,6 +65,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "argument_block",
+          "named": true
+        },
         {
           "type": "excludes",
           "named": true
@@ -55,6 +117,25 @@
       "types": [
         {
           "type": "directive_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "directive_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "directive_name",
+          "named": true
+        },
+        {
+          "type": "projection",
           "named": true
         }
       ]
@@ -114,11 +195,39 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
-      "required": true,
+      "multiple": true,
+      "required": false,
       "types": [
         {
+          "type": "argument_block",
+          "named": true
+        },
+        {
+          "type": "directive",
+          "named": true
+        },
+        {
+          "type": "directive_block",
+          "named": true
+        },
+        {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "operator",
+          "named": true
+        },
+        {
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
           "named": true
         }
       ]
@@ -130,14 +239,57 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
+        {
+          "type": "argument_block",
+          "named": true
+        },
+        {
+          "type": "directive",
+          "named": true
+        },
+        {
+          "type": "directive_block",
+          "named": true
+        },
         {
           "type": "expression",
           "named": true
         },
         {
-          "type": "until_expression",
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "operator",
+          "named": true
+        },
+        {
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "match_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "group",
+          "named": true
+        },
+        {
+          "type": "projection",
           "named": true
         }
       ]
@@ -167,17 +319,9 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": false,
       "types": [
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
         {
           "type": "string",
           "named": true
@@ -200,6 +344,21 @@
       "types": [
         {
           "type": "primary",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "parallel_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "projection",
           "named": true
         }
       ]
@@ -229,6 +388,10 @@
       "required": true,
       "types": [
         {
+          "type": "array",
+          "named": true
+        },
+        {
           "type": "atom",
           "named": true
         },
@@ -241,7 +404,27 @@
           "named": true
         },
         {
+          "type": "match_block",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "parallel_block",
+          "named": true
+        },
+        {
           "type": "projection",
+          "named": true
+        },
+        {
+          "type": "race_block",
+          "named": true
+        },
+        {
+          "type": "string",
           "named": true
         }
       ]
@@ -256,11 +439,23 @@
       "required": false,
       "types": [
         {
-          "type": "identifier",
+          "type": "argument_block",
           "named": true
         },
         {
-          "type": "number",
+          "type": "directive",
+          "named": true
+        },
+        {
+          "type": "directive_block",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "modifier",
           "named": true
         },
         {
@@ -272,7 +467,11 @@
           "named": true
         },
         {
-          "type": "string",
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
           "named": true
         }
       ]
@@ -287,11 +486,19 @@
       "required": true,
       "types": [
         {
+          "type": "argument_block",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "number",
+          "type": "modifier",
           "named": true
         },
         {
@@ -299,7 +506,11 @@
           "named": true
         },
         {
-          "type": "string",
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
           "named": true
         }
       ]
@@ -311,6 +522,26 @@
     "fields": {}
   },
   {
+    "type": "punctuation",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "race_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "projection",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "source_file",
     "named": true,
     "root": true,
@@ -320,11 +551,35 @@
       "required": false,
       "types": [
         {
+          "type": "argument_block",
+          "named": true
+        },
+        {
           "type": "directive",
           "named": true
         },
         {
+          "type": "directive_block",
+          "named": true
+        },
+        {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "operator",
+          "named": true
+        },
+        {
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
           "named": true
         }
       ]
@@ -351,31 +606,8 @@
     }
   },
   {
-    "type": "until_expression",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "operator",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        }
-      ]
-    }
+    "type": "!",
+    "named": false
   },
   {
     "type": "!=",
@@ -386,7 +618,19 @@
     "named": false
   },
   {
+    "type": "$",
+    "named": false
+  },
+  {
+    "type": "%",
+    "named": false
+  },
+  {
     "type": "&",
+    "named": false
+  },
+  {
+    "type": "&&",
     "named": false
   },
   {
@@ -430,6 +674,10 @@
     "named": false
   },
   {
+    "type": ";",
+    "named": false
+  },
+  {
     "type": "<",
     "named": false
   },
@@ -462,6 +710,14 @@
     "named": false
   },
   {
+    "type": "[",
+    "named": false
+  },
+  {
+    "type": "]",
+    "named": false
+  },
+  {
     "type": "comment",
     "named": true,
     "extra": true
@@ -479,11 +735,27 @@
     "named": false
   },
   {
+    "type": "match",
+    "named": false
+  },
+  {
     "type": "modifier_name",
     "named": true
   },
   {
     "type": "number",
+    "named": true
+  },
+  {
+    "type": "parallel",
+    "named": false
+  },
+  {
+    "type": "race",
+    "named": false
+  },
+  {
+    "type": "raw_char",
     "named": true
   },
   {

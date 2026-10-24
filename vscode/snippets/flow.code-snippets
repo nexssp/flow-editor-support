@@ -1,52 +1,87 @@
 {
   "Sequential pipeline": {
     "prefix": "flow-pipe",
-    "body": ["${1:source.node}", "-> ${2:target.node}", ""],
+    "body": ["${1:source.node}", "-> ${2:target.node}"],
     "description": "Create a sequential Flow pipeline"
   },
-  "Parallel fan-out": {
+  "Structured arguments": {
+    "prefix": "flow-args",
+    "body": ["${1:action.node} @{ ${2:value}: ${3:.input} }"],
+    "description": "Pass structured data using an action argument block"
+  },
+  "Named parallel branches": {
     "prefix": "flow-parallel",
+    "body": ["parallel {", "  ${1:profile}: ${2:profile.action},", "  ${3:metrics}: ${4:metrics.action},", "}"],
+    "description": "Run labeled Flow branches concurrently"
+  },
+  "Parallel fan-out operator": {
+    "prefix": "flow-fanout",
     "body": ["( ${1:first.node} & ${2:second.node} )"],
-    "description": "Run Flow nodes in parallel"
+    "description": "Run unnamed Flow branches concurrently"
+  },
+  "Race": {
+    "prefix": "flow-race",
+    "body": ["race {", "  ${1:first.action},", "  ${2:second.action},", "}"],
+    "description": "Return the first successful branch"
+  },
+  "Match": {
+    "prefix": "flow-match",
+    "body": ["match {", "  ${1:.condition} -> ${2:action.one},", "  _ -> ${3:action.other}", "}"],
+    "description": "Match the input against ordered arms"
   },
   "Fallback chain": {
     "prefix": "flow-fallback",
     "body": ["( ${1:primary.node} || ${2:fallback.node} )"],
-    "description": "Try the next node when the previous node fails"
+    "description": "Try the next branch when the previous one fails"
   },
-  "Conditional node": {
-    "prefix": "flow-if",
-    "body": ["${1:gate} ? ${2:target.node}"],
-    "description": "Run a target when the gate output is truthy"
+  "Conditional with else": {
+    "prefix": "flow-conditional",
+    "body": ["${1:condition} ? ${2:when_true} : ${3:when_false}"],
+    "description": "Create a Flow conditional expression"
   },
   "Projection": {
     "prefix": "flow-projection",
     "body": ["{ ${1:field}: ${2:.input} }"],
-    "description": "Reshape the payload with an inline projection"
+    "description": "Reshape the current payload"
   },
   "Bounded loop": {
     "prefix": "flow-loop",
     "body": ["loop(", "  ${1:body.node}", ") until( ${2:condition} )"],
-    "description": "Create a bounded autonomous loop"
+    "description": "Create a bounded loop"
   },
-  "Directive block": {
-    "prefix": "flow-directive",
-    "body": ["@${1:config}:${2:key}=${3:value}"],
-    "description": "Add a Flow preprocessing directive"
+  "Post-run assertion block": {
+    "prefix": "flow-assert",
+    "body": ["@assert {", "  ${1:result.ok == true}", "}"],
+    "description": "Assert properties of the completed run"
   },
-  "Configured node": {
-    "prefix": "flow-node",
-    "body": ["${1:namespace.node}:timeout=${2:10s}:retry=${3:2}:cache=${4:5m}"],
-    "description": "Add a node with common resilience modifiers"
+  "Single-expression assertion": {
+    "prefix": "flow-assert-expression",
+    "body": ["@assert: ${1:result.ok == true}"],
+    "description": "Flow v0.42.0 post-run assertion"
+  },
+  "Compact inline assertion list": {
+    "prefix": "flow-assert-inline",
+    "body": ["@assert: { ${1:result.ok == true}, ${2:result.count > 0} }"],
+    "description": "Flow v0.42.0 comma-separated assertions"
+  },
+  "Runtime assertion expression": {
+    "prefix": "flow-assert-call",
+    "body": ["assert(${1:condition}, \"${2:failure message}\")"],
+    "description": "Assert a condition while the pipeline runs"
+  },
+  "Schema declaration": {
+    "prefix": "flow-schema",
+    "body": ["@schema ${1:Request} {", "  ${2:Name} ${3:string} `json:\"${4:name}\" validate:\"required\"`", "}"],
+    "description": "Declare a runtime payload schema"
   },
   "Named pipeline": {
     "prefix": "flow-pipeline",
-    "body": ["@pipeline ${1:name}", "  ${2:source.node}", "  -> ${3:target.node}", "@end"],
+    "body": ["@pipeline ${1:name}", "  :${2:timeout}=10s", "  ${3:source.node}", "@end"],
     "description": "Declare a reusable named pipeline"
   },
-  "Require library": {
+  "Require extension bundle": {
     "prefix": "flow-require",
-    "body": ["@require ${1:./local/path}"],
-    "description": "Import a Flow library"
+    "body": ["@require ${1:github.com/acme/tools} ${2:v1.0.0} as ${3:tools}"],
+    "description": "Require a Flow extension bundle"
   }
 }

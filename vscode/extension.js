@@ -40,13 +40,19 @@ function consume() {
   }
 }
 function activate(context) {
-  const configured = (vscode.workspace.getConfiguration('nexssFlow').get('languageServer.command') || '').trim();
-  const parts = configured ? configured.split(/\s+/) : [];
-  const command = parts[0] || process.execPath;
-  const args = parts.length > 0 ? parts.slice(1) : [path.join(context.extensionPath, 'lsp', 'flow-language-server.js')];
+  const configuration = vscode.workspace.getConfiguration('nexssFlow');
+  const configured = (configuration.get('languageServer.command') || '').trim();
+  const configuredArgs = configuration.get('languageServer.args') || [];
+  const command = configured || process.execPath;
+  const args = configured ? configuredArgs : [path.join(context.extensionPath, 'lsp', 'flow-language-server.js')];
   server = cp.spawn(command, args, { cwd: context.extensionPath, stdio: ['pipe', 'pipe', 'pipe'] });
   server.stdout.on('data', chunk => { buffer = Buffer.concat([buffer, chunk]); consume(); });
   server.stderr.on('data', chunk => console.error(`[nexss-flow-lsp] ${chunk}`));
+  server.on('error', error => {
+    for (const { reject } of pending.values()) reject(error);
+    pending.clear();
+    vscode.window.showErrorMessage(`Nexss Flow language server: ${error.message}`);
+  });
   server.on('exit', (code, signal) => {
     const error = new Error(`Nexss Flow LSP exited (${code ?? 'null'}${signal ? `, ${signal}` : ''})`);
     for (const { reject } of pending.values()) reject(error);
@@ -63,9 +69,11 @@ function activate(context) {
           position: { line: position.line, character: position.character }
         });
         return (result?.items || []).map(item => {
-          const completion = new vscode.CompletionItem(item.label, vscode.CompletionItemKind.Keyword);
+          const kind = item.kind === 15 ? vscode.CompletionItemKind.Snippet : vscode.CompletionItemKind.Keyword;
+          const completion = new vscode.CompletionItem(item.label, kind);
           completion.detail = item.detail;
-          completion.insertText = item.textEdit?.newText || item.insertText || item.label;
+          const text = item.textEdit?.newText || item.insertText || item.label;
+          completion.insertText = item.insertTextFormat === 2 ? new vscode.SnippetString(text) : text;
           return completion;
         });
       } catch (_) { return []; }
@@ -92,7 +100,8 @@ function activate(context) {
         notify('textDocument/didOpen', {
           textDocument: { uri: document.uri.toString(), languageId: 'nexss-flow', version: 1, text: document.getText() }
         });
-        const editor = vscode.window.activeTextEditor;
+        const activeEditor = vscode.window.activeTextEditor;
+        const editor = activeEditor?.document === document ? activeEditor : undefined;
         const result = await send('textDocument/formatting', {
           textDocument: { uri: document.uri.toString() },
           options: {

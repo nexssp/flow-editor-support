@@ -1,139 +1,111 @@
 # Nexss Flow editor support
 
-![Nexss logo](assets/nexss-logo.png)
+Editor tooling for Nexss Flow, the workflow language maintained in the [Nexss Flow repository](https://github.com/nexssp/flow). The canonical source format is **`.nflow`**; current language syntax is documented in the [Flow language reference](https://github.com/nexssp/flow/blob/main/docs/language-reference.md).
 
-Editor support for the **Nexss Flow** language built around `nexssp/kernel` and the Nexss Flow Arrow DSL. The repository is intentionally editor-only: it does not attempt to parse or execute Flow. It provides a shared syntax vocabulary for:
+This package provides syntax highlighting, snippets, a conservative formatter, and a small stdio Language Server Protocol (LSP) server. It is editor assistance, not a replacement for the Flow compiler: the grammar and colorizers do not validate every runtime rule, and the LSP does not provide compiler diagnostics, go-to-definition, or semantic analysis.
 
-- **Zed** through a Tree-sitter grammar and `highlights.scm`.
-- **VS Code and compatible editors** through a TextMate grammar.
-- **Notepad++** through a User Defined Language XML profile.
-- **Completion snippets** for common pipelines, projections, directives, loops, and node modifiers.
-- **LSP stubs** for VS Code/Zed integration, exposing initialize, hover, and structural completion responses.
-- **`flowfmt` autoformatting** through the CLI, LSP, VS Code, and a best-effort Notepad++ NppExec wrapper.
+The syntax examples and formatter are checked against [Flow v0.42.0](https://github.com/nexssp/flow/releases/tag/v0.42.0), including its single-expression, block, and compact-list `@assert` forms.
 
-The syntax is designed to be forgiving while a flow is being edited. Unknown action names remain highlighted as nodes, so newly registered kernel actions appear automatically without changing the grammar.
+## What each editor gets
 
-## Install
+| Editor | Included support | What it does not provide |
+| --- | --- | --- |
+| **VS Code** | `.nflow` association, TextMate highlighting, snippets, completion, placeholder hover, and document formatting. The VSIX bundles its own LSP and formatter copies. | No compiler diagnostics or semantic navigation. |
+| **Zed** | Tree-sitter highlighting, bracket matching, the shared LSP/formatter, and a Zed-specific extension wrapper. Both current and legacy packages are included. | The grammar is fetched from the Git revision declared in the extension manifest; see the Zed note below. |
+| **Notepad++** | User Defined Language profile plus a best-effort NppExec command that runs `flowfmt`. | Notepad++'s UDL profile is colorization only; formatting needs Node.js and the NppExec plugin. |
+| **JetBrains IDEs** | TextMate syntax highlighting with `.nflow` file association and an External Tool formatter recipe. | TextMate does not provide native IntelliJ inspections, PSI, or **Reformat Code** integration. |
+| **Claude Code** | LSP completion/placeholder hover and the `/flowfmt` command. | Claude Code does not color source files; the host editor handles syntax highlighting. |
 
-### Zed
-
-Copy `zed/` into a local Zed extension directory or use it as the basis of a published Zed extension. The grammar is included as `zed/grammars/flow.wasm` only after compiling the Tree-sitter grammar; the repository source is `zed/grammars/flow.js` and can be compiled with the Tree-sitter CLI.
-
-```bash
-npx tree-sitter generate zed/grammars/flow.js
-npx tree-sitter build --wasm zed/grammars/flow.js -o zed/grammars/flow.wasm
-```
-
-For a quick local test of the highlight queries, inspect `zed/grammars/flow.js` and `zed/languages/flow/highlights.scm` together.
+## Install and configure
 
 ### VS Code
 
-Copy `vscode/` into an extension project, or copy `vscode/syntaxes/flow.tmLanguage.json` into an existing TextMate grammar extension. Associate it with `*.flow`.
+Install `nexss-flow-vscode.vsix` from the release artifacts, or open the `vscode/` folder as the extension project and package it with `@vscode/vsce`. The bundled server starts with the VS Code extension's Node runtime, so the default setup does not need a separate `node` command on `PATH`. `.nflow` files activate the extension automatically.
 
-A minimal `package.json` contribution is shown in `vscode/package.json`.
+For format-on-save, add this to VS Code settings:
 
-The completion file is `vscode/snippets/flow.code-snippets`. The dependency-free LSP stub is at `lsp/flow-language-server.js`; the VS Code extension host in `vscode/extension.js` launches the embedded copy and forwards completion requests over stdio using JSON-RPC. It is intentionally ready to be replaced with registry-aware kernel introspection.
+```json
+"[nexss-flow]": {
+  "editor.defaultFormatter": "nexssp.nexss-flow-syntax",
+  "editor.formatOnSave": true
+}
+```
+
+A custom compatible stdio LSP can be set with `nexssFlow.languageServer.command` and its separate `nexssFlow.languageServer.args` array. Keeping the executable and argument list separate supports paths containing spaces.
+
+### Zed
+
+Use `nexss-flow-zed.zip` for current Zed versions, or `nexss-flow-zed-legacy-0.230.2.zip` for older Zed 0.230.2. Extract the archive and select the folder containing `extension.toml` in **Install Dev Extension**.
+
+The extension wrapper resolves the bundled `lsp/flow-language-server.js` from the extension directory and uses Zed's Node runtime. To use the LSP formatter on save, set the language formatter to `language_server` and `format_on_save` to `on`; the formatter always uses the same two-space style. The Tree-sitter grammar is a separate repository source: both manifests fetch `https://github.com/nexssp/flow-editor-support` at the configured `main` revision. Consequently, Zed will not see a grammar change made only in a local, unpublished copy; first publish the updated support-repository revision, or use a **local-only** `file://` repository URL while developing. Do not commit a machine-specific `file://` URL. See [Zed's language-extension documentation](https://zed.dev/docs/extensions/languages) and [language settings](https://zed.dev/docs/configuring-languages) for details.
+
+Add this to Zed's `settings.json` to enable format-on-save:
+
+```json
+"languages": {
+  "Nexss Flow": {
+    "formatter": "language_server",
+    "format_on_save": "on",
+    "tab_size": 2
+  }
+}
+```
 
 ### Notepad++
 
-Import `notepadpp/flow-udl.xml` using **Language > Define your language > Import**. Associate `.flow` files manually if Notepad++ does not do so automatically.
+Import `notepadpp/flow-udl.xml` through **Language → Define your language → Import**. If needed, associate the `nflow` suffix with the imported language. The profile treats `//` as the portable comment marker and does not color `#` as a comment, since `#` is also used by Flow selectors and expression predicates.
 
-### Zed snippets and LSP
+For formatting, install Node.js and the NppExec plugin. Copy `notepadpp/flowfmt.cmd` to `<Notepad++>\plugins\Config\flowfmt.cmd` and the repository's `fmt/` directory to `<Notepad++>\plugins\fmt\`. Then run `notepadpp/nppexec/Format-Flow.npes` from **Plugins → NppExec → Execute...** and optionally assign a shortcut. The command saves, formats, and reopens the current document.
 
-Zed snippets are in `.zed/snippets/nexss-flow.json`; this is the repository/project-local snippet location and may need to be copied into a user Zed snippets directory for a published extension. The Zed language configuration registers `nexss-flow-language-server`; the executable wrapper is `zed/lsp/nexss-flow-language-server`, and the packaged Zed archive includes both the wrapper and its embedded server. The companion metadata in `zed/language-servers/` documents the local command used by an extension host.
+### JetBrains IDEs
 
-## CI/CD and releases
+In **Settings/Preferences → Editor → TextMate Bundles**, add `jetbrains/textmate`. The grammar declares the `nflow` file type; associate `*.nflow` manually if your IDE does not do so automatically. To format a file, configure an External Tool or File Watcher to run:
 
-`.github/workflows/release.yml` validates every pull request, builds the VS Code VSIX, creates ZIP artifacts for the source/Zed/Notepad++ integrations, and publishes tagged GitHub releases for tags matching `vX.Y.Z`. Marketplace publishing is deferred; no marketplace credentials are required by this workflow.
+```text
+node "<repository>/fmt/cli.js" --write "$FilePath$"
+```
 
-To reproduce packaging locally:
+This is an external formatter, not native JetBrains formatting support.
+
+### Claude Code
+
+Install the `claude/` folder as a Claude Code plugin and enable it for the project. The plugin needs Node.js on `PATH`; `.lsp.json` maps `.nflow` files to the bundled server, and `/flowfmt` formats a specified file. The server's hover text is intentionally a placeholder, and its completion list is a small syntax-oriented starter set.
+
+## Formatting
+
+`flowfmt` in `fmt/cli.js` is the canonical Go-fmt-style formatter: one deterministic output, with fixed two-space indentation, shared by the CLI and bundled editor integrations. It can run on save through VS Code and Zed's language-server integrations, be configured as a JetBrains File Watcher, or run from Notepad++'s NppExec command. VS Code's `editor.formatOnSave` setting is shown above; Zed's per-language settings are shown above.
+
+To put the standalone formatter on your `PATH`, run `npm link` from this package directory; `flowfmt` then works as a local tool, much like `gofmt`. You can also call it through `node fmt/cli.js` without installing it globally.
+
+```bash
+flowfmt --check examples/complete.nflow test/fixtures/current-syntax.nflow
+flowfmt -w examples/complete.nflow
+node fmt/cli.js examples/complete.nflow       # preview to stdout
+node fmt/cli.js --write examples/complete.nflow  # rewrite in place (`-w`)
+node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow
+cat examples/complete.nflow | node fmt/cli.js --stdin
+```
+
+The formatter normalizes operators, inline v0.42 `@assert` expressions, and block indentation; it preserves line endings, UTF-8 BOMs, quoted content, Flow's whitespace-significant ternary separator, and expression predicates. It deliberately has no indentation or line-width overrides, so editors produce the same result. It remains conservative rather than compiler/AST-driven: it does not reorder modifiers, wrap long lines, or validate semantics. The example and syntax fixture cover single-expression, block, and compact-list assertions, plus the runtime `assert(...)` form, argument blocks, schema, control forms, selectors, arrays, and quoted strings. The Tree-sitter grammar is permissive and highlights unknown action names structurally, so new kernel actions do not need a hard-coded list.
+
+## Validate and package
+
+Run the complete local checks:
+
+```bash
+npm run validate
+cargo check --manifest-path zed/Cargo.toml
+cargo check --manifest-path zed-legacy-0.230.2/Cargo.toml
+```
+
+`npm run validate` runs formatter/LSP tests, a mocked VS Code extension-host test, an idempotence check, Tree-sitter generation and parsing, and cross-editor metadata/copy checks. The Cargo commands compile-check both Zed wrappers. The release script repeats validation in an isolated temporary staging area and leaves unrelated files in the selected output directory untouched:
 
 ```bash
 bash scripts/package-release.sh dist
 ```
 
-The output directory contains `nexss-flow-vscode.vsix`, `nexss-flow-zed.zip`, `nexss-flow-zed-legacy-0.230.2.zip`, `nexss-flow-notepadpp.zip`, `nexss-flow-source.zip`, and `SHA256SUMS`.
-
-The supplied Nexss logo is included in the source bundle and adapted for each editor: VS Code uses `vscode/icon.png` in its extension manifest, while the Zed and Notepad++ bundles include `logo.png`/`nexss-logo.png` for repository, package, and documentation branding. Zed's official publishing flow does not currently use an extension-manifest icon field, so its logo is shipped as an asset rather than added as unsupported TOML.
-
-Two separate Zed packages are produced. Use `nexss-flow-zed.zip` for current Zed versions and `nexss-flow-zed-legacy-0.230.2.zip` for Zed 0.230.2. Both manifests use the working `schema_version = 1` format and declare the `process:exec` capability; they remain separate so future Zed-specific changes cannot break the older package. For **Install Dev Extension**, select the extracted folder containing `extension.toml` directly.
-
-Additional integrations are included for other developer tools. `claude/` is a Claude Code plugin package with `.lsp.json` code intelligence and a `/flowfmt` command; Claude Code itself does not render editor syntax colors. `jetbrains/` contains an importable TextMate grammar for IntelliJ-based IDEs, plus instructions for invoking `flowfmt` as an External Tool. Native JetBrains formatting and refactoring would require a dedicated IntelliJ Platform plugin; the TextMate bundle is coloring-only.
-
-To create a GitHub release, push a version tag whose commit already contains `.github/workflows/release.yml`:
-
-```bash
-git tag -a v0.1.0 -m "Release v0.1.0"
-git push origin v0.1.0
-```
-
-The workflow validates and packages every pushed `v*` tag, then creates the GitHub release. Marketplace publishing is deliberately deferred; no marketplace accounts, variables, or secrets are required for the current release process.
-
-## Formatting
-
-The repository includes a conservative, dependency-free `flowfmt` implementation. It normalizes operator spacing, indentation, blank lines, line endings, and UTF-8 BOM handling without changing strings or modifier ordering. It is intentionally a syntax formatter rather than a semantic validator; malformed Flow should be rejected by the canonical Flow compiler.
-
-The canonical Tree-sitter source is `grammar.js` at the repository root. It now generates successfully with `npx --yes tree-sitter-cli generate grammar.js`, producing `src/parser.c` and `src/node-types.json`. The Zed manifests reference this repository-root grammar project rather than a nested `zed/grammars/flow.js` path, which avoids the indefinite “Installing” state caused by the previous layout. The current LSP remains a Node development implementation; a production Zed LSP extension would additionally need a Rust/WASM wrapper like the attached `srcpack` extension.
-
-```bash
-node fmt/cli.js examples/complete.flow
-node fmt/cli.js --check examples/complete.flow
-node fmt/cli.js --write examples/complete.flow
-cat examples/complete.flow | node fmt/cli.js --stdin
-```
-
-VS Code formatting is available through **Format Document**. To enable format-on-save, add:
-
-```json
-"[nexss-flow]": {
-  "editor.formatOnSave": true
-}
-```
-
-Zed uses the registered LSP formatter; enable `format_on_save` in Zed settings if desired. Notepad++ support is best-effort through `notepadpp/nppexec/Format-Flow.npes`; see `notepadpp/README.md`.
-
-## Syntax covered
-
-```flow
-// A complete editor fixture
-@config:budget_usd=1.00
-@config:approval=danger
-@assert: success == true
-@require github.com/acme/text-tools v1.0.0
-
-users.solve:route="POST /api/users/solve":retry=2:cache=5m:auth
-  -> { user: .input, note: "hello" }
-  -> ( users.validate & users.audit )
-  -> ( redis.get || postgres.query || legacy.rest_api )
-  -> approved ? users.persist
-
-loop(
-  agent.critic:model="deepseek-flash":timeout=10s @review #security,quality ~slow
-  -> log.info
-) until( attempts >= 3 )
-```
-
-The grammar highlights **node names structurally**, not from a fixed list. A node is an identifier-like atom such as `users.solve`, `ai.llm`, `my_new_kernel_action`, or `github.com/acme/action`. This is what makes newly added kernel nodes appear automatically.
-
-## Design notes
-
-The implementation follows the reference lexer and parser rather than trying to make Flow indistinguishable from Elixir. In particular:
-
-- `#` is a Flow target selector. `//` is the portable line-comment form across the Tree-sitter, Zed, VS Code, and Notepad++ profiles; this avoids ambiguity with target selectors.
-- `@` is both the directive prefix and the inline prompt prefix. Directive lines are recognized at line start; inline prompts are recognized after a node.
-- Projection expressions are deliberately scoped as a region so punctuation and field references remain readable without pretending to validate expr-lang.
-- Modifier keys are highlighted as attributes, but modifier values are left permissive because Flow accepts durations, paths, expressions, and transport-specific values.
-
-## Validation
-
-Run the repository checks without installing dependencies:
-
-```bash
-python3 scripts/validate.py
-```
-
-The validator checks all expected files, parses JSON/XML, verifies key grammar constructs, and checks that the example fixture contains the major Flow operators.
+The output includes separate VS Code, current/legacy Zed, Notepad++, Claude Code, and JetBrains packages, plus a complete source archive and `SHA256SUMS`. Native Notepad++, JetBrains, and Claude Code application UIs are not part of the automated test environment; their manifests/assets are structurally validated here.
 
 ## License
 
-Apache-2.0. This editor-support repository is a companion to the Nexss open-source Flow project; confirm the upstream project’s license and contribution policy before publishing a combined distribution.
+Apache-2.0. This editor-support repository is a companion to the Nexss Flow project; confirm upstream licensing and contribution terms before publishing a combined distribution.

@@ -4,7 +4,7 @@
 @assert:success == true
 @description "A searchable example of a Flow pipeline"
 @require ./text
-@require github.com/acme/text-tools v1.0.0
+@require github.com/nexssp/text-tools v1.0.0
 
 @pipeline greet
   { message: "hello, " + name }

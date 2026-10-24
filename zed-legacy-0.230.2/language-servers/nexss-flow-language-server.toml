@@ -6,4 +6,4 @@ command = "lsp/nexss-flow-language-server"
 
 [language]
 name = "Nexss Flow"
-path_suffixes = ["flow"]
+path_suffixes = ["nflow"]

@@ -1,0 +1,33 @@
+// Representative syntax from the current Flow language reference.
+@description "Editor grammar coverage"
+@schema Request {
+  Name string `json:"name" default:"standard" validate:"required"`
+  Depth int `json:"depth" default:"1" validate:"gte=1"`
+}
+
+{ level: 4, danger: true, mode: true ? "yes" : "no", n: 0 }
+-> parallel {
+  profile: const @{ value: "profile-ready" },
+  metrics: const @{ value: `metrics:ready` },
+}
+-> race {
+  fail @{ kind: "Unavailable", message: "this candidate fails" },
+  const @{ value: "winner" },
+}
+-> match {
+  .danger && .level > 3 -> const @{ value: "critical" },
+  .danger -> const @{ value: "warning" },
+  _ -> const @{ value: { n: 0, level: 0, danger: false } }
+}
+-> loop({ n: .n + 1 }) until(.n >= 3)
+-> assert(.n == 3, "loop counter should reach 3")
+-> runtime.const @{ value: { ok: true, items: ["nonempty"] } }
+-> runtime.const @review #security, quality ~slow @{ value: { ok: true, items: ["nonempty"] } }
+
+@assert: result.ok == true
+@assert result.items[0] == "nonempty"
+@assert {
+  result.ok == true
+  all(result.items, # != "")
+}
+@assert: { result.ok == true, all(result.items, # != ""), result.items[0] == "nonempty" }

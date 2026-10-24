@@ -16,13 +16,20 @@ const { format } = require(formatterPath);
 
 const snippets = [
   ['flow-pipe', 'source.node\n-> target.node', 'Sequential pipeline'],
-  ['flow-parallel', '( first.node & second.node )', 'Parallel fan-out'],
+  ['flow-args', 'action.node @{ value: ${1:.input} }', 'Structured action arguments'],
+  ['flow-parallel', 'parallel {\n  first: ${1:action.one},\n  second: ${2:action.two},\n}', 'Named parallel fan-out'],
+  ['flow-race', 'race {\n  ${1:action.one},\n  ${2:action.two},\n}', 'First successful alternative'],
+  ['flow-match', 'match {\n  ${1:.condition} -> ${2:action.one},\n  _ -> ${3:action.other}\n}', 'Match input against ordered arms'],
   ['flow-fallback', '( primary.node || fallback.node )', 'Fallback chain'],
   ['flow-if', 'gate ? target.node', 'Conditional node'],
   ['flow-projection', '{ field: .input }', 'Inline projection'],
   ['flow-loop', 'loop( body.node ) until( condition )', 'Bounded loop'],
   ['flow-node', 'namespace.node:timeout=10s:retry=2', 'Configured action node'],
   ['flow-pipeline', '@pipeline name\n  source.node\n@end', 'Named pipeline'],
+  ['flow-assert', '@assert {\n  result.ok == true\n}', 'Post-run assertion block'],
+  ['flow-assert-expression', '@assert: ${1:result.ok == true}', 'Single-expression assertion (Flow v0.42.0)'],
+  ['flow-assert-inline', '@assert: { ${1:result.ok == true}, ${2:result.count > 0} }', 'Compact assertion list (Flow v0.42.0)'],
+  ['flow-assert-call', 'assert(${1:condition}, "${2:failure message}")', 'Runtime assertion expression'],
 ];
 let buffer = Buffer.alloc(0);
 let shutdown = false;
@@ -40,7 +47,8 @@ function completionItems(position = { line: 0, character: 0 }) {
 }
 function endPosition(text) {
   const lines = text.split(/\r?\n/);
-  return { line: Math.max(0, lines.length - 1), character: [...(lines[lines.length - 1] || '')].length };
+  // JavaScript string length is UTF-16 code units, matching LSP's default encoding.
+  return { line: Math.max(0, lines.length - 1), character: (lines[lines.length - 1] || '').length };
 }
 function documentText(uri) { return documents.get(uri) || ''; }
 function extractText(params) {
@@ -74,10 +82,7 @@ function handle(msg) {
   if (method === 'textDocument/formatting') {
     const uri = params.textDocument && params.textDocument.uri;
     const text = documentText(uri);
-    const formatted = format(text, {
-      indentWidth: params.options && params.options.tabSize,
-      insertSpaces: params.options ? params.options.insertSpaces !== false : true,
-    });
+    const formatted = format(text);
     return send(id, [{ range: { start: { line: 0, character: 0 }, end: endPosition(text) }, newText: formatted }]);
   }
   if (id !== undefined) return send(id, null);

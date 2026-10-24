@@ -1,0 +1,8 @@
+// Canonical Nexss Flow editor fixture; run with `nflow lint examples/complete.nflow`.
+@description "Current Nexss Flow editor-support example"
+@pipeline editor_fixture
+  :timeout=2s
+  const @{ value: { message: "hello, flow", tags: ["editor", "nflow"] } }
+@end
+@assert: result.message == "hello, flow"
+{} -> pipeline.editor_fixture
