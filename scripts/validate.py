@@ -11,6 +11,7 @@ required = [
     'assets/nexss-logo.png', 'examples/complete.nflow', 'test/fixtures/current-syntax.nflow',
     'test/fixtures/template-render-input.nflow', 'test/fixtures/template-render-expected.nflow',
     'test/fixtures/template-render-contexts.nflow', 'test/template-textmate.test.js', 'test/nflow-lsp.test.js',
+    'test/helpers/process-tree.js', 'test/process-tree.test.js',
     'fmt/index.js', 'fmt/cli.js', 'fmt/test/helpers.js', 'fmt/test/formatter.test.js',
     'fmt/test/core-integration.test.js', 'fmt/test/real-core-lsp.test.js', 'fmt/test/template-render-core.test.js',
     'fmt/test/fixtures/pipeline.nflow', 'fmt/test/fixtures/pipeline.expected.nflow',
