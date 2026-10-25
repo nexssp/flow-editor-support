@@ -22,7 +22,7 @@ mkdir -p "$SRC"
 
 # Work only in the temporary staging copy. The user's repository and existing
 # output directory contents are never removed or modified by this script.
-for item in README.md LICENSE assets grammar.js src examples fmt lsp zed zed-legacy-0.230.2 vscode notepadpp claude jetbrains package.json scripts test .zed .github; do
+for item in README.md LICENSE assets grammar.js src examples fmt lsp zed zed-legacy-0.230.2 vscode notepadpp claude jetbrains package.json package-lock.json scripts test .zed .github; do
   cp -a "$ROOT/$item" "$SRC/"
 done
 rm -rf -- "$SRC/zed/target" "$SRC/zed-legacy-0.230.2/target"
@@ -59,7 +59,7 @@ chmod +x "$SRC/zed/lsp/nexss-flow-language-server" "$SRC/zed-legacy-0.230.2/lsp/
 (cd "$SRC" && node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow)
 (cd "$SRC" && bash scripts/check-grammar.sh)
 
-(cd "$SRC" && zip -qr "$STAGE/nexss-flow-source.zip" README.md LICENSE assets grammar.js src examples fmt lsp zed zed-legacy-0.230.2 vscode notepadpp claude jetbrains package.json scripts test .zed .github)
+(cd "$SRC" && zip -qr "$STAGE/nexss-flow-source.zip" README.md LICENSE assets grammar.js src examples fmt lsp zed zed-legacy-0.230.2 vscode notepadpp claude jetbrains package.json package-lock.json scripts test .zed .github)
 (cd "$SRC/zed" && zip -qr "$STAGE/nexss-flow-zed.zip" .)
 (cd "$SRC/zed-legacy-0.230.2" && zip -qr "$STAGE/nexss-flow-zed-legacy-0.230.2.zip" .)
 (cd "$SRC/notepadpp" && zip -qr "$STAGE/nexss-flow-notepadpp.zip" .)

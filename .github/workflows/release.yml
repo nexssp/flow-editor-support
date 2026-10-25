@@ -21,6 +21,8 @@ jobs:
       - name: Install and verify Flow core v0.43.0
         run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.43.0" >/dev/null
       - uses: dtolnay/rust-toolchain@stable
+      - name: Install JavaScript test dependencies
+        run: npm ci
       - name: Validate editor tooling with the real Flow core
         run: npm run validate
       - name: Check JavaScript syntax

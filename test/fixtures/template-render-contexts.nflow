@@ -1,0 +1,11 @@
+ordinary.call @{
+  template: "ordinary string {{.ignored}}"
+}
+template.render @{
+  title: "neighbor string {{.ignored}}"
+  template: "render template {{.visible}} {{range .items}}{{.}}{{end}}"
+  variables: {
+    template: "nested value {{.ignored}}"
+    message: "neighbor object value {{.ignored}}"
+  }
+}

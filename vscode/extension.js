@@ -68,11 +68,15 @@ function activate(context) {
   }).catch(console.error);
 
   const provider = vscode.languages.registerCompletionItemProvider('nexss-flow', {
-    async provideCompletionItems(document, position) {
+    async provideCompletionItems(document, position, _token, context) {
       try {
         const result = await send('textDocument/completion', {
           textDocument: { uri: document.uri.toString() },
-          position: { line: position.line, character: position.character }
+          position: { line: position.line, character: position.character },
+          context: context ? {
+            triggerKind: context.triggerKind,
+            triggerCharacter: context.triggerCharacter
+          } : undefined,
         });
         return (result?.items || []).map(item => {
           const kind = item.kind === 15 ? vscode.CompletionItemKind.Snippet : vscode.CompletionItemKind.Keyword;
@@ -80,6 +84,10 @@ function activate(context) {
           completion.detail = item.detail;
           const text = item.textEdit?.newText || item.insertText || item.label;
           completion.insertText = item.insertTextFormat === 2 ? new vscode.SnippetString(text) : text;
+          const range = item.textEdit?.range;
+          if (range) completion.range = new vscode.Range(
+            range.start.line, range.start.character, range.end.line, range.end.character
+          );
           return completion;
         });
       } catch (_) { return []; }

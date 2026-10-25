@@ -35,6 +35,7 @@ module.exports = grammar({
       $.race_block,
       $.match_block,
       $.loop,
+      $.template_render,
       $.atom,
       $.projection,
       $.array,
@@ -45,6 +46,20 @@ module.exports = grammar({
     atom: $ => prec.right(10, seq(
       $.identifier,
       repeat(choice($.modifier, $.prompt, $.targets, $.excludes, $.argument_block)),
+    )),
+
+    template_render: $ => prec(20, seq(
+      token(prec(2, 'template.render')),
+      $.template_render_argument_block,
+    )),
+    template_render_argument_block: $ => seq('@', $.template_render_projection),
+    template_render_projection: $ => seq('{', repeat(choice(
+      $.template_render_template_field,
+      $.projection_field,
+      $._block_item,
+    )), '}'),
+    template_render_template_field: $ => prec(3, seq(
+      'template', ':', repeat1(choice($.template_string, $._value_item)),
     )),
 
     modifier: $ => prec.right(seq(':', $.modifier_name, optional(seq('=', $.modifier_value)))),
@@ -90,6 +105,49 @@ module.exports = grammar({
       /'([^'\\]|\\.)*'/,
       /`([^`\\]|\\.)*`/,
     ),
+    template_string: $ => choice(
+      seq(token(prec(1, '"')), repeat(choice(
+        $.template_action, $.template_double_text, $.template_brace, $.template_escape,
+      )), token(prec(1, '"'))),
+      seq(token(prec(1, "'")), repeat(choice(
+        $.template_action, $.template_single_text, $.template_brace, $.template_escape,
+      )), token(prec(1, "'"))),
+      seq(token(prec(1, '`')), repeat(choice(
+        $.template_action, $.template_backtick_text, $.template_brace, $.template_escape,
+      )), token(prec(1, '`'))),
+    ),
+    template_action: $ => seq(
+      $.template_action_open,
+      optional($.template_trim_marker),
+      repeat(choice(
+        $.template_keyword,
+        $.template_variable,
+        $.template_dot,
+        $.template_identifier,
+        $.template_inner_string,
+        $.template_operator,
+        $.template_action_content,
+      )),
+      optional($.template_trim_marker),
+      $.template_action_close,
+    ),
+    template_action_open: _ => token(prec(3, '{{')),
+    template_action_close: _ => token(prec(3, '}}')),
+    template_trim_marker: _ => token(prec(2, '-')),
+    template_keyword: _ => token(prec(2, choice(
+      'range', 'end', 'if', 'else', 'with', 'template', 'block', 'define', 'break', 'continue',
+    ))),
+    template_variable: _ => token(prec(3, /\$(?:[A-Za-z_][A-Za-z0-9_]*|\.[A-Za-z_][A-Za-z0-9_]*)|\.[A-Za-z_][A-Za-z0-9_]*/)),
+    template_dot: _ => token('.'),
+    template_identifier: _ => token(prec(1, /[A-Za-z_][A-Za-z0-9_]*/)),
+    template_inner_string: _ => token(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/),
+    template_operator: _ => token(prec(2, choice(':=', '==', '!=', '<=', '>=', '|', ',', ':', '=', '<', '>', '+', '-', '*', '/'))),
+    template_action_content: _ => token(prec(-1, /[^{}\s]+/)),
+    template_double_text: _ => token(prec(-1, /[^"\\{}]+/)),
+    template_single_text: _ => token(prec(-1, /[^'\\{}]+/)),
+    template_backtick_text: _ => token(prec(-1, /[^`\\{}]+/)),
+    template_brace: _ => token(prec(-1, /[{}]/)),
+    template_escape: _ => token(/\\./),
     number: $ => /-?[0-9]+(?:\.[0-9]+)?/,
     operator: $ => choice('->', '||', '&&', '==', '!=', '>=', '<=', '|', '&', '?', '+', '-', '*', '/', '%', '>', '<', '=', '!'),
     punctuation: $ => choice(':', ',', '.', ';', '$'),

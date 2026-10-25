@@ -4,7 +4,8 @@ ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 cd "$ROOT"
 
 npx --yes tree-sitter-cli generate grammar.js
-for file in examples/complete.nflow test/fixtures/current-syntax.nflow; do
+for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
+  test/fixtures/template-render-input.nflow test/fixtures/template-render-contexts.nflow; do
   output="$(npx --yes tree-sitter-cli parse "$file" 2>&1)" || {
     printf '%s\n' "$output" >&2
     exit 1
@@ -14,6 +15,35 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow; do
     exit 1
   fi
   printf 'Tree-sitter accepted %s\n' "$file"
+done
+
+for query in \
+  zed/languages/flow/highlights.scm \
+  zed-legacy-0.230.2/languages/flow/highlights.scm; do
+  sample_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/template-render-input.nflow 2>&1)" || {
+    printf 'Tree-sitter query failed for %s on the supplied sample:\n%s\n' "$query" "$sample_output" >&2
+    exit 1
+  }
+  for capture in 'keyword.control' 'text: `range`' 'text: `end`' 'text: `.customer`' \
+    'text: `.items`' 'text: `.`' 'punctuation.special'; do
+    grep -Fq "$capture" <<<"$sample_output" || {
+      printf 'Expected capture %s is missing from %s sample output:\n%s\n' "$capture" "$query" "$sample_output" >&2
+      exit 1
+    }
+  done
+  context_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/template-render-contexts.nflow 2>&1)" || {
+    printf 'Tree-sitter query failed for %s on context fixture:\n%s\n' "$query" "$context_output" >&2
+    exit 1
+  }
+  grep -Fq 'text: `.visible`' <<<"$context_output" || {
+    printf 'The render template variable was not captured by %s:\n%s\n' "$query" "$context_output" >&2
+    exit 1
+  }
+  if grep -Fq 'text: `.ignored`' <<<"$context_output"; then
+    printf 'Ordinary or nested strings were incorrectly treated as Go templates by %s:\n%s\n' "$query" "$context_output" >&2
+    exit 1
+  fi
+  printf 'Tree-sitter template captures are scoped correctly in %s\n' "$query"
 done
 
 for query in \

@@ -48,6 +48,29 @@
 "<=" @operator
 (operator) @operator
 
+(template_render "template.render" @function)
+(template_render_argument_block "@" @punctuation.special)
+(template_render_projection "{" @punctuation.bracket)
+(template_render_projection "}" @punctuation.bracket)
+(template_render_template_field
+  "template" @property
+  (template_string) @string)
+(template_double_text) @string
+(template_single_text) @string
+(template_backtick_text) @string
+(template_brace) @string
+(template_escape) @string.escape
+(template_action_open) @punctuation.special
+(template_action_close) @punctuation.special
+(template_trim_marker) @operator
+(template_keyword) @keyword.control
+(template_variable) @variable.member
+(template_dot) @variable.builtin
+(template_identifier) @function
+(template_inner_string) @string
+(template_operator) @operator
+(template_action_content) @variable
+
 (string) @string
 (number) @number
 ((identifier) @constant.builtin

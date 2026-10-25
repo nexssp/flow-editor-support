@@ -4,11 +4,17 @@
   "private": true,
   "description": "Nexss Flow editor tooling with adapters to the canonical nflow formatter",
   "license": "Apache-2.0",
-  "bin": { "flowfmt": "./fmt/cli.js" },
+  "bin": {
+    "flowfmt": "./fmt/cli.js"
+  },
   "scripts": {
-    "test": "node --test fmt/test/*.test.js vscode/test/*.test.js",
-    "format:check": "node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow",
+    "test": "node --test fmt/test/*.test.js vscode/test/*.test.js test/*.test.js",
+    "format:check": "node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow test/fixtures/template-render-expected.nflow",
     "grammar:check": "bash scripts/check-grammar.sh",
     "validate": "npm test && npm run format:check && npm run grammar:check && python3 scripts/validate.py"
+  },
+  "devDependencies": {
+    "vscode-oniguruma": "2.0.1",
+    "vscode-textmate": "9.3.2"
   }
 }

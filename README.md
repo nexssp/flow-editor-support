@@ -16,6 +16,12 @@ Check `nflow --version` in the environment the editor inherits: it must report v
 | **JetBrains IDEs** | TextMate syntax highlighting and an External Tool or File Watcher that runs `nflow fmt`; a File Watcher can run on save. | No native IntelliJ **Reformat Code**, code-style panels, inspections, or PSI-aware refactorings. |
 | **Claude Code** | LSP completion/placeholder hover and the `/flowfmt` command for explicit formatting through `nflow fmt`. | No source-file colorization or automatic format-on-save command; the host editor handles highlighting. |
 
+## Go templates in `template.render`
+
+The Zed Tree-sitter grammar and the VS Code/JetBrains TextMate grammar recognize Go `text/template` actions only in the top-level `template:` string of a `template.render @{...}` expression. Action delimiters (including whitespace-trim markers), control words such as `range` and `end`, field variables such as `.customer` and `.items`, and the current-context dot (`.`) receive separate scopes. Neighboring strings, ordinary object values, and nested `template:` fields remain ordinary Flow strings; template content is not injected into every quoted value.
+
+Notepad++ uses its User Defined Language profile, which cannot embed a context-aware nested grammar without also coloring matching text in unrelated strings, so it leaves these values as ordinary strings. Claude Code does not color source files itself and relies on its host editor. The `nflow fmt` integration preserves the supplied template string and remains idempotent.
+
 ## Install and configure
 
 ### VS Code

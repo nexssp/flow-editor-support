@@ -42,11 +42,17 @@ function notify(method, params) {
   const payload = JSON.stringify({ jsonrpc: '2.0', method, params });
   process.stdout.write(`Content-Length: ${Buffer.byteLength(payload, 'utf8')}\r\n\r\n${payload}`);
 }
-function completionItems(position = { line: 0, character: 0 }) {
-  return snippets.map(([label, insertText, detail]) => ({
-    label, kind: 15, detail, insertTextFormat: 2,
-    textEdit: { newText: insertText, range: { start: position, end: position } },
-  }));
+function completionItems(position = { line: 0, character: 0 }, context = {}) {
+  const typedAtTrigger = context.triggerKind === 2 && context.triggerCharacter === '@';
+  return snippets.map(([label, insertText, detail]) => {
+    const start = typedAtTrigger && insertText.startsWith('@') && position.character > 0
+      ? { ...position, character: position.character - 1 }
+      : position;
+    return {
+      label, kind: 15, detail, insertTextFormat: 2,
+      textEdit: { newText: insertText, range: { start, end: position } },
+    };
+  });
 }
 function endPosition(text) {
   const lines = text.split(/\r?\n/);
@@ -90,7 +96,7 @@ function handle(msg) {
   }
   if (method === 'shutdown') { shutdown = true; return send(id, null); }
   if (method === 'exit') { process.exit(shutdown ? 0 : 1); }
-  if (method === 'textDocument/completion') return send(id, { isIncomplete: false, items: completionItems(params.position || { line: 0, character: 0 }) });
+  if (method === 'textDocument/completion') return send(id, { isIncomplete: false, items: completionItems(params.position || { line: 0, character: 0 }, params.context) });
   if (method === 'textDocument/hover') return send(id, { contents: { kind: 'markdown', value: '**Nexss Flow** node or DSL construct.\n\nThe stub is ready to be replaced by registry-aware analysis.' } });
   if (method === 'textDocument/didOpen' || method === 'textDocument/didChange') {
     const uri = params.textDocument && params.textDocument.uri;

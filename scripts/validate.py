@@ -7,11 +7,13 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 required = [
-    'README.md', 'LICENSE', 'package.json', 'grammar.js', 'src/parser.c', 'src/node-types.json',
+    'README.md', 'LICENSE', 'package.json', 'package-lock.json', 'grammar.js', 'src/parser.c', 'src/node-types.json',
     'assets/nexss-logo.png', 'examples/complete.nflow', 'test/fixtures/current-syntax.nflow',
+    'test/fixtures/template-render-input.nflow', 'test/fixtures/template-render-expected.nflow',
+    'test/fixtures/template-render-contexts.nflow', 'test/template-textmate.test.js',
     'fmt/index.js', 'fmt/cli.js', 'fmt/test/helpers.js', 'fmt/test/formatter.test.js', 'fmt/test/lsp.test.js',
     'fmt/test/fixtures/pipeline.nflow', 'fmt/test/fixtures/pipeline.expected.nflow',
-    'fmt/test/core-integration.test.js',
+    'fmt/test/core-integration.test.js', 'fmt/test/template-render-core.test.js',
     'lsp/flow-language-server.js', 'scripts/validate.py', 'scripts/check-grammar.sh', 'scripts/package-release.sh',
     'scripts/install-flow-core.sh',
     'zed/extension.toml', 'zed/grammars/flow.js', 'zed/languages/flow/config.toml',
@@ -67,6 +69,12 @@ assert properties['nexssFlow.languageServer.command']['default'] == ''
 assert properties['nexssFlow.nflowCommand']['default'] == ''
 assert 'nexssFlow.languageServer.args' in properties
 assert tm['scopeName'] == 'source.nflow' and tm['fileTypes'] == ['nflow']
+for grammar_rule in ['templateRender', 'templateRenderStringDouble', 'goTemplate']:
+    assert grammar_rule in tm['repository'], f'TextMate grammar lacks {grammar_rule}'
+go_template_rules = json.dumps(tm['repository']['goTemplate'])
+for scope in ['keyword.control.go-template', 'variable.other.go-template',
+              'variable.language.go-template', 'punctuation.section.embedded.begin.go-template']:
+    assert scope in go_template_rules, f'TextMate grammar lacks {scope}'
 assert jetbrains_tm == tm, 'JetBrains TextMate grammar must match the VS Code source grammar'
 assert claude_plugin['name'] == 'nexss-flow'
 assert claude_lsp['nexss-flow']['extensionToLanguage'] == {'.nflow': 'nexss-flow'}
@@ -157,10 +165,17 @@ cli = (ROOT / 'fmt/cli.js').read_text()
 assert "spawnSync(executable, ['fmt', ...process.argv.slice(2)]" in cli and "stdio: 'inherit'" in cli
 assert json.loads((ROOT / 'package.json').read_text())['bin']['flowfmt'] == './fmt/cli.js'
 assert 'test/fixtures/current-syntax.nflow' in json.loads((ROOT / 'package.json').read_text())['scripts']['format:check']
+package = json.loads((ROOT / 'package.json').read_text())
+assert 'test/fixtures/template-render-expected.nflow' in package['scripts']['format:check']
+assert package['devDependencies']['vscode-textmate'] == '9.3.2'
+assert package['devDependencies']['vscode-oniguruma'] == '2.0.1'
 
 highlights = (ROOT / 'zed/languages/flow/highlights.scm').read_text()
 for token in ['@operator', '@function', '@property', '@keyword.control', '@string', '@number', '(array "["']:
     assert token in highlights, f'Zed highlight query lacks {token}'
+for token in ['(template_keyword) @keyword.control', '(template_variable) @variable.member',
+              '(template_dot) @variable.builtin', '(template_action_open) @punctuation.special']:
+    assert token in highlights, f'Zed query lacks template scope {token}'
 brackets = (ROOT / 'zed/languages/flow/brackets.scm').read_text()
 assert '"[" @open "]" @close' in brackets
 
@@ -179,6 +194,7 @@ assert 'nexss-flow-claude-code.zip' in release and 'nexss-flow-jetbrains.zip' in
 assert 'install-flow-core.sh" --check' in release, 'release packaging must reject missing/incompatible Flow core before staging'
 workflow = (ROOT / '.github/workflows/release.yml').read_text()
 assert 'package-release.sh' in workflow and 'softprops/action-gh-release' in workflow
+assert 'run: npm ci' in workflow, 'validation CI must install TextMate test dependencies'
 assert workflow.count('install-flow-core.sh install') == 2, 'both isolated release jobs must install the same verified Flow core'
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
 assert 'VERSION=0.43.0' in core_installer and 'EXPECTED_MANIFEST_SHA256=' in core_installer
@@ -193,4 +209,6 @@ assert 'compatible Flow core build that includes `nflow fmt`' in readme
 for token in ['nflow --version', 'editor.formatOnSave', 'format_on_save', 'NFLOW_BIN', 'File Watcher', '/flowfmt']:
     assert token in readme, f'root README lacks formatter setup guidance: {token}'
 assert 'stock Flow v0.42.0 does not yet include that command' not in readme
+assert 'Go templates in `template.render`' in readme
+assert 'ordinary object values, and nested `template:` fields remain ordinary Flow strings' in readme
 print(f'validated {len(required)} required files; nflow routing, editor snippets/configs, grammar/LSP copies, and package safety=OK')

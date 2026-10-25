@@ -12,7 +12,15 @@ const registrations = {};
 let settings = {};
 class SnippetString { constructor(value) { this.value = value; } }
 class CompletionItem { constructor(label, kind) { this.label = label; this.kind = kind; } }
-class Range { constructor(...values) { this.values = values; } }
+class Range {
+  constructor(...values) {
+    this.values = values;
+    [this.start, this.end] = [
+      { line: values[0], character: values[1] },
+      { line: values[2], character: values[3] },
+    ];
+  }
+}
 class TextEdit { constructor(range, newText) { this.range = range; this.newText = newText; } }
 class MarkdownString { constructor(value) { this.value = value; } }
 class Hover { constructor(contents) { this.contents = contents; } }
@@ -48,7 +56,13 @@ Module._load = function(request, parent, isMain) {
 const extension = require('../extension.js');
 Module._load = originalLoad;
 
-test('VS Code formats only through the configured nflow executable and receives multiline results', async t => {
+function applyCompletion(text, completion) {
+  const range = completion.range;
+  const offset = position => text.split('\n').slice(0, position.line).reduce((sum, line) => sum + line.length + 1, 0) + position.character;
+  return text.slice(0, offset(range.start)) + completion.insertText.value + text.slice(offset(range.end));
+}
+
+test('VS Code providers preserve completion ranges and format through configured nflow', async t => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'flow extension with spaces '));
   t.after(() => fs.rmSync(tempRoot, { recursive: true, force: true }));
   const serverDir = path.join(tempRoot, 'lsp');
@@ -80,7 +94,7 @@ test('VS Code formats only through the configured nflow executable and receives 
   };
   try {
     extension.activate(context);
-    const completions = await registrations.completion.provideCompletionItems(document, { line: 0, character: 0 });
+    const completions = await registrations.completion.provideCompletionItems(document, { line: 0, character: 0 }, undefined, { triggerKind: 1 });
     const argsSnippet = completions.find(item => item.label === 'flow-args');
     assert.ok(argsSnippet);
     assert.ok(argsSnippet.insertText instanceof SnippetString);
@@ -93,6 +107,42 @@ test('VS Code formats only through the configured nflow executable and receives 
     assert.match(nodeSnippet.insertText.value, / :timeout=.* :retry=/);
     const pipelineSnippet = completions.find(item => item.label === 'flow-pipeline');
     assert.match(pipelineSnippet.insertText.value, /\n  :timeout=10s\n  :retry=2\n\n/);
+    assert.deepEqual(pipelineSnippet.range.values, [0, 0, 0, 0]);
+
+    await t.test('directive completions replace the typed @ instead of duplicating it', async () => {
+      const typedAtDocument = {
+        uri: { toString: () => 'file:///typed-at.nflow' },
+        getText: () => '@',
+      };
+      const atTriggered = await registrations.completion.provideCompletionItems(
+        typedAtDocument, { line: 0, character: 1 }, undefined, { triggerKind: 2, triggerCharacter: '@' }
+      );
+      for (const [label, directive] of [['flow-pipeline', '@pipeline'], ['flow-assert', '@assert']]) {
+        const item = atTriggered.find(completion => completion.label === label);
+        assert.ok(item, `${label} completion exists`);
+        assert.deepEqual(item.range.values, [0, 0, 0, 1]);
+        const inserted = applyCompletion('@', item);
+        assert.ok(inserted.startsWith(directive));
+        assert.ok(!inserted.startsWith(`@${directive}`), `${label} must replace the typed @, not duplicate it`);
+      }
+    });
+
+    await t.test('manual snippets keep their @ and non-@ triggers keep zero-width ranges', async () => {
+      const manuallyInserted = applyCompletion('', pipelineSnippet);
+      assert.ok(manuallyInserted.startsWith('@pipeline'));
+      assert.ok(!manuallyInserted.startsWith('@@pipeline'));
+
+      const colonDocument = {
+        uri: { toString: () => 'file:///typed-colon.nflow' },
+        getText: () => 'x:',
+      };
+      const colonTriggered = await registrations.completion.provideCompletionItems(
+        colonDocument, { line: 0, character: 2 }, undefined, { triggerKind: 2, triggerCharacter: ':' }
+      );
+      const colonAssert = colonTriggered.find(item => item.label === 'flow-assert');
+      assert.deepEqual(colonAssert.range.values, [0, 2, 0, 2]);
+      assert.ok(applyCompletion('x:', colonAssert).startsWith('x:@assert'));
+    });
 
     const hover = await registrations.hover.provideHover(document, { line: 0, character: 0 });
     assert.ok(hover instanceof Hover);

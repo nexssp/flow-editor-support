@@ -426,6 +426,10 @@
         {
           "type": "string",
           "named": true
+        },
+        {
+          "type": "template_render",
+          "named": true
         }
       ]
     }
@@ -606,11 +610,226 @@
     }
   },
   {
+    "type": "template_action",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "template_action_close",
+          "named": true
+        },
+        {
+          "type": "template_action_content",
+          "named": true
+        },
+        {
+          "type": "template_action_open",
+          "named": true
+        },
+        {
+          "type": "template_dot",
+          "named": true
+        },
+        {
+          "type": "template_identifier",
+          "named": true
+        },
+        {
+          "type": "template_inner_string",
+          "named": true
+        },
+        {
+          "type": "template_keyword",
+          "named": true
+        },
+        {
+          "type": "template_operator",
+          "named": true
+        },
+        {
+          "type": "template_trim_marker",
+          "named": true
+        },
+        {
+          "type": "template_variable",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "template_dot",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "template_render",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "template_render_argument_block",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "template_render_argument_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "template_render_projection",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "template_render_projection",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "argument_block",
+          "named": true
+        },
+        {
+          "type": "directive",
+          "named": true
+        },
+        {
+          "type": "directive_block",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "operator",
+          "named": true
+        },
+        {
+          "type": "projection_field",
+          "named": true
+        },
+        {
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
+          "named": true
+        },
+        {
+          "type": "template_render_template_field",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "template_render_template_field",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "argument_block",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "operator",
+          "named": true
+        },
+        {
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
+          "named": true
+        },
+        {
+          "type": "template_string",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "template_string",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "template_action",
+          "named": true
+        },
+        {
+          "type": "template_backtick_text",
+          "named": true
+        },
+        {
+          "type": "template_brace",
+          "named": true
+        },
+        {
+          "type": "template_double_text",
+          "named": true
+        },
+        {
+          "type": "template_escape",
+          "named": true
+        },
+        {
+          "type": "template_single_text",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "!",
     "named": false
   },
   {
     "type": "!=",
+    "named": false
+  },
+  {
+    "type": "\"",
     "named": false
   },
   {
@@ -631,6 +850,10 @@
   },
   {
     "type": "&&",
+    "named": false
+  },
+  {
+    "type": "'",
     "named": false
   },
   {
@@ -718,6 +941,10 @@
     "named": false
   },
   {
+    "type": "`",
+    "named": false
+  },
+  {
     "type": "comment",
     "named": true,
     "extra": true
@@ -756,6 +983,70 @@
   },
   {
     "type": "raw_char",
+    "named": true
+  },
+  {
+    "type": "template",
+    "named": false
+  },
+  {
+    "type": "template.render",
+    "named": false
+  },
+  {
+    "type": "template_action_close",
+    "named": true
+  },
+  {
+    "type": "template_action_content",
+    "named": true
+  },
+  {
+    "type": "template_action_open",
+    "named": true
+  },
+  {
+    "type": "template_backtick_text",
+    "named": true
+  },
+  {
+    "type": "template_brace",
+    "named": true
+  },
+  {
+    "type": "template_double_text",
+    "named": true
+  },
+  {
+    "type": "template_escape",
+    "named": true
+  },
+  {
+    "type": "template_identifier",
+    "named": true
+  },
+  {
+    "type": "template_inner_string",
+    "named": true
+  },
+  {
+    "type": "template_keyword",
+    "named": true
+  },
+  {
+    "type": "template_operator",
+    "named": true
+  },
+  {
+    "type": "template_single_text",
+    "named": true
+  },
+  {
+    "type": "template_trim_marker",
+    "named": true
+  },
+  {
+    "type": "template_variable",
     "named": true
   },
   {
