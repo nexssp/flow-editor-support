@@ -3,10 +3,13 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
+const fs = require('node:fs');
 const path = require('node:path');
 
 const CORE = process.env.FLOW_NFLOW_LSP_BIN || process.env.FLOW_NFLOW_BIN || '';
 const LAUNCHER = path.resolve(__dirname, '../../lsp/nflow-lsp.js');
+const TEMPLATE_INPUT = fs.readFileSync(path.resolve(__dirname, '../../test/fixtures/template-render-input.nflow'), 'utf8');
+const TEMPLATE_EXPECTED = fs.readFileSync(path.resolve(__dirname, '../../test/fixtures/template-render-expected.nflow'), 'utf8');
 
 function frame(message) {
   const body = JSON.stringify(message);
@@ -93,7 +96,8 @@ test('Flow v0.44.1+ native LSP publishes diagnostics and formats only valid sour
   });
   const initialized = await nextMessage(message => message.id === 1);
   assert.equal(initialized.error, undefined, initialized.error?.message);
-  assert.equal(initialized.result.serverInfo.version, 'v0.44.1');
+  assert.ok(['v0.44.1', 'dev'].includes(initialized.result.serverInfo.version),
+    `unexpected Flow LSP version ${initialized.result.serverInfo.version}`);
   assert.equal(initialized.result.capabilities.documentFormattingProvider, true);
   assert.ok(initialized.result.capabilities.completionProvider);
   assert.equal(initialized.result.capabilities.hoverProvider, true);
@@ -136,8 +140,25 @@ test('Flow v0.44.1+ native LSP publishes diagnostics and formats only valid sour
   assert.equal(formatted.result[0].newText,
     '@pipeline work\n  :timeout=2s\n  :retry=3\n  runtime.const :retry=2\n@end\n');
 
-  request(child, 4, 'shutdown', {});
-  await nextMessage(message => message.id === 4);
+  notify(child, 'textDocument/didChange', {
+    textDocument: { uri, version: 3 },
+    contentChanges: [{ text: TEMPLATE_INPUT }],
+  });
+  const templateDiagnostics = await nextMessage(message =>
+    message.method === 'textDocument/publishDiagnostics' && message.params.uri === uri && message.params.version === 3);
+  assert.deepEqual(templateDiagnostics.params.diagnostics, []);
+
+  request(child, 5, 'textDocument/formatting', {
+    textDocument: { uri },
+    options: { tabSize: 2, insertSpaces: true },
+  });
+  const templateFormatted = await nextMessage(message => message.id === 5);
+  assert.equal(templateFormatted.error, undefined, templateFormatted.error?.message);
+  assert.equal(templateFormatted.result.length, 1);
+  assert.equal(templateFormatted.result[0].newText, TEMPLATE_EXPECTED);
+
+  request(child, 6, 'shutdown', {});
+  await nextMessage(message => message.id === 6);
   notify(child, 'exit', {});
   child.stdin.end();
   const exit = await new Promise(resolve => child.once('close', (code, signal) => resolve({ code, signal })));

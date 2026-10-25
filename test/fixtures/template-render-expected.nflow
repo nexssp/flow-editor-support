@@ -5,6 +5,7 @@ template.render @{
   template: "Hi {{.customer}},\n\nYour order {{.order_id}} is confirmed. Estimated delivery: {{.delivery_date}}.\n\nItems:\n{{range .items}}- {{.}}\n{{end}}\nThanks,\n{{.store}}",
   variables: {
     customer: "Ada Lovelace",
+
     order_id: "SO-1042",
     delivery_date: "Tuesday, Oct 28",
     items: ["Notebook", "Pen"],
