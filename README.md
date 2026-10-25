@@ -1,16 +1,16 @@
 # Nexss Flow editor support
 
-Editor tooling for Nexss Flow, whose canonical source format is **`.nflow`**. The core reference implementation is the [Flow v0.44.1 release](https://github.com/nexssp/flow/releases/tag/v0.44.1); the [official editor-support v0.3.1 source](https://github.com/nexssp/flow-editor-support/tree/v0.3.1) is the baseline being updated here.
+Editor tooling for Nexss Flow, whose canonical source format is **`.nflow`**. The core reference implementation is the [Flow v0.44.2 release](https://github.com/nexssp/flow/releases/tag/v0.44.2); the [official editor-support v0.3.4 source](https://github.com/nexssp/flow-editor-support/tree/v0.3.4) is the baseline for this update.
 
 ## One core for language services
 
 Flow core now owns language parsing, diagnostics, completion, hover, and document formatting. Editors that support LSP start **`nflow lsp`** through the shared `lsp/nflow-lsp.js` launcher. The launcher only selects and checks the executable, then passes stdio directly through to Flow; it does not parse source, generate diagnostics, or format text. Formatting continues to use **`nflow fmt`**, and project-wide compilation checks use **`nflow lint`**.
 
-The launcher requires **Flow v0.44.1 or newer** and checks the selected executable's `--version` before starting the server. This minimum is grounded in the tagged core: [the v0.44.1 server advertises sync, diagnostics-backed language analysis, completion, hover and formatting](https://github.com/nexssp/flow/blob/a17c87fd106002128120e6cd359589b4768eef55/cli/lsp.go#L335-L369). It reports an incompatible or missing core to stderr and does not start an older server.
+The launcher requires **Flow v0.44.2 or newer** and checks the selected executable's `--version` before starting the server. This minimum is grounded in the tagged core: [the v0.44.2 server advertises sync, diagnostics-backed language analysis, completion, hover and formatting](https://github.com/nexssp/flow/blob/12ceb9e46beb7a38199d3bdf80b395a937d28a1c/cli/lsp.go#L335-L369). It reports an incompatible or missing core to stderr and does not start an older server.
 
-The core LSP publishes diagnostics when a document opens or changes and clears them when the source is corrected. Formatting errors are returned as LSP errors with diagnostics, not as an empty successful edit. See the [v0.44.1 diagnostic and formatting handlers](https://github.com/nexssp/flow/blob/a17c87fd106002128120e6cd359589b4768eef55/cli/lsp.go#L372-L453) and [formatting error path](https://github.com/nexssp/flow/blob/a17c87fd106002128120e6cd359589b4768eef55/cli/lsp.go#L515-L542).
+The core LSP publishes diagnostics when a document opens or changes and clears them when the source is corrected. Formatting errors are returned as LSP errors with diagnostics, not as an empty successful edit. See the [v0.44.2 diagnostic and formatting handlers](https://github.com/nexssp/flow/blob/12ceb9e46beb7a38199d3bdf80b395a937d28a1c/cli/lsp.go#L372-L453) and [formatting error path](https://github.com/nexssp/flow/blob/12ceb9e46beb7a38199d3bdf80b395a937d28a1c/cli/lsp.go#L515-L542).
 
-LSP diagnostics are not a substitute for every `nflow lint` project check. In particular, the released LSP documents that external `@require` bundles not linked into the running binary need `nflow lint`; the core reports this limitation rather than silently dropping the requirement. The LSP currently uses full-document changes, generic placeholder hover text, and a fixed set of syntax-oriented completion snippets. See the [native LSP implementation](https://github.com/nexssp/flow/blob/a17c87fd106002128120e6cd359589b4768eef55/cli/lsp.go#L289-L369) and [`nflow lint` guidance](https://github.com/nexssp/flow/blob/a17c87fd106002128120e6cd359589b4768eef55/docs/cli.md#L93-L110).
+LSP diagnostics are not a substitute for every `nflow lint` project check. In particular, the released LSP documents that external `@require` bundles not linked into the running binary need `nflow lint`; the core reports this limitation rather than silently dropping the requirement. The LSP currently uses full-document changes, generic placeholder hover text, and a fixed set of syntax-oriented completion snippets. See the [native LSP implementation](https://github.com/nexssp/flow/blob/12ceb9e46beb7a38199d3bdf80b395a937d28a1c/cli/lsp.go#L289-L369) and [`nflow lint` guidance](https://github.com/nexssp/flow/blob/12ceb9e46beb7a38199d3bdf80b395a937d28a1c/docs/cli.md#L93-L110).
 
 ## Editor support at a glance
 
@@ -26,7 +26,7 @@ The LSP capabilities come from Flow core rather than editor-specific parsers. Of
 
 ## Install and choose the Flow executable
 
-Install the released Flow binary for your platform from the [v0.44.1 release](https://github.com/nexssp/flow/releases/tag/v0.44.1), or build the core from its source. Check the version in the environment inherited by your editor:
+Install the released Flow binary for your platform from the [v0.44.2 release](https://github.com/nexssp/flow/releases/tag/v0.44.2), or build the core from its source. Check the version in the environment inherited by your editor:
 
 ```sh
 nflow --version
@@ -36,7 +36,7 @@ The language-server launcher selects the executable in this order: `NFLOW_BIN`, 
 
 In VS Code, `nexssFlow.nflowCommand` sets the Flow executable path for the language-server process and takes precedence over `NFLOW_BIN`. For Zed and Claude Code, set `NFLOW_BIN` in the environment those apps inherit. If the selected binary is missing, too old, or does not report a parseable version, the launcher prints an error to stderr instead of silently degrading. A manually configured VS Code `nexssFlow.languageServer.command` is an advanced override and bypasses this check.
 
-The installer used by CI fetches the official v0.44.1 Linux amd64 archive and verifies its published checksum. Its `--check` mode accepts v0.44.1 or later; to emit the three test variables for one binary:
+The installer used by CI fetches the official v0.44.2 Linux amd64 archive and verifies its published checksum. Its `--check` mode accepts v0.44.2 or later; to emit the three test variables for one binary:
 
 ```sh
 eval "$(bash scripts/install-flow-core.sh --check /path/to/nflow)"
@@ -99,13 +99,13 @@ A File Watcher can run the same command on save. The selected **Program** contro
 
 ## Formatting and linting
 
-`nflow fmt` is the only formatting implementation. It supports `nflow fmt FILE` (formatted output to stdout), `nflow fmt --write FILE` (atomic rewrite), `nflow fmt --check FILE`, and `nflow fmt --stdin`. Invalid source is rejected before a file is replaced; this behavior is covered by the [v0.44.1 formatter implementation and tests](https://github.com/nexssp/flow/blob/a17c87fd106002128120e6cd359589b4768eef55/cli/fmt.go#L113-L147). `nflow lint` performs the compiler/project checks described in the [Flow CLI guide](https://github.com/nexssp/flow/blob/a17c87fd106002128120e6cd359589b4768eef55/docs/cli.md#L101-L110).
+`nflow fmt` is the only formatting implementation. It supports `nflow fmt FILE` (formatted output to stdout), `nflow fmt --write FILE` (atomic rewrite), `nflow fmt --check FILE`, and `nflow fmt --stdin`. Invalid source is rejected before a file is replaced; this behavior is covered by the [v0.44.2 formatter implementation and tests](https://github.com/nexssp/flow/blob/12ceb9e46beb7a38199d3bdf80b395a937d28a1c/cli/fmt.go#L113-L147). `nflow lint` performs the compiler/project checks described in the [Flow CLI guide](https://github.com/nexssp/flow/blob/12ceb9e46beb7a38199d3bdf80b395a937d28a1c/docs/cli.md#L101-L110).
 
 The shared `fmt/` files are argument-forwarding adapters only. They do not define spacing, indentation, line-wrapping, parsing, or diagnostics. Tree-sitter and TextMate grammars remain syntax-highlighting tools, not alternate compilers.
 
 ## Validation
 
-Set all real-core variables to the same verified v0.44.1 executable so integration tests cannot silently skip:
+Set all real-core variables to the same verified v0.44.2 executable so integration tests cannot silently skip:
 
 ```sh
 export NFLOW_BIN=/path/to/nflow
@@ -120,6 +120,8 @@ cargo check --manifest-path zed-legacy-0.230.2/Cargo.toml
 `npm run validate` exercises adapter launch and version checks, real-core formatting, native LSP diagnostics and formatting over stdio, syntax fixtures, metadata consistency, and invalid-source preservation. GUI smoke tests require installed editor applications; automated protocol checks do not claim to have tested editor UI behavior.
 
 ## Go templates in `template.render`
+Flow v0.44.2 includes the core fix for multiline template formatting; the regression is exercised against the released binary through both `nflow fmt --check` and native LSP formatting.
+
 
 The Zed Tree-sitter grammar and VS Code/JetBrains TextMate grammar recognize Go `text/template` actions only in the top-level `template:` string of a `template.render @{...}` expression. Template action delimiters, control words, field variables, and the current-context dot receive separate scopes. Neighboring strings, ordinary object values, and nested `template:` fields remain ordinary Flow strings. Notepad++ leaves template values as ordinary strings because its UDL cannot provide context-aware nested highlighting without coloring unrelated text. Claude Code relies on its host editor for source highlighting.
 

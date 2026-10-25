@@ -6,8 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnCaptured } = require('../../test/helpers/process-tree');
 
-const CORE = process.env.FLOW_NFLOW_PATCHED_BIN || process.env.FLOW_NFLOW_LSP_BIN || process.env.FLOW_NFLOW_BIN || '';
-const TEST_TEMPLATE_FIX = Boolean(process.env.FLOW_NFLOW_PATCHED_BIN);
+const CORE = process.env.FLOW_NFLOW_LSP_BIN || process.env.FLOW_NFLOW_BIN || '';
 const LAUNCHER = path.resolve(__dirname, '../../lsp/nflow-lsp.js');
 const TEMPLATE_INPUT = fs.readFileSync(path.resolve(__dirname, '../../test/fixtures/template-render-input.nflow'), 'utf8');
 const TEMPLATE_EXPECTED = fs.readFileSync(path.resolve(__dirname, '../../test/fixtures/template-render-expected.nflow'), 'utf8');
@@ -77,7 +76,7 @@ function request(child, id, method, params) {
   child.stdin.write(frame({ jsonrpc: '2.0', id, method, params }));
 }
 
-test('Flow v0.44.1+ native LSP publishes diagnostics and formats valid source', { skip: !CORE, timeout: 60000 }, async t => {
+test('Flow v0.44.2+ native LSP publishes diagnostics and formats valid source', { skip: !CORE, timeout: 60000 }, async t => {
   const managed = spawnCaptured(process.execPath, [LAUNCHER], {
     env: { ...process.env, NFLOW_BIN: CORE },
   });
@@ -100,7 +99,7 @@ test('Flow v0.44.1+ native LSP publishes diagnostics and formats valid source', 
   const initialized = await nextMessage(message => message.id === 1);
   assert.equal(initialized.error, undefined, initialized.error?.message);
   assert.ok(initialized.result.serverInfo.version === 'dev'
-    || /^v0\.44\.1(?:\+.*)?$/.test(initialized.result.serverInfo.version),
+    || /^v0\.44\.2(?:\+.*)?$/.test(initialized.result.serverInfo.version),
   `unexpected Flow LSP version ${initialized.result.serverInfo.version}`);
   assert.equal(initialized.result.capabilities.documentFormattingProvider, true);
   assert.ok(initialized.result.capabilities.completionProvider);
@@ -144,24 +143,22 @@ test('Flow v0.44.1+ native LSP publishes diagnostics and formats valid source', 
   assert.equal(formatted.result[0].newText,
     '@pipeline work\n  :timeout=2s\n  :retry=3\n  runtime.const :retry=2\n@end\n');
 
-  if (TEST_TEMPLATE_FIX) {
-    notify(child, 'textDocument/didChange', {
-      textDocument: { uri, version: 3 },
-      contentChanges: [{ text: TEMPLATE_INPUT }],
-    });
-    const templateDiagnostics = await nextMessage(message =>
-      message.method === 'textDocument/publishDiagnostics' && message.params.uri === uri && message.params.version === 3);
-    assert.deepEqual(templateDiagnostics.params.diagnostics, []);
+  notify(child, 'textDocument/didChange', {
+    textDocument: { uri, version: 3 },
+    contentChanges: [{ text: TEMPLATE_INPUT }],
+  });
+  const templateDiagnostics = await nextMessage(message =>
+    message.method === 'textDocument/publishDiagnostics' && message.params.uri === uri && message.params.version === 3);
+  assert.deepEqual(templateDiagnostics.params.diagnostics, []);
 
-    request(child, 5, 'textDocument/formatting', {
-      textDocument: { uri },
-      options: { tabSize: 2, insertSpaces: true },
-    });
-    const templateFormatted = await nextMessage(message => message.id === 5);
-    assert.equal(templateFormatted.error, undefined, templateFormatted.error?.message);
-    assert.equal(templateFormatted.result.length, 1);
-    assert.equal(templateFormatted.result[0].newText, TEMPLATE_EXPECTED);
-  }
+  request(child, 5, 'textDocument/formatting', {
+    textDocument: { uri },
+    options: { tabSize: 2, insertSpaces: true },
+  });
+  const templateFormatted = await nextMessage(message => message.id === 5);
+  assert.equal(templateFormatted.error, undefined, templateFormatted.error?.message);
+  assert.equal(templateFormatted.result.length, 1);
+  assert.equal(templateFormatted.result[0].newText, TEMPLATE_EXPECTED);
 
   request(child, 6, 'shutdown', {});
   await nextMessage(message => message.id === 6);

@@ -82,7 +82,7 @@ assert vscode['contributes']['languages'][0]['id'] == 'nexss-flow'
 assert vscode['contributes']['grammars'][0]['scopeName'] == 'source.nflow'
 properties = vscode['contributes']['configuration']['properties']
 assert properties['nexssFlow.nflowCommand']['default'] == ''
-assert 'v0.44.1 or newer' in properties['nexssFlow.nflowCommand']['description']
+assert 'v0.44.2 or newer' in properties['nexssFlow.nflowCommand']['description']
 assert properties['nexssFlow.languageServer.command']['default'] == ''
 assert 'bypasses the core version check' in properties['nexssFlow.languageServer.command']['description']
 assert 'nexssFlow.languageServer.args' in properties
@@ -139,7 +139,7 @@ cmd = (ROOT / 'notepadpp/flowfmt.cmd').read_text()
 assert 'fmt --write' in cmd and 'NFLOW_BIN' in cmd and 'fmt\\cli.js' not in cmd
 claude_command = (ROOT / 'claude/commands/flowfmt.md').read_text()
 assert 'fmt/cli.js" --write' in claude_command and 'NFLOW_BIN' in claude_command
-assert 'v0.44.1 or newer' in claude_command
+assert 'v0.44.2 or newer' in claude_command
 assert 'File Watcher' in (ROOT / 'jetbrains/README.md').read_text()
 assert 'fmt --write' in (ROOT / 'jetbrains/README.md').read_text()
 assert 'nflow lint' in (ROOT / 'jetbrains/README.md').read_text()
@@ -153,7 +153,7 @@ for rel in ['vscode/lsp/nflow-lsp.js', 'zed/lsp/nflow-lsp.js',
             'zed-legacy-0.230.2/lsp/nflow-lsp.js', 'claude/lsp/nflow-lsp.js']:
     assert (ROOT / rel).read_bytes() == launcher, f'stale native LSP launcher copy: {rel}'
 source = launcher.decode('utf-8')
-for token in ['MINIMUM_VERSION = [0, 44, 1]', "['lsp']", "['--version']", 'stdio: \'inherit\'', 'NFLOW_BIN']:
+for token in ['MINIMUM_VERSION = [0, 44, 2]', "['lsp']", "['--version']", 'stdio: \'inherit\'', 'NFLOW_BIN']:
     assert token in source, f'native launcher lacks {token}'
 for token in ['textDocument/', 'publishDiagnostics', 'JSON.stringify', 'formatter', 'completionItems']:
     assert token not in source, f'launcher must not implement LSP features: {token}'
@@ -224,20 +224,25 @@ workflow = (ROOT / '.github/workflows/release.yml').read_text()
 assert 'package-release.sh' in workflow and 'softprops/action-gh-release' in workflow
 assert 'run: npm ci' in workflow
 assert workflow.count('install-flow-core.sh install') == 2
-assert 'nflow-v0.44.1' in workflow and 'node --check lsp/nflow-lsp.js' in workflow
+assert 'nflow-v0.44.2' in workflow and 'node --check lsp/nflow-lsp.js' in workflow
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
-assert 'VERSION=0.44.1' in core_installer and 'MINIMUM_VERSION=0.44.1' in core_installer
-assert 'EXPECTED_MANIFEST_SHA256=' in core_installer
+assert 'VERSION=0.44.2' in core_installer and 'MINIMUM_VERSION=0.44.2' in core_installer
+assert 'actual_patch < 2' in core_installer
+real_core_lsp_test = (ROOT / 'fmt/test/real-core-lsp.test.js').read_text()
+assert 'FLOW_NFLOW_PATCHED_BIN' not in real_core_lsp_test
+assert 'if (TEST_TEMPLATE_FIX)' not in real_core_lsp_test
+assert 'templateFormatted.result[0].newText, TEMPLATE_EXPECTED' in real_core_lsp_test
+assert 'EXPECTED_MANIFEST_SHA256=21d006367ad5b3584765f7908552c4f9846055bdaf72e99858928609ee711626' in core_installer
 for variable in ['NFLOW_BIN', 'FLOW_NFLOW_BIN', 'FLOW_NFLOW_LSP_BIN']:
     assert f'printf \'{variable}=%s\\n\'' in core_installer
 
 readme = (ROOT / 'README.md').read_text()
 for editor in ['VS Code', 'Zed', 'Notepad++', 'JetBrains', 'Claude Code']:
     assert editor in readme, f'root README lacks {editor} integration documentation'
-for token in ['nflow lsp', 'nflow lint', 'nflow fmt', 'v0.44.1 or newer', 'NFLOW_BIN',
+for token in ['nflow lsp', 'nflow lint', 'nflow fmt', 'v0.44.2 or newer', 'NFLOW_BIN',
               'editor.formatOnSave', 'format_on_save', 'File Watcher', '/flowfmt',
               'Invalid source is rejected', 'external `@require` bundles']:
     assert token in readme, f'root README lacks {token}'
 assert 'v0.43.0' not in readme and 'Flow v0.43.0' not in readme
 assert 'Go templates in `template.render`' in readme
-print(f'validated {len(required)} required files; core-native LSP routing, v0.44.1+ selection, editor fallbacks, and package safety=OK')
+print(f'validated {len(required)} required files; core-native LSP routing, v0.44.2+ selection, editor fallbacks, and package safety=OK')

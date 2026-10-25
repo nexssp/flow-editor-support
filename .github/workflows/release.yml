@@ -10,6 +10,9 @@ on:
 permissions:
   contents: write
 
+env:
+  RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_type == 'tag' && github.ref_name || '' }}
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -18,8 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install and verify Flow core v0.44.1
-        run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.44.1" >/dev/null
+      - name: Install and verify Flow core v0.44.2
+        run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.44.2" >/dev/null
       - uses: dtolnay/rust-toolchain@stable
       - name: Install JavaScript test dependencies
         run: npm ci
@@ -35,7 +38,7 @@ jobs:
           cargo check --manifest-path zed/Cargo.toml
           cargo check --manifest-path zed-legacy-0.230.2/Cargo.toml
       - name: Package artifacts
-        run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist"
+        run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist" "$RELEASE_TAG"
       - uses: actions/upload-artifact@v4
         with:
           name: nexss-flow-editor-artifacts
@@ -50,10 +53,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install and verify Flow core v0.44.1
-        run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.44.1" >/dev/null
+      - name: Install and verify Flow core v0.44.2
+        run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.44.2" >/dev/null
       - name: Package release assets
-        run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist"
+        run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist" "$RELEASE_TAG"
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
