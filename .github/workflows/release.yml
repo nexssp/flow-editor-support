@@ -18,8 +18,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install and verify Flow core v0.43.0
+        run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.43.0" >/dev/null
       - uses: dtolnay/rust-toolchain@stable
-      - name: Validate editor tooling
+      - name: Validate editor tooling with the real Flow core
         run: npm run validate
       - name: Check JavaScript syntax
         run: |
@@ -46,6 +48,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install and verify Flow core v0.43.0
+        run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.43.0" >/dev/null
       - name: Package release assets
         run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist"
       - name: Publish GitHub release

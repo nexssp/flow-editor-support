@@ -1,5 +1,9 @@
 // Representative syntax from the current Flow language reference.
+@nflow_version ">=0.43.0"
 @description "Editor grammar coverage"
+@require ./local/helpers as helpers {
+  prefix: "DEMO"
+}
 @schema Request {
   Name string `json:"name" default:"standard" validate:"required"`
   Depth int `json:"depth" default:"1" validate:"gte=1"`
@@ -15,9 +19,12 @@
   const @{ value: "winner" },
 }
 -> match {
-  .danger && .level > 3 -> const @{ value: "critical" },
-  .danger -> const @{ value: "warning" },
-  _ -> const @{ value: { n: 0, level: 0, danger: false } }
+  .danger && .level > 3
+    -> const @{ value: "critical" },
+  .danger
+    -> const @{ value: "warning" },
+  _
+    -> const @{ value: { n: 0, level: 0, danger: false } }
 }
 -> loop({ n: .n + 1 }) until(.n >= 3)
 -> assert(.n == 3, "loop counter should reach 3")
@@ -31,3 +38,10 @@
   all(result.items, # != "")
 }
 @assert: { result.ok == true, all(result.items, # != ""), result.items[0] == "nonempty" }
+
+@pipeline modifier_style
+  :timeout=2s
+  :retry=2
+
+  runtime.const :timeout=1s :retry=1 @{ value: "readable" }
+@end

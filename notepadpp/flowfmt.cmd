@@ -1,5 +1,6 @@
 @echo off
 setlocal
-set "ROOT=%~dp0.."
-node "%ROOT%\fmt\cli.js" --write %*
+set "NFLOW_COMMAND=nflow"
+if defined NFLOW_BIN set "NFLOW_COMMAND=%NFLOW_BIN%"
+"%NFLOW_COMMAND%" fmt --write %*
 exit /b %ERRORLEVEL%

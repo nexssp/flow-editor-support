@@ -9,6 +9,12 @@ if [[ "$OUT_DIR" = "/" || "$OUT_DIR" = "$ROOT" ]]; then
   exit 2
 fi
 
+# Validate the exact formatter core before staging or running tests. This keeps
+# missing/incompatible cores from silently skipping the real-core test suite.
+CORE_ENV="$(bash "$ROOT/scripts/install-flow-core.sh" --check)"
+eval "$CORE_ENV"
+echo "Verified Flow core v0.43.0: $FLOW_NFLOW_BIN" >&2
+
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/nexss-flow-release.XXXXXX")"
 trap 'rm -rf -- "$STAGE"' EXIT
 SRC="$STAGE/source"
@@ -46,7 +52,7 @@ cp "$SRC/grammar.js" "$SRC/zed-legacy-0.230.2/grammars/flow.js"
 cp "$SRC/vscode/syntaxes/flow.tmLanguage.json" "$SRC/jetbrains/textmate/nexss-flow.tmLanguage.json"
 chmod +x "$SRC/zed/lsp/nexss-flow-language-server" "$SRC/zed-legacy-0.230.2/lsp/nexss-flow-language-server" \
   "$SRC/fmt/cli.js" "$SRC/claude/fmt/cli.js" "$SRC/notepadpp/fmt/cli.js" "$SRC/jetbrains/fmt/cli.js" \
-  "$SRC/scripts/package-release.sh" "$SRC/scripts/check-grammar.sh"
+  "$SRC/scripts/package-release.sh" "$SRC/scripts/check-grammar.sh" "$SRC/scripts/install-flow-core.sh"
 
 (cd "$SRC" && python3 scripts/validate.py)
 (cd "$SRC" && node --test fmt/test/*.test.js vscode/test/*.test.js)

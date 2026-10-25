@@ -2,7 +2,10 @@
 @description "Current Nexss Flow editor-support example"
 @pipeline editor_fixture
   :timeout=2s
+  :retry=2
+
   const @{ value: { message: "hello, flow", tags: ["editor", "nflow"] } }
 @end
 @assert: result.message == "hello, flow"
-{} -> pipeline.editor_fixture
+{}
+  -> pipeline.editor_fixture

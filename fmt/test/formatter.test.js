@@ -1,86 +1,71 @@
+'use strict';
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { format } = require('../index.js');
+const { format, runNflow } = require('../index.js');
+const { createNflowMock, readCalls } = require('./helpers.js');
 
-const dir = path.join(__dirname, 'fixtures');
-for (const name of fs.readdirSync(dir).filter(name => name.endsWith('.nflow') && !name.endsWith('.expected.nflow'))) {
-  test(`formats and is idempotent: ${name}`, () => {
-    const input = fs.readFileSync(path.join(dir, name), 'utf8');
-    const expected = fs.readFileSync(path.join(dir, name.replace(/\.nflow$/, '.expected.nflow')), 'utf8');
-    const actual = format(input);
-    assert.equal(actual, expected);
-    assert.equal(format(actual), actual);
+const cli = path.join(__dirname, '..', 'cli.js');
+
+test('format delegates to nflow fmt and returns its readable multiline output verbatim', t => {
+  const fixtureDir = path.join(__dirname, 'fixtures');
+  const pipelineInput = fs.readFileSync(path.join(fixtureDir, 'pipeline.nflow'), 'utf8');
+  const pipelineExpected = fs.readFileSync(path.join(fixtureDir, 'pipeline.expected.nflow'), 'utf8');
+  const inlineInput = 'runtime.const:timeout=1s:retry=2\n';
+  const inlineExpected = 'runtime.const :timeout=1s :retry=2\n';
+  const input = pipelineInput + inlineInput;
+  const expected = pipelineExpected + inlineExpected;
+  const mock = createNflowMock(t, { outputs: { [input]: expected } });
+  assert.equal(format(input, { env: mock.env }), expected);
+  assert.deepEqual(readCalls(mock), [{ args: ['fmt', '--stdin'], input }]);
+});
+
+test('the configured nflow executable is used and no editor style options are added', t => {
+  const mock = createNflowMock(t);
+  const result = runNflow(['--check', 'sample.nflow'], { command: mock.executable, env: mock.env });
+  assert.equal(result.status, 0);
+  assert.deepEqual(readCalls(mock), [{ args: ['fmt', '--check', 'sample.nflow'], input: '' }]);
+});
+
+test('missing nflow reports the core dependency instead of falling back to another formatter', () => {
+  assert.throws(
+    () => format('noop\n', { command: path.join(osTempDirectory(), 'not-installed-nflow') }),
+    /Install a Flow build that provides `nflow fmt`/,
+  );
+});
+
+test('nflow formatter failures are returned to the caller without hiding diagnostics', t => {
+  const mock = createNflowMock(t, { exitCode: 2, stderr: 'invalid Flow syntax\n' });
+  assert.throws(() => format('broken\n', { env: mock.env }), /nflow fmt --stdin failed with exit code 2: invalid Flow syntax/);
+});
+
+test('flowfmt CLI transparently forwards file operations to nflow fmt', t => {
+  const mock = createNflowMock(t);
+  const result = spawnSync(process.execPath, [cli, '--write', 'file with spaces.nflow'], {
+    env: mock.env,
+    encoding: 'utf8',
   });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(readCalls(mock), [{ args: ['fmt', '--write', 'file with spaces.nflow'], input: '' }]);
+});
+
+test('flowfmt CLI transparently forwards stdin requests to nflow fmt', t => {
+  const input = 'source -> action :timeout=2s\n';
+  const expected = 'source\n  :timeout=2s\n-> action\n';
+  const mock = createNflowMock(t, { outputs: { [input]: expected } });
+  const result = spawnSync(process.execPath, [cli, '--stdin'], {
+    env: mock.env,
+    input,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, expected);
+  assert.deepEqual(readCalls(mock), [{ args: ['fmt', '--stdin'], input }]);
+});
+
+function osTempDirectory() {
+  return require('node:os').tmpdir();
 }
-
-test('preserves BOM and CRLF', () => {
-  const input = '\uFEFFa->b\r\n';
-  const output = format(input);
-  assert.equal(output, '\uFEFFa -> b\r\n');
-});
-
-test('preserves whitespace-significant ternary else separators', () => {
-  assert.equal(format('true?noop : noop\n'), 'true ? noop : noop\n');
-});
-
-test('leaves backtick strings and inline comments unchanged', () => {
-  const input = 'action.node:note=`x -> y // z: q`->next.node // keep -> exact\n';
-  const expected = 'action.node:note=`x -> y // z: q` -> next.node // keep -> exact\n';
-  assert.equal(format(input), expected);
-});
-
-test('does not treat expression predicates as comments', () => {
-  const input = '@assert {\nresult.count>0\nall(result.items,# != "")\n}\n';
-  const expected = '@assert {\n  result.count > 0\n  all(result.items, # != "")\n}\n';
-  assert.equal(format(input), expected);
-});
-
-test('formats Flow v0.42 single-expression and compact assertion directives', () => {
-  const input = '@assert: result.count>0\n@assert result.items[0]=="a,b"\n';
-  const expected = '@assert: result.count > 0\n@assert result.items[0] == "a,b"\n';
-  assert.equal(format(input), expected);
-  assert.equal(format(expected), expected);
-
-  const compact = '@assert:{len(result.tags)==2,all(result.tags,#!=""),result.tags[0]=="a,b"}\n';
-  const compactExpected = '@assert: { len(result.tags) == 2, all(result.tags, # != ""), result.tags[0] == "a,b" }\n';
-  assert.equal(format(compact), compactExpected);
-  assert.equal(format(compactExpected), compactExpected);
-  assert.equal(format('@assertion foo==bar\n'), '@assertion foo==bar\n');
-});
-
-test('uses canonical spacing for named fields without altering race modifiers', () => {
-  const input = 'parallel {\nprofile:const @{ value:"x" },\n}\n';
-  const expected = 'parallel {\n  profile: const @{ value: "x" },\n}\n';
-  assert.equal(format(input), expected);
-  assert.equal(format(input, { indentWidth: 4, insertSpaces: false }), expected);
-  assert.equal(format(expected), expected);
-
-  const race = 'source -> race {\nconst:timeout=10s,\n}\n';
-  assert.equal(format(race), 'source -> race {\n  const:timeout=10s,\n}\n');
-});
-
-test('preserves whole-line hash comments and empty objects', () => {
-  assert.equal(format('# keep this comment\n{}->noop\n'), '# keep this comment\n{} -> noop\n');
-});
-
-test('ignores quoted braces when indenting following lines', () => {
-  const input = 'const @{ value: "literal { brace" }\nnoop\n';
-  assert.equal(format(input), input);
-});
-
-test('preserves multiline string content and comment-like text', () => {
-  const input = 'const @{ value: "first { line\n  second -> // literal : text\nthird }" }\n';
-  assert.equal(format(input), input);
-});
-
-test('rejects style overrides so flowfmt stays canonical', () => {
-  const cli = path.join(__dirname, '..', 'cli.js');
-  for (const flag of ['--print-width', '--indent-width', '--no-blank-lines']) {
-    const result = spawnSync(process.execPath, [cli, flag, '--stdin'], { input: '', encoding: 'utf8' });
-    assert.equal(result.status, 2);
-    assert.match(result.stderr, new RegExp(`unknown option: ${flag}`));
-  }
-});

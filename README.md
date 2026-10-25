@@ -2,27 +2,27 @@
 
 Editor tooling for Nexss Flow, the workflow language maintained in the [Nexss Flow repository](https://github.com/nexssp/flow). The canonical source format is **`.nflow`**; current language syntax is documented in the [Flow language reference](https://github.com/nexssp/flow/blob/main/docs/language-reference.md).
 
-This package provides syntax highlighting, snippets, a conservative formatter, and a small stdio Language Server Protocol (LSP) server. It is editor assistance, not a replacement for the Flow compiler: the grammar and colorizers do not validate every runtime rule, and the LSP does not provide compiler diagnostics, go-to-definition, or semantic analysis.
+This package provides syntax highlighting, snippets, a small stdio Language Server Protocol (LSP) server, and thin formatter adapters. It does **not** implement formatting rules: every editor forwards formatting to the Flow executable's `nflow fmt` command. Use [Flow v0.43.0](https://github.com/nexssp/flow/releases/tag/v0.43.0) or newer, or a compatible Flow core build that includes `nflow fmt`; editor integrations report a missing core dependency rather than silently falling back to a different formatter. Flow v0.43.0 is the first released core version with the built-in formatter. The editor support targets v0.43.0 language syntax, including single-expression, block, and compact-list `@assert` forms.
 
-The syntax examples and formatter are checked against [Flow v0.42.0](https://github.com/nexssp/flow/releases/tag/v0.42.0), including its single-expression, block, and compact-list `@assert` forms.
+Check `nflow --version` in the environment the editor inherits: it must report v0.43.0 or newer. An older Flow build can expose an `nflow fmt` command yet still reject v0.43 syntax, so a working `fmt` subcommand alone is not enough.
 
 ## What each editor gets
 
-| Editor | Included support | What it does not provide |
+| Editor | Included support and formatting path | What it does not provide |
 | --- | --- | --- |
-| **VS Code** | `.nflow` association, TextMate highlighting, snippets, completion, placeholder hover, and document formatting. The VSIX bundles its own LSP and formatter copies. | No compiler diagnostics or semantic navigation. |
-| **Zed** | Tree-sitter highlighting, bracket matching, the shared LSP/formatter, and a Zed-specific extension wrapper. Both current and legacy packages are included. | The grammar is fetched from the Git revision declared in the extension manifest; see the Zed note below. |
-| **Notepad++** | User Defined Language profile plus a best-effort NppExec command that runs `flowfmt`. | Notepad++'s UDL profile is colorization only; formatting needs Node.js and the NppExec plugin. |
-| **JetBrains IDEs** | TextMate syntax highlighting with `.nflow` file association and an External Tool formatter recipe. | TextMate does not provide native IntelliJ inspections, PSI, or **Reformat Code** integration. |
-| **Claude Code** | LSP completion/placeholder hover and the `/flowfmt` command. | Claude Code does not color source files; the host editor handles syntax highlighting. |
+| **VS Code** | `.nflow` association, TextMate highlighting, snippets, completion, placeholder hover, and **Format Document** via `nflow fmt`; optional format-on-save. | No continuous compiler diagnostics or semantic navigation; formatter parse errors are published at their source position when formatting is requested. |
+| **Zed** | Tree-sitter highlighting, bracket matching, and LSP formatting via **Format Document**; optional format-on-save. Current and legacy packages are included. | The grammar is fetched from the Git revision declared in the extension manifest; see the Zed note below. |
+| **Notepad++** | User Defined Language profile and an NppExec command that runs `nflow fmt` on demand (can be bound to a shortcut). | UDL is colorization only; this package does not register a native format-on-save provider. |
+| **JetBrains IDEs** | TextMate syntax highlighting and an External Tool or File Watcher that runs `nflow fmt`; a File Watcher can run on save. | No native IntelliJ **Reformat Code**, code-style panels, inspections, or PSI-aware refactorings. |
+| **Claude Code** | LSP completion/placeholder hover and the `/flowfmt` command for explicit formatting through `nflow fmt`. | No source-file colorization or automatic format-on-save command; the host editor handles highlighting. |
 
 ## Install and configure
 
 ### VS Code
 
-Install `nexss-flow-vscode.vsix` from the release artifacts, or open the `vscode/` folder as the extension project and package it with `@vscode/vsce`. The bundled server starts with the VS Code extension's Node runtime, so the default setup does not need a separate `node` command on `PATH`. `.nflow` files activate the extension automatically.
+Install `nexss-flow-vscode.vsix` from the release artifacts, or open the `vscode/` folder as the extension project and package it with `@vscode/vsce`. The bundled language server starts with the VS Code extension's Node runtime. `.nflow` files activate the extension automatically.
 
-For format-on-save, add this to VS Code settings:
+To enable format-on-save, add this to VS Code settings. You can also run **Format Document** from the command palette at any time:
 
 ```json
 "[nexss-flow]": {
@@ -31,13 +31,13 @@ For format-on-save, add this to VS Code settings:
 }
 ```
 
-A custom compatible stdio LSP can be set with `nexssFlow.languageServer.command` and its separate `nexssFlow.languageServer.args` array. Keeping the executable and argument list separate supports paths containing spaces.
+The extension uses `nflow` on `PATH` by default. Set `nexssFlow.nflowCommand` to the executable's path if it is installed elsewhere; alternatively, set `NFLOW_BIN` in the extension's environment. This value is an executable path, not a command plus arguments. A custom compatible stdio LSP can still be set with `nexssFlow.languageServer.command` and its separate `nexssFlow.languageServer.args` array; it must implement `textDocument/formatting` for formatting to work.
 
 ### Zed
 
 Use `nexss-flow-zed.zip` for current Zed versions, or `nexss-flow-zed-legacy-0.230.2.zip` for older Zed 0.230.2. Extract the archive and select the folder containing `extension.toml` in **Install Dev Extension**.
 
-The extension wrapper resolves the bundled `lsp/flow-language-server.js` from the extension directory and uses Zed's Node runtime. To use the LSP formatter on save, set the language formatter to `language_server` and `format_on_save` to `on`; the formatter always uses the same two-space style. The Tree-sitter grammar is a separate repository source: both manifests fetch `https://github.com/nexssp/flow-editor-support` at the configured `main` revision. Consequently, Zed will not see a grammar change made only in a local, unpublished copy; first publish the updated support-repository revision, or use a **local-only** `file://` repository URL while developing. Do not commit a machine-specific `file://` URL. See [Zed's language-extension documentation](https://zed.dev/docs/extensions/languages) and [language settings](https://zed.dev/docs/configuring-languages) for details.
+The extension wrapper resolves the bundled `lsp/flow-language-server.js` from the extension directory and uses Zed's Node runtime. Formatting is delegated to `nflow fmt`; install Flow v0.43.0 or newer on the environment inherited by Zed, or set `NFLOW_BIN` to that executable's path. To format on save, set the language formatter to `language_server` and `format_on_save` to `on`. The Tree-sitter grammar is a separate repository source: both manifests fetch `https://github.com/nexssp/flow-editor-support` at the configured `main` revision. Consequently, Zed will not see a grammar change made only in a local, unpublished copy; first publish the updated support-repository revision, or use a **local-only** `file://` repository URL while developing. Do not commit a machine-specific `file://` URL. See [Zed's language-extension documentation](https://zed.dev/docs/extensions/languages) and [language settings](https://zed.dev/docs/configuring-languages) for details.
 
 Add this to Zed's `settings.json` to enable format-on-save:
 
@@ -55,56 +55,49 @@ Add this to Zed's `settings.json` to enable format-on-save:
 
 Import `notepadpp/flow-udl.xml` through **Language → Define your language → Import**. If needed, associate the `nflow` suffix with the imported language. The profile treats `//` as the portable comment marker and does not color `#` as a comment, since `#` is also used by Flow selectors and expression predicates.
 
-For formatting, install Node.js and the NppExec plugin. Copy `notepadpp/flowfmt.cmd` to `<Notepad++>\plugins\Config\flowfmt.cmd` and the repository's `fmt/` directory to `<Notepad++>\plugins\fmt\`. Then run `notepadpp/nppexec/Format-Flow.npes` from **Plugins → NppExec → Execute...** and optionally assign a shortcut. The command saves, formats, and reopens the current document.
+For formatting, install Flow v0.43.0 or newer and the NppExec plugin. Ensure `nflow` is on `PATH`, or set `NFLOW_BIN` to the full executable path in the environment Notepad++ inherits. Copy `notepadpp/flowfmt.cmd` to `<Notepad++>\plugins\Config\flowfmt.cmd`, then run `notepadpp/nppexec/Format-Flow.npes` from **Plugins → NppExec → Execute...**. The command saves, formats, and reopens the current document; it may be bound to a shortcut.
 
 ### JetBrains IDEs
 
-In **Settings/Preferences → Editor → TextMate Bundles**, add `jetbrains/textmate`. The grammar declares the `nflow` file type; associate `*.nflow` manually if your IDE does not do so automatically. To format a file, configure an External Tool or File Watcher to run:
+In **Settings/Preferences → Editor → TextMate Bundles**, add `jetbrains/textmate`. The grammar declares the `nflow` file type; associate `*.nflow` manually if the IDE does not do so automatically.
+
+For one-off formatting, configure an External Tool with **Program** set to `nflow` (or the full path to the Flow v0.43.0-or-newer executable) and **Arguments** set to:
 
 ```text
-node "<repository>/fmt/cli.js" --write "$FilePath$"
+fmt --write "$FilePath$"
 ```
 
-This is an external formatter, not native JetBrains formatting support.
+For formatting on save, configure the same command as a File Watcher for Flow/`.nflow` files. A direct External Tool launches the executable selected in **Program**; setting `NFLOW_BIN` does not replace that executable path. The TextMate bundle provides coloring only, not native JetBrains formatting support.
 
 ### Claude Code
 
-Install the `claude/` folder as a Claude Code plugin and enable it for the project. The plugin needs Node.js on `PATH`; `.lsp.json` maps `.nflow` files to the bundled server, and `/flowfmt` formats a specified file. The server's hover text is intentionally a placeholder, and its completion list is a small syntax-oriented starter set.
+Install the `claude/` folder as a Claude Code plugin and enable it for the project. The plugin needs Node.js on `PATH` for its LSP. `/flowfmt path/to/file.nflow` uses the bundled adapter, which forwards to Flow core's `nflow fmt` and honors `NFLOW_BIN` (otherwise it uses `nflow` on `PATH`). Install Flow v0.43.0 or newer and verify the version in the environment Claude Code inherits. The server's hover text is intentionally a placeholder, and its completion list is a small syntax-oriented starter set.
 
 ## Formatting
 
-`flowfmt` in `fmt/cli.js` is the canonical Go-fmt-style formatter: one deterministic output, with fixed two-space indentation, shared by the CLI and bundled editor integrations. It can run on save through VS Code and Zed's language-server integrations, be configured as a JetBrains File Watcher, or run from Notepad++'s NppExec command. VS Code's `editor.formatOnSave` setting is shown above; Zed's per-language settings are shown above.
+**`nflow fmt` is the single source of truth.** `fmt/index.js` is only an adapter that sends the document to `nflow fmt --stdin` and returns its output verbatim; `fmt/cli.js` forwards command-line arguments to `nflow fmt`. The LSPs and each editor package use these adapters or invoke the same executable directly. No editor bundle has its own formatter algorithm, spacing rule, indentation rule, or line-wrapping policy.
 
-To put the standalone formatter on your `PATH`, run `npm link` from this package directory; `flowfmt` then works as a local tool, much like `gofmt`. You can also call it through `node fmt/cli.js` without installing it globally.
+The core formatter handles modifier attributes written compactly or with spaces (for example `action:timeout=1s:retry=2` and `action :timeout=1s :retry=2`), indented multiline modifier lists, and readable top-level pipeline continuations. It splits multi-attribute declaration headers into ordered, indented `:attribute` lines where Flow syntax allows; object fields (`key: value`) and whitespace-significant ternary separators (`yes : no`) keep their distinct meanings. Comments, strings, and raw expression text are not reserialized by editor code.
+
+The released command supports `nflow fmt FILE` (formatted output to stdout), `nflow fmt --write FILE` (atomic rewrite), `nflow fmt --check FILE` (check without writing), and `nflow fmt --stdin` (read source from stdin and write formatted source to stdout). Multiple files require `--write` or `--check`; invalid source is not rewritten. The same command can be used in any editor or terminal:
 
 ```bash
-flowfmt --check examples/complete.nflow test/fixtures/current-syntax.nflow
-flowfmt -w examples/complete.nflow
-node fmt/cli.js examples/complete.nflow       # preview to stdout
-node fmt/cli.js --write examples/complete.nflow  # rewrite in place (`-w`)
-node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow
-cat examples/complete.nflow | node fmt/cli.js --stdin
+nflow fmt --check examples/complete.nflow test/fixtures/current-syntax.nflow
+nflow fmt --write examples/complete.nflow
+printf 'source->action\n' | nflow fmt --stdin
 ```
 
-The formatter normalizes operators, inline v0.42 `@assert` expressions, and block indentation; it preserves line endings, UTF-8 BOMs, quoted content, Flow's whitespace-significant ternary separator, and expression predicates. It deliberately has no indentation or line-width overrides, so editors produce the same result. It remains conservative rather than compiler/AST-driven: it does not reorder modifiers, wrap long lines, or validate semantics. The example and syntax fixture cover single-expression, block, and compact-list assertions, plus the runtime `assert(...)` form, argument blocks, schema, control forms, selectors, arrays, and quoted strings. The Tree-sitter grammar is permissive and highlights unknown action names structurally, so new kernel actions do not need a hard-coded list.
-
-## Validate and package
-
-Run the complete local checks:
+The `flowfmt` executable is a compatibility wrapper for `nflow fmt`; it contains no independent rules. `npm run validate` runs adapter/LSP tests, a VS Code API-harness test, Tree-sitter generation and parsing, and cross-editor metadata/copy checks. Set `FLOW_NFLOW_BIN` and `NFLOW_BIN` to a real Flow v0.43.0-or-newer executable when running integration tests so they exercise the actual core rather than only mocks:
 
 ```bash
+FLOW_NFLOW_BIN=/path/to/nflow NFLOW_BIN=/path/to/nflow npm test
 npm run validate
 cargo check --manifest-path zed/Cargo.toml
 cargo check --manifest-path zed-legacy-0.230.2/Cargo.toml
-```
-
-`npm run validate` runs formatter/LSP tests, a mocked VS Code extension-host test, an idempotence check, Tree-sitter generation and parsing, and cross-editor metadata/copy checks. The Cargo commands compile-check both Zed wrappers. The release script repeats validation in an isolated temporary staging area and leaves unrelated files in the selected output directory untouched:
-
-```bash
 bash scripts/package-release.sh dist
 ```
 
-The output includes separate VS Code, current/legacy Zed, Notepad++, Claude Code, and JetBrains packages, plus a complete source archive and `SHA256SUMS`. Native Notepad++, JetBrains, and Claude Code application UIs are not part of the automated test environment; their manifests/assets are structurally validated here.
+The output includes separate VS Code, current/legacy Zed, Notepad++, Claude Code, and JetBrains packages, plus a complete source archive and `SHA256SUMS`. Native editor UI testing requires those editor applications; when they are unavailable, automated checks exercise the VS Code API/provider path, actual LSP/CLI routes, and package wiring without claiming a live application test.
 
 ## License
 

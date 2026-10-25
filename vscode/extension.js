@@ -43,6 +43,7 @@ function activate(context) {
   const configuration = vscode.workspace.getConfiguration('nexssFlow');
   const configured = (configuration.get('languageServer.command') || '').trim();
   const configuredArgs = configuration.get('languageServer.args') || [];
+  const nflowCommand = (configuration.get('nflowCommand') || '').trim();
   const command = configured || process.execPath;
   const args = configured ? configuredArgs : [path.join(context.extensionPath, 'lsp', 'flow-language-server.js')];
   server = cp.spawn(command, args, { cwd: context.extensionPath, stdio: ['pipe', 'pipe', 'pipe'] });
@@ -59,7 +60,12 @@ function activate(context) {
     pending.clear();
     if (server && server.exitCode !== null) server = undefined;
   });
-  send('initialize', { processId: process.pid, rootUri: vscode.workspace.workspaceFolders?.[0]?.uri.toString() || null, capabilities: {} }).catch(console.error);
+  send('initialize', {
+    processId: process.pid,
+    rootUri: vscode.workspace.workspaceFolders?.[0]?.uri.toString() || null,
+    capabilities: {},
+    initializationOptions: { nflowCommand },
+  }).catch(console.error);
 
   const provider = vscode.languages.registerCompletionItemProvider('nexss-flow', {
     async provideCompletionItems(document, position) {

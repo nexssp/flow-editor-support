@@ -33,6 +33,11 @@
     "configuration": {
       "title": "Nexss Flow",
       "properties": {
+        "nexssFlow.nflowCommand": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to the nflow executable that provides `nflow fmt`; leave blank to use NFLOW_BIN or nflow on PATH."
+        },
         "nexssFlow.languageServer.command": {
           "type": "string",
           "default": "",

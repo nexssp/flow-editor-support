@@ -6,10 +6,10 @@ In **Settings/Preferences → Editor → TextMate Bundles → Add**, select the 
 
 ## Formatting
 
-The standalone JetBrains ZIP includes `fmt/cli.js` and `fmt/index.js`; the complete source archive includes the same formatter at its root. Run it as an External Tool or File Watcher:
+Use Flow v0.43.0 or newer and confirm the executable version with `nflow --version`. Configure an External Tool for manual formatting or a File Watcher for formatting on save. Set **Program** to `nflow` when it is on `PATH`, or to the full path of the Flow executable. Set **Arguments** to:
 
 ```text
-node "<standalone-package-or-source-root>/fmt/cli.js" --write "$FilePath$"
+fmt --write "$FilePath$"
 ```
 
-This invokes the shared canonical two-space formatter. The TextMate bundle provides coloring only; native **Reformat Code**, code-style panels, inspections, and PSI-aware refactorings require a dedicated IntelliJ Platform plugin and are not included here.
+For a File Watcher, restrict the watcher to Flow/`.nflow` files. A direct External Tool or File Watcher launches the executable selected in **Program**; setting `NFLOW_BIN` does not replace that path. The tool delegates all formatting to the real `nflow fmt` command and has no bundled formatting algorithm. The TextMate bundle provides coloring only; native **Reformat Code**, code-style panels, inspections, and PSI-aware refactorings require a dedicated IntelliJ Platform plugin and are not included here.

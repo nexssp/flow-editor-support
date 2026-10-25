@@ -2,7 +2,7 @@
   "name": "nexss-flow-tooling",
   "version": "0.1.0",
   "private": true,
-  "description": "Editor tooling and formatter for Nexss Flow",
+  "description": "Nexss Flow editor tooling with adapters to the canonical nflow formatter",
   "license": "Apache-2.0",
   "bin": { "flowfmt": "./fmt/cli.js" },
   "scripts": {

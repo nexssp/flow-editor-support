@@ -46,12 +46,12 @@
   },
   "flow-node": {
     "prefix": "flow-node",
-    "body": ["${1:namespace.node}:timeout=${2:10s}:retry=${3:2}"],
-    "description": "Configured action node"
+    "body": ["${1:namespace.node} :timeout=${2:10s} :retry=${3:2}"],
+    "description": "Action with spaced Flow modifier attributes"
   },
   "flow-pipeline": {
     "prefix": "flow-pipeline",
-    "body": ["@pipeline ${1:name}", "  :timeout=10s", "  ${2:source.node}", "@end"],
+    "body": ["@pipeline ${1:name}", "  :timeout=10s", "  :retry=2", "", "  ${2:source.node}", "@end"],
     "description": "Named reusable pipeline"
   }
 }
