@@ -1,8 +1,12 @@
 // Representative syntax from the current Flow language reference.
-@nflow_version ">=0.43.0"
+@nflow_version ">=0.44.1"
 @description "Editor grammar coverage"
-@require ./local/helpers as helpers {
-  prefix: "DEMO"
+@require retry as helpers {
+  default_max: "2",
+  backoff: "constant",
+  min_backoff: "1ns",
+  max_backoff: "1ns",
+  retry_all: "true"
 }
 @schema Request {
   Name string `json:"name" default:"standard" validate:"required"`

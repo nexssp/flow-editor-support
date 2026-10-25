@@ -1,7 +1,7 @@
 {
   "nexss-flow": {
     "command": "node",
-    "args": ["${CLAUDE_PLUGIN_ROOT}/lsp/flow-language-server.js"],
+    "args": ["${CLAUDE_PLUGIN_ROOT}/lsp/nflow-lsp.js"],
     "extensionToLanguage": {
       ".nflow": "nexss-flow"
     }

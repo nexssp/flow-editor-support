@@ -13,7 +13,7 @@ fi
 # missing/incompatible cores from silently skipping the real-core test suite.
 CORE_ENV="$(bash "$ROOT/scripts/install-flow-core.sh" --check)"
 eval "$CORE_ENV"
-echo "Verified Flow core v0.43.0: $FLOW_NFLOW_BIN" >&2
+echo "Verified Flow core v0.44.1 or newer: $FLOW_NFLOW_BIN" >&2
 
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/nexss-flow-release.XXXXXX")"
 trap 'rm -rf -- "$STAGE"' EXIT
@@ -33,10 +33,10 @@ mkdir -p "$SRC/vscode/lsp" "$SRC/vscode/fmt" \
   "$SRC/zed-legacy-0.230.2/grammars" "$SRC/claude/lsp" "$SRC/claude/fmt" \
   "$SRC/notepadpp/fmt" "$SRC/jetbrains/fmt"
 cp "$SRC/LICENSE" "$SRC/vscode/LICENSE"
-cp "$SRC/lsp/flow-language-server.js" "$SRC/vscode/lsp/flow-language-server.js"
-cp "$SRC/lsp/flow-language-server.js" "$SRC/zed/lsp/flow-language-server.js"
-cp "$SRC/lsp/flow-language-server.js" "$SRC/zed-legacy-0.230.2/lsp/flow-language-server.js"
-cp "$SRC/lsp/flow-language-server.js" "$SRC/claude/lsp/flow-language-server.js"
+cp "$SRC/lsp/nflow-lsp.js" "$SRC/vscode/lsp/nflow-lsp.js"
+cp "$SRC/lsp/nflow-lsp.js" "$SRC/zed/lsp/nflow-lsp.js"
+cp "$SRC/lsp/nflow-lsp.js" "$SRC/zed-legacy-0.230.2/lsp/nflow-lsp.js"
+cp "$SRC/lsp/nflow-lsp.js" "$SRC/claude/lsp/nflow-lsp.js"
 cp "$SRC/fmt/index.js" "$SRC/vscode/fmt/index.js"
 cp "$SRC/fmt/index.js" "$SRC/zed/fmt/index.js"
 cp "$SRC/fmt/index.js" "$SRC/zed-legacy-0.230.2/fmt/index.js"
@@ -55,7 +55,7 @@ chmod +x "$SRC/zed/lsp/nexss-flow-language-server" "$SRC/zed-legacy-0.230.2/lsp/
   "$SRC/scripts/package-release.sh" "$SRC/scripts/check-grammar.sh" "$SRC/scripts/install-flow-core.sh"
 
 (cd "$SRC" && python3 scripts/validate.py)
-(cd "$SRC" && node --test fmt/test/*.test.js vscode/test/*.test.js)
+(cd "$SRC" && node --test fmt/test/*.test.js vscode/test/*.test.js test/nflow-lsp.test.js)
 (cd "$SRC" && node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow)
 (cd "$SRC" && bash scripts/check-grammar.sh)
 
@@ -69,7 +69,8 @@ if ! command -v npx >/dev/null 2>&1; then
   echo "npx is required to build the VS Code VSIX" >&2
   exit 1
 fi
-(cd "$SRC/vscode" && npx --yes @vscode/vsce package --out "$STAGE/nexss-flow-vscode.vsix" --no-dependencies)
+(cd "$SRC/vscode" && npm ci --omit=dev --no-audit --no-fund)
+(cd "$SRC/vscode" && npx --yes @vscode/vsce package --out "$STAGE/nexss-flow-vscode.vsix")
 
 if command -v sha256sum >/dev/null 2>&1; then
   (cd "$STAGE" && sha256sum nexss-flow*.zip nexss-flow*.vsix > SHA256SUMS)

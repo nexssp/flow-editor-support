@@ -1,6 +1,6 @@
-# LSP stub metadata for local development and extension wiring.
+# Language-server metadata for local development and extension wiring.
 # The canonical published-extension declaration is in ../extension.toml.
-# The executable is intentionally dependency-free and speaks JSON-RPC over stdio.
+# The launcher checks Flow core compatibility and starts native `nflow lsp`.
 name = "nexss-flow-language-server"
 command = "lsp/nexss-flow-language-server"
 

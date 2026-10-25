@@ -57,12 +57,12 @@
   "Single-expression assertion": {
     "prefix": "flow-assert-expression",
     "body": ["@assert: ${1:result.ok == true}"],
-    "description": "Flow v0.42.0 post-run assertion"
+    "description": "Single-expression post-run assertion"
   },
   "Compact inline assertion list": {
     "prefix": "flow-assert-inline",
     "body": ["@assert: { ${1:result.ok == true}, ${2:result.count > 0} }"],
-    "description": "Flow v0.42.0 comma-separated assertions"
+    "description": "Compact list of post-run assertions"
   },
   "Runtime assertion expression": {
     "prefix": "flow-assert-call",

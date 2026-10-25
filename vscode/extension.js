@@ -1,150 +1,45 @@
+'use strict';
+
+const fs = require('node:fs');
+const path = require('node:path');
 const vscode = require('vscode');
-const cp = require('child_process');
-const path = require('path');
+const { LanguageClient } = require('vscode-languageclient/node');
 
-let server;
-let nextId = 1;
-let pending = new Map();
-let buffer = Buffer.alloc(0);
+let client;
 
-function send(method, params) {
-  return new Promise((resolve, reject) => {
-    const id = nextId++;
-    pending.set(id, { resolve, reject });
-    const body = JSON.stringify({ jsonrpc: '2.0', id, method, params });
-    server.stdin.write(`Content-Length: ${Buffer.byteLength(body, 'utf8')}\r\n\r\n${body}`);
-  });
-}
-function notify(method, params) {
-  const body = JSON.stringify({ jsonrpc: '2.0', method, params });
-  server.stdin.write(`Content-Length: ${Buffer.byteLength(body, 'utf8')}\r\n\r\n${body}`);
-}
-function consume() {
-  while (true) {
-    const separator = buffer.indexOf(Buffer.from('\r\n\r\n'));
-    if (separator < 0) return;
-    const header = buffer.slice(0, separator).toString('ascii');
-    const match = header.match(/Content-Length:\s*(\d+)/i);
-    if (!match) { buffer = buffer.slice(separator + 4); continue; }
-    const length = Number(match[1]);
-    const start = separator + 4;
-    if (buffer.length < start + length) return;
-    const message = JSON.parse(buffer.slice(start, start + length).toString('utf8'));
-    buffer = buffer.slice(start + length);
-    if (message.id && pending.has(message.id)) {
-      const request = pending.get(message.id);
-      pending.delete(message.id);
-      if (message.error) request.reject(new Error(message.error.message));
-      else request.resolve(message.result);
-    }
-  }
-}
-function activate(context) {
+async function activate(context) {
   const configuration = vscode.workspace.getConfiguration('nexssFlow');
-  const configured = (configuration.get('languageServer.command') || '').trim();
+  const configuredServer = (configuration.get('languageServer.command') || '').trim();
   const configuredArgs = configuration.get('languageServer.args') || [];
   const nflowCommand = (configuration.get('nflowCommand') || '').trim();
-  const command = configured || process.execPath;
-  const args = configured ? configuredArgs : [path.join(context.extensionPath, 'lsp', 'flow-language-server.js')];
-  server = cp.spawn(command, args, { cwd: context.extensionPath, stdio: ['pipe', 'pipe', 'pipe'] });
-  server.stdout.on('data', chunk => { buffer = Buffer.concat([buffer, chunk]); consume(); });
-  server.stderr.on('data', chunk => console.error(`[nexss-flow-lsp] ${chunk}`));
-  server.on('error', error => {
-    for (const { reject } of pending.values()) reject(error);
-    pending.clear();
-    vscode.window.showErrorMessage(`Nexss Flow language server: ${error.message}`);
-  });
-  server.on('exit', (code, signal) => {
-    const error = new Error(`Nexss Flow LSP exited (${code ?? 'null'}${signal ? `, ${signal}` : ''})`);
-    for (const { reject } of pending.values()) reject(error);
-    pending.clear();
-    if (server && server.exitCode !== null) server = undefined;
-  });
-  send('initialize', {
-    processId: process.pid,
-    rootUri: vscode.workspace.workspaceFolders?.[0]?.uri.toString() || null,
-    capabilities: {},
-    initializationOptions: { nflowCommand },
-  }).catch(console.error);
+  const env = { ...process.env };
+  if (nflowCommand) env.NFLOW_BIN = nflowCommand;
 
-  const provider = vscode.languages.registerCompletionItemProvider('nexss-flow', {
-    async provideCompletionItems(document, position, _token, context) {
-      try {
-        const result = await send('textDocument/completion', {
-          textDocument: { uri: document.uri.toString() },
-          position: { line: position.line, character: position.character },
-          context: context ? {
-            triggerKind: context.triggerKind,
-            triggerCharacter: context.triggerCharacter
-          } : undefined,
-        });
-        return (result?.items || []).map(item => {
-          const kind = item.kind === 15 ? vscode.CompletionItemKind.Snippet : vscode.CompletionItemKind.Keyword;
-          const completion = new vscode.CompletionItem(item.label, kind);
-          completion.detail = item.detail;
-          const text = item.textEdit?.newText || item.insertText || item.label;
-          completion.insertText = item.insertTextFormat === 2 ? new vscode.SnippetString(text) : text;
-          const range = item.textEdit?.range;
-          if (range) completion.range = new vscode.Range(
-            range.start.line, range.start.character, range.end.line, range.end.character
-          );
-          return completion;
-        });
-      } catch (_) { return []; }
-    }
-  }, '@', ':', '.', ' ', '-', '|', '&', '?', '{');
-  context.subscriptions.push(provider);
-  const hover = vscode.languages.registerHoverProvider('nexss-flow', {
-    async provideHover(document, position) {
-      try {
-        const result = await send('textDocument/hover', {
-          textDocument: { uri: document.uri.toString() },
-          position: { line: position.line, character: position.character }
-        });
-        if (!result?.contents) return undefined;
-        const value = typeof result.contents === 'string' ? result.contents : result.contents.value;
-        return new vscode.Hover(new vscode.MarkdownString(value));
-      } catch (_) { return undefined; }
-    }
-  });
-  context.subscriptions.push(hover);
-  const formatter = vscode.languages.registerDocumentFormattingEditProvider('nexss-flow', {
-    async provideDocumentFormattingEdits(document) {
-      try {
-        notify('textDocument/didOpen', {
-          textDocument: { uri: document.uri.toString(), languageId: 'nexss-flow', version: 1, text: document.getText() }
-        });
-        const activeEditor = vscode.window.activeTextEditor;
-        const editor = activeEditor?.document === document ? activeEditor : undefined;
-        const result = await send('textDocument/formatting', {
-          textDocument: { uri: document.uri.toString() },
-          options: {
-            tabSize: editor?.options.tabSize || 2,
-            insertSpaces: editor?.options.insertSpaces !== false,
-          }
-        });
-        return (result || []).map(edit => new vscode.TextEdit(
-          new vscode.Range(edit.range.start.line, edit.range.start.character, edit.range.end.line, edit.range.end.character),
-          edit.newText
-        ));
-      } catch (error) {
-        vscode.window.showErrorMessage(`Flowfmt: ${error.message}`);
-        return [];
-      }
-    }
-  });
-  context.subscriptions.push(formatter);
+  let serverOptions;
+  if (configuredServer) {
+    serverOptions = { command: configuredServer, args: configuredArgs, options: { env } };
+  } else {
+    const packagedLauncher = path.join(context.extensionPath, 'lsp', 'nflow-lsp.js');
+    const sourceLauncher = path.resolve(context.extensionPath, '..', 'lsp', 'nflow-lsp.js');
+    const launcher = fs.existsSync(packagedLauncher) ? packagedLauncher : sourceLauncher;
+    serverOptions = { command: process.execPath, args: [launcher], options: { env } };
+  }
+
+  client = new LanguageClient(
+    'nexss-flow',
+    'Nexss Flow',
+    serverOptions,
+    { documentSelector: [{ scheme: 'file', language: 'nexss-flow' }] },
+  );
+  context.subscriptions.push(client);
+  await client.start();
 }
+
 async function deactivate() {
-  if (!server) return undefined;
-  const child = server;
-  try {
-    await Promise.race([
-      send('shutdown', {}),
-      new Promise(resolve => setTimeout(resolve, 500))
-    ]);
-  } catch (_) { /* best effort */ }
-  child.kill();
-  server = undefined;
+  if (!client) return;
+  const activeClient = client;
+  client = undefined;
+  await activeClient.stop();
 }
+
 module.exports = { activate, deactivate };

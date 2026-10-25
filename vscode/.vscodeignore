@@ -1,5 +1,4 @@
 *.vsix
 .vscodeignore
-node_modules/
 *.log
 test/

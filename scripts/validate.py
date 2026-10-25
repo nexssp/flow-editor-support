@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dependency-free consistency checks for every Nexss Flow editor integration."""
+"""Consistency and architecture checks for Nexss Flow editor integrations."""
 from pathlib import Path
 import json
 import tomllib
@@ -10,50 +10,62 @@ required = [
     'README.md', 'LICENSE', 'package.json', 'package-lock.json', 'grammar.js', 'src/parser.c', 'src/node-types.json',
     'assets/nexss-logo.png', 'examples/complete.nflow', 'test/fixtures/current-syntax.nflow',
     'test/fixtures/template-render-input.nflow', 'test/fixtures/template-render-expected.nflow',
-    'test/fixtures/template-render-contexts.nflow', 'test/template-textmate.test.js',
-    'fmt/index.js', 'fmt/cli.js', 'fmt/test/helpers.js', 'fmt/test/formatter.test.js', 'fmt/test/lsp.test.js',
+    'test/fixtures/template-render-contexts.nflow', 'test/template-textmate.test.js', 'test/nflow-lsp.test.js',
+    'fmt/index.js', 'fmt/cli.js', 'fmt/test/helpers.js', 'fmt/test/formatter.test.js',
+    'fmt/test/core-integration.test.js', 'fmt/test/real-core-lsp.test.js', 'fmt/test/template-render-core.test.js',
     'fmt/test/fixtures/pipeline.nflow', 'fmt/test/fixtures/pipeline.expected.nflow',
-    'fmt/test/core-integration.test.js', 'fmt/test/template-render-core.test.js',
-    'lsp/flow-language-server.js', 'scripts/validate.py', 'scripts/check-grammar.sh', 'scripts/package-release.sh',
-    'scripts/install-flow-core.sh',
+    'lsp/nflow-lsp.js', 'lsp/nexss-flow-language-server', 'scripts/validate.py', 'scripts/check-grammar.sh',
+    'scripts/package-release.sh', 'scripts/install-flow-core.sh',
     'zed/extension.toml', 'zed/grammars/flow.js', 'zed/languages/flow/config.toml',
-    'zed/languages/flow/highlights.scm', 'zed/languages/flow/brackets.scm',
-    'zed/lsp/flow-language-server.js', 'zed/fmt/index.js', 'zed/logo.png', 'zed/Cargo.toml', 'zed/src/flow_extension.rs',
+    'zed/languages/flow/highlights.scm', 'zed/languages/flow/brackets.scm', 'zed/lsp/nflow-lsp.js',
+    'zed/lsp/nexss-flow-language-server', 'zed/language-servers/nexss-flow-language-server.toml',
+    'zed/fmt/index.js', 'zed/logo.png', 'zed/Cargo.toml', 'zed/src/flow_extension.rs',
     'zed-legacy-0.230.2/extension.toml', 'zed-legacy-0.230.2/languages/flow/config.toml',
     'zed-legacy-0.230.2/languages/flow/highlights.scm', 'zed-legacy-0.230.2/languages/flow/brackets.scm',
     'zed-legacy-0.230.2/grammar.js', 'zed-legacy-0.230.2/grammars/flow.js',
-    'zed-legacy-0.230.2/lsp/flow-language-server.js', 'zed-legacy-0.230.2/fmt/index.js',
-    'zed-legacy-0.230.2/logo.png', 'zed-legacy-0.230.2/Cargo.toml', 'zed-legacy-0.230.2/src/flow_extension.rs',
-    'vscode/package.json', 'vscode/icon.png', 'vscode/extension.js', 'vscode/.vscodeignore',
-    'vscode/lsp/flow-language-server.js', 'vscode/fmt/index.js', 'vscode/language-configuration.json',
-    'vscode/syntaxes/flow.tmLanguage.json', 'vscode/snippets/flow.code-snippets',
-    'vscode/test/extension.test.js', 'vscode/test/real-core.test.js',
-    '.zed/snippets/nexss-flow.json',
-    'notepadpp/flow-udl.xml', 'notepadpp/README.md', 'notepadpp/nexss-logo.png',
-    'notepadpp/fmt/cli.js', 'notepadpp/fmt/index.js',
-    'notepadpp/flowfmt.cmd', 'notepadpp/nppexec/Format-Flow.npes',
-    'claude/.claude-plugin/plugin.json', 'claude/.lsp.json', 'claude/commands/flowfmt.md',
-    'claude/lsp/flow-language-server.js', 'claude/fmt/index.js', 'claude/fmt/cli.js', 'claude/README.md',
-    'jetbrains/textmate/nexss-flow.tmLanguage.json', 'jetbrains/README.md',
-    'jetbrains/fmt/cli.js', 'jetbrains/fmt/index.js',
-    '.github/workflows/release.yml',
+    'zed-legacy-0.230.2/lsp/nflow-lsp.js', 'zed-legacy-0.230.2/lsp/nexss-flow-language-server',
+    'zed-legacy-0.230.2/language-servers/nexss-flow-language-server.toml',
+    'zed-legacy-0.230.2/fmt/index.js', 'zed-legacy-0.230.2/logo.png',
+    'zed-legacy-0.230.2/Cargo.toml', 'zed-legacy-0.230.2/src/flow_extension.rs',
+    'vscode/package.json', 'vscode/package-lock.json', 'vscode/icon.png', 'vscode/extension.js',
+    'vscode/.vscodeignore', 'vscode/lsp/nflow-lsp.js', 'vscode/fmt/index.js',
+    'vscode/language-configuration.json', 'vscode/syntaxes/flow.tmLanguage.json',
+    'vscode/snippets/flow.code-snippets', 'vscode/test/extension.test.js', 'vscode/test/real-core.test.js',
+    '.zed/snippets/nexss-flow.json', 'notepadpp/flow-udl.xml', 'notepadpp/README.md', 'notepadpp/nexss-logo.png',
+    'notepadpp/fmt/cli.js', 'notepadpp/fmt/index.js', 'notepadpp/flowfmt.cmd',
+    'notepadpp/nppexec/Format-Flow.npes', 'claude/.claude-plugin/plugin.json', 'claude/.lsp.json',
+    'claude/commands/flowfmt.md', 'claude/lsp/nflow-lsp.js', 'claude/fmt/index.js', 'claude/fmt/cli.js',
+    'claude/README.md', 'jetbrains/textmate/nexss-flow.tmLanguage.json', 'jetbrains/README.md',
+    'jetbrains/fmt/cli.js', 'jetbrains/fmt/index.js', '.github/workflows/release.yml',
 ]
 for rel in required:
     path = ROOT / rel
     assert path.is_file() and path.stat().st_size > 0, f'missing or empty: {rel}'
 
-# Parse structured metadata, including snippets and generated Tree-sitter node metadata.
+removed = [
+    'lsp/flow-language-server.js', 'vscode/lsp/flow-language-server.js', 'zed/lsp/flow-language-server.js',
+    'zed-legacy-0.230.2/lsp/flow-language-server.js', 'claude/lsp/flow-language-server.js',
+    'fmt/test/lsp.test.js',
+]
+for rel in removed:
+    assert not (ROOT / rel).exists(), f'obsolete bridge/test must be removed: {rel}'
+
 for path in ROOT.rglob('*.json'):
     if 'target' in path.parts or 'node_modules' in path.parts:
         continue
     json.loads(path.read_text(encoding='utf-8'))
-for rel in ['zed/extension.toml', 'zed/languages/flow/config.toml',
-            'zed-legacy-0.230.2/extension.toml', 'zed-legacy-0.230.2/languages/flow/config.toml',
-            'zed/Cargo.toml', 'zed-legacy-0.230.2/Cargo.toml']:
+for rel in [
+    'zed/extension.toml', 'zed/languages/flow/config.toml',
+    'zed-legacy-0.230.2/extension.toml', 'zed-legacy-0.230.2/languages/flow/config.toml',
+    'zed/Cargo.toml', 'zed-legacy-0.230.2/Cargo.toml',
+    'zed/language-servers/nexss-flow-language-server.toml',
+    'zed-legacy-0.230.2/language-servers/nexss-flow-language-server.toml',
+]:
     tomllib.loads((ROOT / rel).read_text(encoding='utf-8'))
 ET.parse(ROOT / 'notepadpp/flow-udl.xml')
 
 vscode = json.loads((ROOT / 'vscode/package.json').read_text())
+vscode_lock = json.loads((ROOT / 'vscode/package-lock.json').read_text())
 claude_plugin = json.loads((ROOT / 'claude/.claude-plugin/plugin.json').read_text())
 claude_lsp = json.loads((ROOT / 'claude/.lsp.json').read_text())
 tm = json.loads((ROOT / 'vscode/syntaxes/flow.tmLanguage.json').read_text())
@@ -61,13 +73,19 @@ jetbrains_tm = json.loads((ROOT / 'jetbrains/textmate/nexss-flow.tmLanguage.json
 vscode_snippets = json.loads((ROOT / 'vscode/snippets/flow.code-snippets').read_text())
 zed_snippets = json.loads((ROOT / '.zed/snippets/nexss-flow.json').read_text())
 assert vscode['main'] == './extension.js' and vscode['publisher'] == 'nexssp'
+assert vscode['engines']['vscode'] == '>=1.82.0'
+assert vscode['dependencies']['vscode-languageclient'] == '9.0.1'
+assert vscode_lock['packages']['node_modules/vscode-languageclient']['version'] == '9.0.1'
 assert vscode['contributes']['languages'][0]['extensions'] == ['.nflow']
 assert vscode['contributes']['languages'][0]['id'] == 'nexss-flow'
 assert vscode['contributes']['grammars'][0]['scopeName'] == 'source.nflow'
 properties = vscode['contributes']['configuration']['properties']
-assert properties['nexssFlow.languageServer.command']['default'] == ''
 assert properties['nexssFlow.nflowCommand']['default'] == ''
+assert 'v0.44.1 or newer' in properties['nexssFlow.nflowCommand']['description']
+assert properties['nexssFlow.languageServer.command']['default'] == ''
+assert 'bypasses the core version check' in properties['nexssFlow.languageServer.command']['description']
 assert 'nexssFlow.languageServer.args' in properties
+assert 'node_modules/' not in (ROOT / 'vscode/.vscodeignore').read_text()
 assert tm['scopeName'] == 'source.nflow' and tm['fileTypes'] == ['nflow']
 for grammar_rule in ['templateRender', 'templateRenderStringDouble', 'goTemplate']:
     assert grammar_rule in tm['repository'], f'TextMate grammar lacks {grammar_rule}'
@@ -78,6 +96,8 @@ for scope in ['keyword.control.go-template', 'variable.other.go-template',
 assert jetbrains_tm == tm, 'JetBrains TextMate grammar must match the VS Code source grammar'
 assert claude_plugin['name'] == 'nexss-flow'
 assert claude_lsp['nexss-flow']['extensionToLanguage'] == {'.nflow': 'nexss-flow'}
+assert claude_lsp['nexss-flow']['command'] == 'node'
+assert claude_lsp['nexss-flow']['args'] == ['${CLAUDE_PLUGIN_ROOT}/lsp/nflow-lsp.js']
 required_assert_snippets = {'flow-assert-expression', 'flow-assert-inline', 'flow-assert-call'}
 assert required_assert_snippets <= {snippet['prefix'] for snippet in vscode_snippets.values()}
 assert required_assert_snippets <= set(zed_snippets)
@@ -101,6 +121,11 @@ for rel in ['zed/extension.toml', 'zed-legacy-0.230.2/extension.toml']:
     assert manifest['grammars']['flow']['repository'] == 'https://github.com/nexssp/flow-editor-support'
     assert manifest['grammars']['flow']['rev'] == 'main'
     assert manifest['language_servers']['nexss-flow-language-server']['languages'] == ['Nexss Flow']
+for rel in ['zed/language-servers/nexss-flow-language-server.toml',
+            'zed-legacy-0.230.2/language-servers/nexss-flow-language-server.toml']:
+    metadata = tomllib.loads((ROOT / rel).read_text())
+    assert metadata['name'] == 'nexss-flow-language-server'
+    assert 'nflow-lsp' in metadata['command'] or metadata['command'].endswith('nexss-flow-language-server')
 
 udl = ET.parse(ROOT / 'notepadpp/flow-udl.xml').getroot()
 user_lang = udl.find('UserLang')
@@ -113,19 +138,29 @@ cmd = (ROOT / 'notepadpp/flowfmt.cmd').read_text()
 assert 'fmt --write' in cmd and 'NFLOW_BIN' in cmd and 'fmt\\cli.js' not in cmd
 claude_command = (ROOT / 'claude/commands/flowfmt.md').read_text()
 assert 'fmt/cli.js" --write' in claude_command and 'NFLOW_BIN' in claude_command
+assert 'v0.44.1 or newer' in claude_command
 assert 'File Watcher' in (ROOT / 'jetbrains/README.md').read_text()
 assert 'fmt --write' in (ROOT / 'jetbrains/README.md').read_text()
+assert 'nflow lint' in (ROOT / 'jetbrains/README.md').read_text()
 assert 'nflow fmt' in (ROOT / 'notepadpp/README.md').read_text()
+assert 'nflow lint' in (ROOT / 'notepadpp/README.md').read_text()
 
-# Bundles may repeat bridge code, but never an independent formatting algorithm.
-lsp_source = (ROOT / 'lsp/flow-language-server.js').read_bytes()
-for rel in ['vscode/lsp/flow-language-server.js', 'zed/lsp/flow-language-server.js',
-            'zed-legacy-0.230.2/lsp/flow-language-server.js', 'claude/lsp/flow-language-server.js']:
-    assert (ROOT / rel).read_bytes() == lsp_source, f'stale LSP copy: {rel}'
-adapter = (ROOT / 'fmt/index.js').read_bytes()
+# A launcher may be copied into installable editor bundles, but it must stay a
+# byte-identical, protocol-transparent wrapper around Flow core's native LSP.
+launcher = (ROOT / 'lsp/nflow-lsp.js').read_bytes()
+for rel in ['vscode/lsp/nflow-lsp.js', 'zed/lsp/nflow-lsp.js',
+            'zed-legacy-0.230.2/lsp/nflow-lsp.js', 'claude/lsp/nflow-lsp.js']:
+    assert (ROOT / rel).read_bytes() == launcher, f'stale native LSP launcher copy: {rel}'
+source = launcher.decode('utf-8')
+for token in ['MINIMUM_VERSION = [0, 44, 1]', "['lsp']", "['--version']", 'stdio: \'inherit\'', 'NFLOW_BIN']:
+    assert token in source, f'native launcher lacks {token}'
+for token in ['textDocument/', 'publishDiagnostics', 'JSON.stringify', 'formatter', 'completionItems']:
+    assert token not in source, f'launcher must not implement LSP features: {token}'
+
+fmt_adapter = (ROOT / 'fmt/index.js').read_bytes()
 for rel in ['vscode/fmt/index.js', 'zed/fmt/index.js', 'zed-legacy-0.230.2/fmt/index.js',
             'claude/fmt/index.js', 'notepadpp/fmt/index.js', 'jetbrains/fmt/index.js']:
-    assert (ROOT / rel).read_bytes() == adapter, f'stale nflow adapter copy: {rel}'
+    assert (ROOT / rel).read_bytes() == fmt_adapter, f'stale nflow formatter adapter copy: {rel}'
 assert (ROOT / 'claude/fmt/cli.js').read_bytes() == (ROOT / 'fmt/cli.js').read_bytes()
 for editor in ['notepadpp', 'jetbrains']:
     assert (ROOT / f'{editor}/fmt/cli.js').read_bytes() == (ROOT / 'fmt/cli.js').read_bytes()
@@ -135,26 +170,21 @@ assert (ROOT / 'zed/src/flow_extension.rs').read_bytes() == (ROOT / 'zed-legacy-
 for rel in ['zed-legacy-0.230.2/languages/flow/highlights.scm', 'zed-legacy-0.230.2/languages/flow/brackets.scm']:
     counterpart = rel.replace('zed-legacy-0.230.2/', 'zed/')
     assert (ROOT / rel).read_bytes() == (ROOT / counterpart).read_bytes(), f'stale Zed query: {rel}'
+for rel in ['zed/src/flow_extension.rs', 'zed-legacy-0.230.2/src/flow_extension.rs']:
+    rust = (ROOT / rel).read_text()
+    assert 'join("lsp").join("nflow-lsp.js")' in rust
+    assert 'zed::node_binary_path()' in rust and 'worktree.shell_env()' in rust
+for rel in ['lsp/nexss-flow-language-server', 'zed/lsp/nexss-flow-language-server',
+            'zed-legacy-0.230.2/lsp/nexss-flow-language-server']:
+    assert 'nflow-lsp.js' in (ROOT / rel).read_text()
 
 extension = (ROOT / 'vscode/extension.js').read_text()
-assert "require('vscode')" in extension
-assert 'registerCompletionItemProvider' in extension and 'registerHoverProvider' in extension
-assert 'registerDocumentFormattingEditProvider' in extension
-assert "configured.split(/\\s+/)" not in extension
-assert "server.on('error'" in extension
-assert 'languageServer.args' in extension and 'initializationOptions: { nflowCommand }' in extension
-zed_rust = (ROOT / 'zed/src/flow_extension.rs').read_text()
-assert 'env::current_dir()' in zed_rust and 'join("lsp")' in zed_rust
-assert 'zed::node_binary_path()' in zed_rust and 'worktree.shell_env()' in zed_rust
-assert 'server_path.to_string_lossy()' in zed_rust
-
-lsp = (ROOT / 'lsp/flow-language-server.js').read_text()
-for token in ['initialize', 'textDocument/completion', 'textDocument/hover', 'textDocument/formatting',
-              'textDocument/didOpen', 'Content-Length', 'UTF-16', 'flow-assert-expression',
-              'flow-assert-inline', 'flow-assert-call', "format(text, { command: nflowCommand })"]:
-    assert token in lsp, f'LSP bridge lacks {token}'
-assert 'documentFormattingProvider' in lsp and 'insertTextFormat: 2' in lsp
-assert 'nflow fmt' in lsp and 'normalizeCode' not in lsp
+assert "require('vscode')" in extension and "require('vscode-languageclient/node')" in extension
+assert 'new LanguageClient(' in extension and 'client.start()' in extension and 'activeClient.stop()' in extension
+assert "languageServer.command" in extension and "languageServer.args" in extension
+assert 'NFLOW_BIN = nflowCommand' in extension
+for old_provider in ['registerCompletionItemProvider', 'registerHoverProvider', 'registerDocumentFormattingEditProvider']:
+    assert old_provider not in extension, f'VS Code must use core LSP, not local provider {old_provider}'
 
 fmt = (ROOT / 'fmt/index.js').read_text()
 assert "spawnSync(executable, ['fmt', ...args]" in fmt
@@ -164,11 +194,6 @@ for old_rule in ['ternaryColonOffsets', 'normalizeCode', 'normalizeAssertDirecti
 cli = (ROOT / 'fmt/cli.js').read_text()
 assert "spawnSync(executable, ['fmt', ...process.argv.slice(2)]" in cli and "stdio: 'inherit'" in cli
 assert json.loads((ROOT / 'package.json').read_text())['bin']['flowfmt'] == './fmt/cli.js'
-assert 'test/fixtures/current-syntax.nflow' in json.loads((ROOT / 'package.json').read_text())['scripts']['format:check']
-package = json.loads((ROOT / 'package.json').read_text())
-assert 'test/fixtures/template-render-expected.nflow' in package['scripts']['format:check']
-assert package['devDependencies']['vscode-textmate'] == '9.3.2'
-assert package['devDependencies']['vscode-oniguruma'] == '2.0.1'
 
 highlights = (ROOT / 'zed/languages/flow/highlights.scm').read_text()
 for token in ['@operator', '@function', '@property', '@keyword.control', '@string', '@number', '(array "["']:
@@ -191,24 +216,27 @@ release = (ROOT / 'scripts/package-release.sh').read_text()
 assert 'mktemp -d' in release and 'Refusing to use an unsafe release output directory' in release
 assert 'rm -rf -- "$STAGE"' in release and 'rm -rf -- "$OUT_DIR"' not in release
 assert 'nexss-flow-claude-code.zip' in release and 'nexss-flow-jetbrains.zip' in release
-assert 'install-flow-core.sh" --check' in release, 'release packaging must reject missing/incompatible Flow core before staging'
+assert 'install-flow-core.sh" --check' in release
+assert 'lsp/nflow-lsp.js' in release and 'vscode/lsp/nflow-lsp.js' in release
+assert 'npm ci --omit=dev' in release and '--no-dependencies' not in release
 workflow = (ROOT / '.github/workflows/release.yml').read_text()
 assert 'package-release.sh' in workflow and 'softprops/action-gh-release' in workflow
-assert 'run: npm ci' in workflow, 'validation CI must install TextMate test dependencies'
-assert workflow.count('install-flow-core.sh install') == 2, 'both isolated release jobs must install the same verified Flow core'
+assert 'run: npm ci' in workflow
+assert workflow.count('install-flow-core.sh install') == 2
+assert 'nflow-v0.44.1' in workflow and 'node --check lsp/nflow-lsp.js' in workflow
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
-assert 'VERSION=0.43.0' in core_installer and 'EXPECTED_MANIFEST_SHA256=' in core_installer
+assert 'VERSION=0.44.1' in core_installer and 'MINIMUM_VERSION=0.44.1' in core_installer
+assert 'EXPECTED_MANIFEST_SHA256=' in core_installer
+for variable in ['NFLOW_BIN', 'FLOW_NFLOW_BIN', 'FLOW_NFLOW_LSP_BIN']:
+    assert f'printf \'{variable}=%s\\n\'' in core_installer
 
 readme = (ROOT / 'README.md').read_text()
 for editor in ['VS Code', 'Zed', 'Notepad++', 'JetBrains', 'Claude Code']:
     assert editor in readme, f'root README lacks {editor} integration documentation'
-assert 'single source of truth' in readme and 'nflow fmt' in readme and 'multiline modifier lists' in readme
-assert 'Flow v0.43.0' in readme and 'first released core version with the built-in formatter' in readme
-assert 'nflow fmt --stdin' in readme and 'atomic rewrite' in readme
-assert 'compatible Flow core build that includes `nflow fmt`' in readme
-for token in ['nflow --version', 'editor.formatOnSave', 'format_on_save', 'NFLOW_BIN', 'File Watcher', '/flowfmt']:
-    assert token in readme, f'root README lacks formatter setup guidance: {token}'
-assert 'stock Flow v0.42.0 does not yet include that command' not in readme
+for token in ['nflow lsp', 'nflow lint', 'nflow fmt', 'v0.44.1 or newer', 'NFLOW_BIN',
+              'editor.formatOnSave', 'format_on_save', 'File Watcher', '/flowfmt',
+              'Invalid source is rejected', 'external `@require` bundles']:
+    assert token in readme, f'root README lacks {token}'
+assert 'v0.43.0' not in readme and 'Flow v0.43.0' not in readme
 assert 'Go templates in `template.render`' in readme
-assert 'ordinary object values, and nested `template:` fields remain ordinary Flow strings' in readme
-print(f'validated {len(required)} required files; nflow routing, editor snippets/configs, grammar/LSP copies, and package safety=OK')
+print(f'validated {len(required)} required files; core-native LSP routing, v0.44.1+ selection, editor fallbacks, and package safety=OK')

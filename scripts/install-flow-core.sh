@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION=0.43.0
+VERSION=0.44.1
+MINIMUM_VERSION=0.44.1
 ASSET="nflow_${VERSION}_linux_amd64.tar.gz"
 MANIFEST="nflow_${VERSION}_checksums.txt"
 RELEASE_URL="https://github.com/nexssp/flow/releases/download/v${VERSION}"
-EXPECTED_MANIFEST_SHA256=f47beb4d3ff10df96183e6ea5c89ff175be5bb32d324391d8ffb8dcfccbc15fe
+EXPECTED_MANIFEST_SHA256=c71bf0dc894abeee1a48b3fc9f57777ce1ced5b3def50a9f6d9704e20797eaae
 
 usage() {
   echo "Usage: $0 [install [INSTALL_DIR] | --check]" >&2
@@ -22,10 +23,10 @@ resolve_binary() {
 
 verify_binary() {
   local candidate="$1"
-  local resolved version_output
+  local resolved version_output version_match actual_major actual_minor actual_patch
   if ! resolved="$(resolve_binary "$candidate")" || [[ ! -x "$resolved" ]]; then
-    echo "Flow core v${VERSION} is required, but the configured nflow executable is missing or not executable: $candidate" >&2
-    echo "Install it with 'bash scripts/install-flow-core.sh install' or set NFLOW_BIN to a verified v${VERSION} executable." >&2
+    echo "Flow core v${MINIMUM_VERSION} or newer is required, but the configured nflow executable is missing or not executable: $candidate" >&2
+    echo "Install it with 'bash scripts/install-flow-core.sh install' or set NFLOW_BIN to a verified Flow executable." >&2
     return 1
   fi
   if ! version_output="$("$resolved" --version 2>&1)"; then
@@ -33,9 +34,17 @@ verify_binary() {
     printf '%s\n' "$version_output" >&2
     return 1
   fi
-  if ! grep -Eq "version:[[:space:]]+v${VERSION}([[:space:]]|$)" <<< "$version_output"; then
-    echo "Expected Flow core v${VERSION}, but '$resolved --version' reported:" >&2
+  if [[ ! "$version_output" =~ version:[[:space:]]+v?([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+    echo "Could not read the Flow version from '$resolved --version':" >&2
     printf '%s\n' "$version_output" >&2
+    return 1
+  fi
+  version_match="${BASH_REMATCH[0]}"
+  actual_major="${BASH_REMATCH[1]}"
+  actual_minor="${BASH_REMATCH[2]}"
+  actual_patch="${BASH_REMATCH[3]}"
+  if (( actual_major < 0 || (actual_major == 0 && actual_minor < 44) || (actual_major == 0 && actual_minor == 44 && actual_patch < 1) )); then
+    echo "Flow core v${MINIMUM_VERSION} or newer is required, but '$resolved --version' reported ${version_match#*version: }." >&2
     return 1
   fi
   printf '%s\n' "$resolved"
@@ -47,10 +56,12 @@ emit_environment() {
     {
       printf 'NFLOW_BIN=%s\n' "$binary"
       printf 'FLOW_NFLOW_BIN=%s\n' "$binary"
+      printf 'FLOW_NFLOW_LSP_BIN=%s\n' "$binary"
     } >> "$GITHUB_ENV"
   fi
   printf 'export NFLOW_BIN=%q\n' "$binary"
   printf 'export FLOW_NFLOW_BIN=%q\n' "$binary"
+  printf 'export FLOW_NFLOW_LSP_BIN=%q\n' "$binary"
 }
 
 MODE="${1:-install}"

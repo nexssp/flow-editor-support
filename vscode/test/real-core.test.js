@@ -3,73 +3,25 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
 const path = require('node:path');
-const Module = require('node:module');
 
-const FLOW_NFLOW_BIN = process.env.FLOW_NFLOW_BIN || '';
-const registrations = {};
-let settings = {};
-class Range { constructor(...values) { this.values = values; } }
-class TextEdit { constructor(range, newText) { this.range = range; this.newText = newText; } }
-const vscodeMock = {
-  Range,
-  TextEdit,
-  workspace: {
-    workspaceFolders: [],
-    getConfiguration: () => ({ get: key => settings[key] }),
-  },
-  window: {
-    activeTextEditor: undefined,
-    showErrorMessage: message => { throw new Error(message); },
-  },
-  languages: {
-    registerCompletionItemProvider: () => ({ dispose() {} }),
-    registerHoverProvider: () => ({ dispose() {} }),
-    registerDocumentFormattingEditProvider: (id, provider) => {
-      registrations.languageId = id;
-      registrations.formatter = provider;
-      return { dispose() {} };
-    },
-  },
-};
-const originalLoad = Module._load;
-Module._load = function(request, parent, isMain) {
-  if (request === 'vscode') return vscodeMock;
-  return originalLoad.call(this, request, parent, isMain);
-};
-const extension = require('../extension.js');
-Module._load = originalLoad;
+const CORE = process.env.FLOW_NFLOW_BIN || '';
+const packageRoot = path.resolve(__dirname, '..');
 
-test('VS Code formatting provider reaches the bundled LSP and real Flow v0.43.0 formatter', { skip: !FLOW_NFLOW_BIN }, async () => {
-  const version = spawnSync(FLOW_NFLOW_BIN, ['--version'], { encoding: 'utf8' });
-  assert.equal(version.status, 0, version.stderr);
-  const versionMatch = version.stdout.match(/version:\s+v(\d+)\.(\d+)\.(\d+)/);
-  assert.ok(versionMatch, `could not read Flow version from: ${version.stdout}`);
-  assert.ok(Number(versionMatch[1]) > 0 || Number(versionMatch[2]) >= 43,
-    `Flow ${versionMatch[0]} is too old; install v0.43.0 or newer`);
-
-  const source = '@pipeline work:timeout=2s:retry=3\n  action.node:retry=2\n@end';
-  const expected = spawnSync(FLOW_NFLOW_BIN, ['fmt', '--stdin'], { input: source, encoding: 'utf8' });
-  assert.equal(expected.status, 0, expected.stderr);
-  settings = {
-    'languageServer.command': '',
-    'languageServer.args': [],
-    'nflowCommand': FLOW_NFLOW_BIN,
-  };
-  const context = { extensionPath: path.resolve(__dirname, '..'), subscriptions: [] };
-  const document = {
-    uri: { toString: () => 'file:///real-core-flow.nflow' },
-    getText: () => source,
-  };
-  try {
-    extension.activate(context);
-    assert.equal(registrations.languageId, 'nexss-flow');
-    const edits = await registrations.formatter.provideDocumentFormattingEdits(document);
-    assert.equal(edits.length, 1);
-    assert.ok(edits[0].range instanceof Range);
-    assert.equal(edits[0].newText, expected.stdout);
-  } finally {
-    await extension.deactivate();
-    settings = {};
+test('VS Code package includes the native LSP launcher and a tested v0.44.1+ Flow core', { skip: !CORE }, () => {
+  const result = spawnSync(CORE, ['--version'], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  const match = `${result.stdout}\n${result.stderr}`.match(/version\s*:\s*v?(\d+)\.(\d+)\.(\d+)/i);
+  assert.ok(match, `could not read Flow version from: ${result.stdout}`);
+  const actual = match.slice(1).map(Number);
+  const minimum = [0, 44, 1];
+  let compatible = true;
+  for (let index = 0; index < minimum.length; index++) {
+    if (actual[index] !== minimum[index]) { compatible = actual[index] > minimum[index]; break; }
   }
+  assert.ok(compatible, `Flow v${actual.join('.')} is too old; v0.44.1 or newer is required`);
+  assert.ok(fs.existsSync(path.join(packageRoot, 'lsp', 'nflow-lsp.js')));
+  const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8'));
+  assert.ok(manifest.dependencies['vscode-languageclient']);
 });

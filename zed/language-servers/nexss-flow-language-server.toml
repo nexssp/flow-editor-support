@@ -1,8 +1,7 @@
-# LSP stub metadata for local development and extension wiring.
 # The canonical published-extension declaration is in ../extension.toml.
-# The executable is intentionally dependency-free and speaks JSON-RPC over stdio.
+# This command starts Flow core's native stdio language server.
 name = "nexss-flow-language-server"
-command = "node lsp/flow-language-server.js"
+command = "node lsp/nflow-lsp.js"
 
 [language]
 name = "Nexss Flow"

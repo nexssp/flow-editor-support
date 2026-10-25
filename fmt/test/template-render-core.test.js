@@ -27,10 +27,10 @@ function templateLiteral(source) {
   return match[1];
 }
 
-test('real Flow v0.43.0 formatter preserves template.render text and remains idempotent', { skip: !CORE }, () => {
+test('real Flow v0.44.1 formatter preserves template.render text and remains idempotent', { skip: !CORE }, () => {
   const version = spawnSync(CORE, ['--version'], { encoding: 'utf8' });
   assert.equal(version.status, 0, version.stderr);
-  assert.match(version.stdout, /version:\s+v0\.43\.0\b/);
+  assert.match(version.stdout, /version:\s+v0\.44\.1\b/);
 
   const formatted = formatWithCore(input);
   assert.equal(formatted, expectedFixture);

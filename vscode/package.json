@@ -1,7 +1,7 @@
 {
   "name": "nexss-flow-syntax",
   "displayName": "Nexss Flow",
-  "description": "Syntax highlighting, snippets, and LSP stub support for Nexss Flow .nflow files",
+  "description": "Syntax highlighting, snippets, and native Flow LSP support for Nexss Flow .nflow files",
   "version": "0.1.0",
   "publisher": "nexssp",
   "icon": "icon.png",
@@ -10,10 +10,13 @@
     "type": "git",
     "url": "https://github.com/nexssp/flow-editor-support"
   },
-  "engines": { "vscode": ">=1.80.0" },
+  "engines": { "vscode": ">=1.82.0" },
   "main": "./extension.js",
   "activationEvents": ["onLanguage:nexss-flow"],
   "categories": ["Programming Languages"],
+  "dependencies": {
+    "vscode-languageclient": "9.0.1"
+  },
   "contributes": {
     "languages": [{
       "id": "nexss-flow",
@@ -36,12 +39,12 @@
         "nexssFlow.nflowCommand": {
           "type": "string",
           "default": "",
-          "description": "Optional path to the nflow executable that provides `nflow fmt`; leave blank to use NFLOW_BIN or nflow on PATH."
+          "description": "Optional path to nflow v0.44.1 or newer; leave blank to use NFLOW_BIN or nflow on PATH."
         },
         "nexssFlow.languageServer.command": {
           "type": "string",
           "default": "",
-          "description": "Optional executable for a compatible stdio language server. Leave blank to use the bundled Flow server."
+          "description": "Optional executable to override the native Flow LSP launcher; a custom server bypasses the core version check."
         },
         "nexssFlow.languageServer.args": {
           "type": "array",

@@ -15,7 +15,7 @@ impl zed::Extension for FlowExtension {
     ) -> Result<zed::Command> {
         let extension_dir = env::current_dir()
             .map_err(|error| format!("unable to locate Nexss Flow extension directory: {error}"))?;
-        let server_path = extension_dir.join("lsp").join("flow-language-server.js");
+        let server_path = extension_dir.join("lsp").join("nflow-lsp.js");
         if !server_path.is_file() {
             return Err(format!("Nexss Flow language server not found: {}", server_path.display()));
         }

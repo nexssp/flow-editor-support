@@ -75,20 +75,36 @@ function assertScope(tokens, source, needle, scope, occurrence = 0) {
   return token;
 }
 
+function assertThemeScope(tokens, source, needle, scopePrefix, occurrence = 0) {
+  const token = tokenFor(tokens, source, needle, occurrence);
+  assert.ok(token.scopes.some(scope => scope === scopePrefix || scope.startsWith(`${scopePrefix}.`)),
+    `${JSON.stringify(needle)} has scopes ${token.scopes.join(' ')}; expected theme-compatible ${scopePrefix} scope`);
+  return token;
+}
+
 for (const editor of Object.keys(grammarPaths)) {
   test(`${editor}: supplied template.render sample has distinct embedded Go template scopes`, () => {
     const source = fs.readFileSync(INPUT_FIXTURE, 'utf8');
     const tokens = tokenize(source, grammars[editor]);
     assertScope(tokens, source, 'template.render', 'entity.name.function.nflow');
     assertScope(tokens, source, '{{', 'punctuation.section.embedded.begin.go-template');
+    assertThemeScope(tokens, source, '{{', 'punctuation.section.embedded');
     assertScope(tokens, source, '}}', 'punctuation.section.embedded.end.go-template');
+    assertThemeScope(tokens, source, '}}', 'punctuation.section.embedded');
     assertScope(tokens, source, '.customer', 'variable.other.go-template');
+    assertThemeScope(tokens, source, '.customer', 'variable.other');
+    assertScope(tokens, source, '.order_id', 'variable.other.go-template');
+    assertThemeScope(tokens, source, '.order_id', 'variable.other');
     assertScope(tokens, source, '.items', 'variable.other.go-template');
     const standaloneDot = tokenAt(tokens, source.indexOf('{{.}}') + 2);
     assert.equal(standaloneDot.text, '.');
     assert.ok(standaloneDot.scopes.includes('variable.language.go-template'));
+    assert.ok(standaloneDot.scopes.some(scope => scope === 'variable.language' || scope.startsWith('variable.language.')),
+      `standalone dot has scopes ${standaloneDot.scopes.join(' ')}; expected theme-compatible variable.language scope`);
     assertScope(tokens, source, 'range', 'keyword.control.go-template');
+    assertThemeScope(tokens, source, 'range', 'keyword.control');
     assertScope(tokens, source, 'end', 'keyword.control.go-template', 1);
+    assertThemeScope(tokens, source, 'end', 'keyword.control', 1);
     const body = tokenFor(tokens, source, 'Hi ');
     assert.ok(body.scopes.includes('string.quoted.double.nflow'));
     assert.ok(!body.scopes.includes('meta.embedded.inline.go-template'));
