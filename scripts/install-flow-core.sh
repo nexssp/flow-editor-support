@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION=0.44.1
-MINIMUM_VERSION=0.44.1
+VERSION=0.44.2
+MINIMUM_VERSION=0.44.2
 ASSET="nflow_${VERSION}_linux_amd64.tar.gz"
 MANIFEST="nflow_${VERSION}_checksums.txt"
 RELEASE_URL="https://github.com/nexssp/flow/releases/download/v${VERSION}"
-EXPECTED_MANIFEST_SHA256=c71bf0dc894abeee1a48b3fc9f57777ce1ced5b3def50a9f6d9704e20797eaae
+EXPECTED_MANIFEST_SHA256=21d006367ad5b3584765f7908552c4f9846055bdaf72e99858928609ee711626
 
 usage() {
   echo "Usage: $0 [install [INSTALL_DIR] | --check]" >&2
@@ -43,7 +43,7 @@ verify_binary() {
   actual_major="${BASH_REMATCH[1]}"
   actual_minor="${BASH_REMATCH[2]}"
   actual_patch="${BASH_REMATCH[3]}"
-  if (( actual_major < 0 || (actual_major == 0 && actual_minor < 44) || (actual_major == 0 && actual_minor == 44 && actual_patch < 1) )); then
+  if (( actual_major < 0 || (actual_major == 0 && actual_minor < 44) || (actual_major == 0 && actual_minor == 44 && actual_patch < 2) )); then
     echo "Flow core v${MINIMUM_VERSION} or newer is required, but '$resolved --version' reported ${version_match#*version: }." >&2
     return 1
   fi

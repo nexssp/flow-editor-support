@@ -31,8 +31,8 @@ function addCleanup(t, managed, directory) {
   });
 }
 
-test('native LSP launcher verifies v0.44.1+ and passes stdio directly to `nflow lsp`', { timeout: 10000 }, async t => {
-  const { executable, directory } = makeFakeCore('0.44.1');
+test('native LSP launcher verifies v0.44.2+ and passes stdio directly to `nflow lsp`', { timeout: 10000 }, async t => {
+  const { executable, directory } = makeFakeCore('0.44.2');
   const managed = runLauncher(executable);
   const { child } = managed;
   addCleanup(t, managed, directory);
@@ -46,7 +46,7 @@ test('native LSP launcher verifies v0.44.1+ and passes stdio directly to `nflow 
 });
 
 test('native LSP launcher rejects an older core without starting its server', { timeout: 10000 }, async t => {
-  const { executable, directory } = makeFakeCore('0.44.0');
+  const { executable, directory } = makeFakeCore('0.44.1');
   const managed = runLauncher(executable);
   const { child } = managed;
   addCleanup(t, managed, directory);
@@ -54,5 +54,5 @@ test('native LSP launcher rejects an older core without starting its server', { 
   const result = await managed.waitForClose(5000, 'native LSP launcher');
   assert.equal(result.code, 1);
   assert.equal(Buffer.concat(managed.stdout).toString(), '');
-  assert.match(Buffer.concat(managed.stderr).toString(), /v0\.44\.1 or newer.*reported v0\.44\.0/);
+  assert.match(Buffer.concat(managed.stderr).toString(), /v0\.44\.2 or newer.*reported v0\.44\.1/);
 });

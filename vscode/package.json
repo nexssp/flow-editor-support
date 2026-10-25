@@ -39,7 +39,7 @@
         "nexssFlow.nflowCommand": {
           "type": "string",
           "default": "",
-          "description": "Optional path to nflow v0.44.1 or newer; leave blank to use NFLOW_BIN or nflow on PATH."
+          "description": "Optional path to nflow v0.44.2 or newer; leave blank to use NFLOW_BIN or nflow on PATH."
         },
         "nexssFlow.languageServer.command": {
           "type": "string",

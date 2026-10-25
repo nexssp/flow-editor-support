@@ -3,7 +3,7 @@
 
 const { spawn, spawnSync } = require('node:child_process');
 
-const MINIMUM_VERSION = [0, 44, 1];
+const MINIMUM_VERSION = [0, 44, 2];
 const executable = [
   process.env.NFLOW_BIN,
   process.env.FLOW_NFLOW_LSP_BIN,
@@ -37,7 +37,7 @@ if (checked.error || checked.status !== 0) {
   } else {
     const version = match.slice(1).map(Number);
     if (!versionAtLeast(version, MINIMUM_VERSION)) {
-      fail(`Flow core v0.44.1 or newer is required for the native language server; '${executable} --version' reported v${version.join('.')}.`);
+      fail(`Flow core v0.44.2 or newer is required for the native language server; '${executable} --version' reported v${version.join('.')}.`);
     } else {
       const server = spawn(executable, ['lsp'], {
         env: process.env,

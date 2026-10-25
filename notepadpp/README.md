@@ -4,7 +4,7 @@ Import `flow-udl.xml` through **Language → Define your language → Import**. 
 
 ## Formatting with NppExec
 
-1. Install Flow v0.44.1 or newer and the **NppExec** plugin; confirm the version with `nflow --version`.
+1. Install Flow v0.44.2 or newer and the **NppExec** plugin; confirm the version with `nflow --version`.
 2. Ensure `nflow` is on `PATH`, or set `NFLOW_BIN` in the environment Notepad++ inherits.
 3. Copy `flowfmt.cmd` to `<Notepad++>\\plugins\\Config\\flowfmt.cmd`.
 4. Open `nppexec/Format-Flow.npes` in NppExec and run it, or paste its contents into **Plugins → NppExec → Execute...**. Bind the command to a shortcut if desired.
