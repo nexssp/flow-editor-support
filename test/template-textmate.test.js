@@ -11,6 +11,36 @@ const grammarPaths = {
   'VS Code': path.join(ROOT, 'vscode/syntaxes/flow.tmLanguage.json'),
   JetBrains: path.join(ROOT, 'jetbrains/textmate/nexss-flow.tmLanguage.json'),
 };
+const pythonGrammar = {
+  scopeName: 'source.python',
+  patterns: [
+    { name: 'comment.line.number-sign.python', begin: '#', end: '$' },
+    { name: 'string.quoted.single.python', begin: "'", end: "'", patterns: [{ name: 'constant.character.escape.python', match: '\\\\.' }] },
+    { name: 'string.quoted.double.python', begin: '"', end: '"', patterns: [{ name: 'constant.character.escape.python', match: '\\\\.' }] },
+    { name: 'keyword.control.python', match: '\\b(import|from|def|return|print)\\b' },
+  ],
+};
+const embeddedLanguageSpecs = [
+  { family: 'rust', scope: 'rust', blockTag: 'rust', inlineTag: 'rs', keyword: 'fn', keywordPattern: '\\b(fn|let|mut|return)\\b' },
+  { family: 'php', scope: 'php', blockTag: 'php', inlineTag: 'php', keyword: 'function', keywordPattern: '\\b(function|echo|return)\\b' },
+  { family: 'typescript', scope: 'typescript', blockTag: 'typescript', inlineTag: 'ts', keyword: 'interface', keywordPattern: '\\b(interface|const|return)\\b' },
+  { family: 'javascript', scope: 'javascript', blockTag: 'javascript', inlineTag: 'js', keyword: 'const', keywordPattern: '\\b(const|function|return)\\b' },
+  { family: 'go', scope: 'go', blockTag: 'go', inlineTag: 'golang', keyword: 'func greet', keywordPattern: '\\b(func|package|return)\\b' },
+];
+const embeddedGrammars = Object.fromEntries(embeddedLanguageSpecs.map(({ scope, keywordPattern }) => {
+  const lang = scope;
+  return [`source.${scope}`, {
+    scopeName: `source.${scope}`,
+    patterns: [
+      { name: `comment.line.double-slash.${lang}`, begin: '//', end: '$' },
+      { name: `comment.block.${lang}`, begin: '/\\*', end: '\\*/' },
+      ...(scope === 'rust' ? [] : [{ name: `string.quoted.single.${lang}`, begin: "'", end: "'" }]),
+      { name: `string.quoted.double.${lang}`, begin: '"', end: '"' },
+      { name: `string.quoted.other.${lang}`, begin: '`', end: '`' },
+      { name: `keyword.control.${lang}`, match: keywordPattern },
+    ],
+  }];
+}));
 let grammars;
 
 test.before(async () => {
@@ -24,9 +54,18 @@ test.before(async () => {
         createOnigScanner: sources => new oniguruma.OnigScanner(sources),
         createOnigString: source => new oniguruma.OnigString(source),
       }),
-      loadGrammar: async scopeName => scopeName === 'source.nflow'
-        ? textmate.parseRawGrammar(fs.readFileSync(grammarPath, 'utf8'), grammarPath)
-        : null,
+      loadGrammar: async scopeName => {
+        if (scopeName === 'source.nflow') {
+          return textmate.parseRawGrammar(fs.readFileSync(grammarPath, 'utf8'), grammarPath);
+        }
+        if (scopeName === 'source.python') {
+          return textmate.parseRawGrammar(JSON.stringify(pythonGrammar), `${editor}-python-test.tmLanguage.json`);
+        }
+        if (embeddedGrammars[scopeName]) {
+          return textmate.parseRawGrammar(JSON.stringify(embeddedGrammars[scopeName]), `${editor}-${scopeName}-test.tmLanguage.json`);
+        }
+        return null;
+      },
     });
     grammars[editor] = await registry.loadGrammar('source.nflow');
   }
@@ -83,6 +122,46 @@ function assertThemeScope(tokens, source, needle, scopePrefix, occurrence = 0) {
 }
 
 for (const editor of Object.keys(grammarPaths)) {
+  test(`${editor}: inline Python uses the embedded Python grammar and leaves Flow syntax visible`, () => {
+    const source = fs.readFileSync(path.join(ROOT, 'test/fixtures/python-inline.nflow'), 'utf8');
+    const tokens = tokenize(source, grammars[editor]);
+    assertScope(tokens, source, 'py', 'keyword.control.language.nflow');
+    assertScope(tokens, source, 'import', 'keyword.control.python');
+    assertScope(tokens, source, 'print', 'keyword.control.python');
+    assertScope(tokens, source, 'Braces in Python text are not Flow delimiters: { and }', 'string.quoted.double.python');
+    assertThemeScope(tokens, source, 'mean', 'string.quoted');
+    const dictionaryClose = tokenAt(tokens, source.indexOf('}\nlabel = f'));
+    assert.ok(dictionaryClose.scopes.includes('punctuation.section.block.end.python'),
+      `nested Python dictionary close has scopes ${dictionaryClose.scopes.join(' ')}`);
+    const afterBlock = tokenAt(tokens, source.indexOf('-> runtime.noop'));
+    assert.ok(afterBlock.scopes.includes('keyword.operator.nflow'),
+      `Flow operator after Python block has scopes ${afterBlock.scopes.join(' ')}`);
+    const pathKeyword = tokenFor(tokens, source, 'py.file');
+    assert.ok(!pathKeyword.scopes.includes('meta.embedded.inline.python.nflow'));
+  });
+
+  test(`${editor}: Rust, PHP, TypeScript, JavaScript, and Go blocks and inline forms reuse editor grammars`, () => {
+    const source = fs.readFileSync(path.join(ROOT, 'test/fixtures/embedded-languages.nflow'), 'utf8');
+    const tokens = tokenize(source, grammars[editor]);
+    for (const language of embeddedLanguageSpecs) {
+      const blockTag = assertScope(tokens, source, language.blockTag, `meta.embedded.block.${language.family}.nflow`);
+      assert.ok(blockTag.scopes.includes('keyword.control.language.nflow'));
+      assertScope(tokens, source, language.keyword, `keyword.control.${language.scope}`);
+      const inlineOffset = source.lastIndexOf(`-> ${language.inlineTag}`) + 3;
+      const inlineTag = tokenAt(tokens, inlineOffset);
+      assert.ok(inlineTag.scopes.includes(`meta.embedded.inline.${language.family}.nflow`),
+        `${JSON.stringify(language.inlineTag)} has scopes ${inlineTag.scopes.join(' ')}; expected inline ${language.family} scope`);
+      assert.ok(inlineTag.scopes.includes('keyword.control.language.nflow'));
+    }
+    assertScope(tokens, source, 'Rust { string }', 'string.quoted.double.rust');
+    assertScope(tokens, source, 'PHP { string }', 'string.quoted.double.php');
+    assertScope(tokens, source, 'JavaScript { string }', 'string.quoted.double.javascript');
+    const flowArrow = tokenFor(tokens, source, '-> php');
+    assert.ok(flowArrow.scopes.includes('keyword.operator.nflow'),
+      `Flow operator after Rust block has scopes ${flowArrow.scopes.join(' ')}`);
+    assert.ok(!flowArrow.scopes.includes('meta.embedded.block.rust.nflow'));
+  });
+
   test(`${editor}: supplied template.render sample has distinct embedded Go template scopes`, () => {
     const source = fs.readFileSync(INPUT_FIXTURE, 'utf8');
     const tokens = tokenize(source, grammars[editor]);

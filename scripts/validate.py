@@ -7,10 +7,11 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 required = [
-    'README.md', 'LICENSE', 'package.json', 'package-lock.json', 'grammar.js', 'src/parser.c', 'src/node-types.json',
+    'README.md', 'LICENSE', 'package.json', 'package-lock.json', 'grammar.js', 'src/parser.c', 'src/node-types.json', 'src/scanner.c',
     'assets/nexss-logo.png', 'examples/complete.nflow', 'test/fixtures/current-syntax.nflow',
     'test/fixtures/template-render-input.nflow', 'test/fixtures/template-render-expected.nflow',
-    'test/fixtures/template-render-contexts.nflow', 'test/template-textmate.test.js', 'test/nflow-lsp.test.js',
+    'test/fixtures/template-render-contexts.nflow', 'test/fixtures/python-inline.nflow',
+    'test/fixtures/embedded-languages.nflow', 'test/template-textmate.test.js', 'test/nflow-lsp.test.js',
     'test/helpers/process-tree.js', 'test/process-tree.test.js',
     'fmt/index.js', 'fmt/cli.js', 'fmt/test/helpers.js', 'fmt/test/formatter.test.js',
     'fmt/test/core-integration.test.js', 'fmt/test/real-core-lsp.test.js', 'fmt/test/template-render-core.test.js',
@@ -80,6 +81,15 @@ assert vscode_lock['packages']['node_modules/vscode-languageclient']['version'] 
 assert vscode['contributes']['languages'][0]['extensions'] == ['.nflow']
 assert vscode['contributes']['languages'][0]['id'] == 'nexss-flow'
 assert vscode['contributes']['grammars'][0]['scopeName'] == 'source.nflow'
+embedded_languages = vscode['contributes']['grammars'][0]['embeddedLanguages']
+expected_embedded_languages = {
+    'meta.embedded.block.python.nflow': 'python',
+    'meta.embedded.inline.python.nflow': 'python',
+}
+for language in ['rust', 'php', 'typescript', 'javascript', 'go']:
+    expected_embedded_languages[f'meta.embedded.block.{language}.nflow'] = language
+    expected_embedded_languages[f'meta.embedded.inline.{language}.nflow'] = language
+assert embedded_languages == expected_embedded_languages
 properties = vscode['contributes']['configuration']['properties']
 assert properties['nexssFlow.nflowCommand']['default'] == ''
 assert 'v0.44.2 or newer' in properties['nexssFlow.nflowCommand']['description']
@@ -88,8 +98,20 @@ assert 'bypasses the core version check' in properties['nexssFlow.languageServer
 assert 'nexssFlow.languageServer.args' in properties
 assert 'node_modules/' not in (ROOT / 'vscode/.vscodeignore').read_text()
 assert tm['scopeName'] == 'source.nflow' and tm['fileTypes'] == ['nflow']
-for grammar_rule in ['templateRender', 'templateRenderStringDouble', 'goTemplate']:
+for grammar_rule in ['templateRender', 'templateRenderStringDouble', 'goTemplate', 'pythonInline', 'pythonBlock', 'pythonNestedBlock',
+                     'rustInline', 'rustBlock', 'rustNestedBlock', 'phpInline', 'phpBlock', 'phpNestedBlock',
+                     'typescriptInline', 'typescriptBlock', 'typescriptNestedBlock',
+                     'javascriptInline', 'javascriptBlock', 'javascriptNestedBlock',
+                     'goInline', 'goBlock', 'goNestedBlock']:
     assert grammar_rule in tm['repository'], f'TextMate grammar lacks {grammar_rule}'
+grammar_source = (ROOT / 'grammar.js').read_text()
+for token in ['language_inline:', 'language_block:', 'language_block_content', 'rust_language_block_content', 'language_inline_double_content',
+              'language_inline_single_content', 'language_inline_backtick_content']:
+    assert token in grammar_source, f'Tree-sitter grammar lacks {token}'
+for language_tag in ['rust', 'rs', 'php', 'typescript', 'ts', 'javascript', 'js', 'go', 'golang']:
+    assert f"'{language_tag}'" in grammar_source, f'Tree-sitter grammar lacks {language_tag} language blocks'
+python_rules = json.dumps({key: tm['repository'][key] for key in ['pythonInline', 'pythonBlock', 'pythonNestedBlock']})
+assert 'source.python' in python_rules, 'TextMate grammar must reuse the editor Python grammar'
 go_template_rules = json.dumps(tm['repository']['goTemplate'])
 for scope in ['keyword.control.go-template', 'variable.other.go-template',
               'variable.language.go-template', 'punctuation.section.embedded.begin.go-template']:
@@ -202,6 +224,10 @@ for token in ['@operator', '@function', '@property', '@keyword.control', '@strin
 for token in ['(template_keyword) @keyword.control', '(template_variable) @variable.member',
               '(template_dot) @variable.builtin', '(template_action_open) @punctuation.special']:
     assert token in highlights, f'Zed query lacks template scope {token}'
+for token in ['(language_block_content) @injection.content', '(rust_language_block_content) @injection.content', '(#set! injection.language "python")']:
+    assert token in highlights, f'Zed query lacks embedded Python scope {token}'
+for language in ['rust', 'php', 'typescript', 'javascript', 'go']:
+    assert f'(#set! injection.language "{language}")' in highlights, f'Zed query lacks {language} injection'
 brackets = (ROOT / 'zed/languages/flow/brackets.scm').read_text()
 assert '"[" @open "]" @close' in brackets
 
@@ -212,6 +238,13 @@ fixture = (ROOT / 'test/fixtures/current-syntax.nflow').read_text()
 for token in ['@nflow_version', 'parallel', 'race', 'match', 'loop(', 'until(', '@{', 'schema', '#', '~', '`',
               '@assert:', '@assert {', 'assert(']:
     assert token in fixture, f'current-syntax fixture lacks {token}'
+python_fixture = (ROOT / 'test/fixtures/python-inline.nflow').read_text()
+for token in ['@require lang', 'py {', 'import json', 'py.file',
+              "'greater_than>'", "'a, ) : &'"]:
+    assert token in python_fixture, f'Python highlighting fixture lacks {token}'
+embedded_fixture = (ROOT / 'test/fixtures/embedded-languages.nflow').read_text()
+for token in ['rust {', 'php {', 'typescript {', 'javascript {', 'go {', 'rs"', "php'", 'ts`', 'js"', "go'", 'golang`']:
+    assert token in embedded_fixture, f'Embedded-language highlighting fixture lacks {token}'
 
 release = (ROOT / 'scripts/package-release.sh').read_text()
 assert 'mktemp -d' in release and 'Refusing to use an unsafe release output directory' in release

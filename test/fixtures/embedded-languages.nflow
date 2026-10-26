@@ -1,0 +1,30 @@
+@require lang
+-> rust {
+fn greet() { let text = "Rust { string }"; }
+fn borrowed<'a>(value: &'a str) -> &'a str { value }
+let raw = r##"A raw brace } stays in this Rust string"##;
+// A brace in a line comment must not end the block: }
+}
+-> php {
+<?php
+function greet() { $text = "PHP { string }"; }
+$single = 'PHP single-quoted { text }';
+/* A brace in a block comment must not end the block: } */
+?>
+}
+-> typescript {
+interface Person { name: string; }
+function greet(person: Person): string { return person.name; }
+}
+-> javascript {
+const item = { label: "JavaScript { string }" };
+}
+-> go {
+func greet() string { return `Go { raw string }` }
+}
+-> rs"fn inlineRust() {}"
+-> php'echo "inline PHP";'
+-> ts`interface InlineType { value: string }`
+-> js"const inlineJs = true;"
+-> go'func inlineGo() {}'
+-> golang`func inlineGolang() {}`

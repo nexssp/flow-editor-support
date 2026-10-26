@@ -6,6 +6,13 @@ module.exports = grammar({
   name: 'flow',
   extras: $ => [/\s+/, $.comment],
   word: $ => $.identifier,
+  externals: $ => [
+    $.rust_language_block_content,
+    $.language_block_content,
+    $.language_inline_double_content,
+    $.language_inline_single_content,
+    $.language_inline_backtick_content,
+  ],
   rules: {
     source_file: $ => repeat(choice(
       $.directive_block,
@@ -35,6 +42,8 @@ module.exports = grammar({
       $.race_block,
       $.match_block,
       $.loop,
+      $.language_inline,
+      $.language_block,
       $.template_render,
       $.atom,
       $.projection,
@@ -46,6 +55,25 @@ module.exports = grammar({
     atom: $ => prec.right(10, seq(
       $.identifier,
       repeat(choice($.modifier, $.prompt, $.targets, $.excludes, $.argument_block)),
+    )),
+
+    language_block: $ => prec(20, choice(
+      seq(choice('rust', 'rs'), '{', optional($.rust_language_block_content), '}'),
+      seq(
+        choice('py', 'python', 'py2', 'python2', 'py3', 'python3', 'php', 'typescript', 'ts', 'javascript', 'js', 'go', 'golang'),
+        '{',
+        optional($.language_block_content),
+        '}',
+      ),
+    )),
+
+    language_inline: $ => prec(20, seq(
+      choice('py', 'python', 'py2', 'python2', 'py3', 'python3', 'rust', 'rs', 'php', 'typescript', 'ts', 'javascript', 'js', 'go', 'golang'),
+      choice(
+        seq('"', optional($.language_inline_double_content), '"'),
+        seq("'", optional($.language_inline_single_content), "'"),
+        seq('`', optional($.language_inline_backtick_content), '`'),
+      ),
     )),
 
     template_render: $ => prec(20, seq(

@@ -125,6 +125,22 @@ Flow v0.44.2 includes the core fix for multiline template formatting; the regres
 
 The Zed Tree-sitter grammar and VS Code/JetBrains TextMate grammar recognize Go `text/template` actions only in the top-level `template:` string of a `template.render @{...}` expression. Template action delimiters, control words, field variables, and the current-context dot receive separate scopes. Neighboring strings, ordinary object values, and nested `template:` fields remain ordinary Flow strings. Notepad++ leaves template values as ordinary strings because its UDL cannot provide context-aware nested highlighting without coloring unrelated text. Claude Code relies on its host editor for source highlighting.
 
+## Embedded languages inside Flow language blocks
+
+When a flow opts into the `lang` bundle, Python, Rust, PHP, TypeScript, JavaScript, and Go code can be written inline or in a brace-delimited block. Common short aliases are also recognized (`py`, `rs`, `ts`, `js`, and `golang`):
+
+```nflow
+@require lang
+-> rust { fn greet() -> &'static str { "hello" } }
+-> php { function greet() { return "hello"; } }
+-> typescript { interface Greeting { text: string } }
+-> javascript { const greeting = { text: "hello" }; }
+-> go { func greet() string { return "hello" } }
+-> js"const inline = true;"
+```
+
+VS Code and JetBrains TextMate definitions reuse their installed `source.rust`, `source.php`, `source.ts`, `source.js`, and `source.go` grammars; Zed injects into the corresponding installed Tree-sitter grammars. Enable the relevant language support in the editor for embedded token coloring. This is an editor-highlighting change only: it does not add or change Flow runtime execution. Notepad++ and Claude Code continue to use their host editor's available syntax support.
+
 ## License
 
 Apache-2.0. This editor-support repository is a companion to Nexss Flow; confirm upstream licensing and contribution terms before publishing a combined distribution.

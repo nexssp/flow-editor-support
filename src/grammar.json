@@ -286,6 +286,14 @@
         },
         {
           "type": "SYMBOL",
+          "name": "language_inline"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "language_block"
+        },
+        {
+          "type": "SYMBOL",
           "name": "template_render"
         },
         {
@@ -351,6 +359,289 @@
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    "language_block": {
+      "type": "PREC",
+      "value": 20,
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "rust"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "rs"
+                  }
+                ]
+              },
+              {
+                "type": "STRING",
+                "value": "{"
+              },
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "rust_language_block_content"
+                  },
+                  {
+                    "type": "BLANK"
+                  }
+                ]
+              },
+              {
+                "type": "STRING",
+                "value": "}"
+              }
+            ]
+          },
+          {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "py"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "python"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "py2"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "python2"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "py3"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "python3"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "php"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "typescript"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "ts"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "javascript"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "js"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "go"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "golang"
+                  }
+                ]
+              },
+              {
+                "type": "STRING",
+                "value": "{"
+              },
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "language_block_content"
+                  },
+                  {
+                    "type": "BLANK"
+                  }
+                ]
+              },
+              {
+                "type": "STRING",
+                "value": "}"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "language_inline": {
+      "type": "PREC",
+      "value": 20,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "py"
+              },
+              {
+                "type": "STRING",
+                "value": "python"
+              },
+              {
+                "type": "STRING",
+                "value": "py2"
+              },
+              {
+                "type": "STRING",
+                "value": "python2"
+              },
+              {
+                "type": "STRING",
+                "value": "py3"
+              },
+              {
+                "type": "STRING",
+                "value": "python3"
+              },
+              {
+                "type": "STRING",
+                "value": "rust"
+              },
+              {
+                "type": "STRING",
+                "value": "rs"
+              },
+              {
+                "type": "STRING",
+                "value": "php"
+              },
+              {
+                "type": "STRING",
+                "value": "typescript"
+              },
+              {
+                "type": "STRING",
+                "value": "ts"
+              },
+              {
+                "type": "STRING",
+                "value": "javascript"
+              },
+              {
+                "type": "STRING",
+                "value": "js"
+              },
+              {
+                "type": "STRING",
+                "value": "go"
+              },
+              {
+                "type": "STRING",
+                "value": "golang"
+              }
+            ]
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "\""
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "language_inline_double_content"
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "\""
+                  }
+                ]
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "'"
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "language_inline_single_content"
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "'"
+                  }
+                ]
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "`"
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "language_inline_backtick_content"
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "`"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -1542,7 +1833,28 @@
   ],
   "conflicts": [],
   "precedences": [],
-  "externals": [],
+  "externals": [
+    {
+      "type": "SYMBOL",
+      "name": "rust_language_block_content"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "language_block_content"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "language_inline_double_content"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "language_inline_single_content"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "language_inline_backtick_content"
+    }
+  ],
   "inline": [],
   "supertypes": [],
   "reserved": {}

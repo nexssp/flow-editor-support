@@ -10,29 +10,60 @@
     "type": "git",
     "url": "https://github.com/nexssp/flow-editor-support"
   },
-  "engines": { "vscode": ">=1.82.0" },
+  "engines": {
+    "vscode": ">=1.82.0"
+  },
   "main": "./extension.js",
-  "activationEvents": ["onLanguage:nexss-flow"],
-  "categories": ["Programming Languages"],
+  "activationEvents": [
+    "onLanguage:nexss-flow"
+  ],
+  "categories": [
+    "Programming Languages"
+  ],
   "dependencies": {
     "vscode-languageclient": "9.0.1"
   },
   "contributes": {
-    "languages": [{
-      "id": "nexss-flow",
-      "aliases": ["Nexss Flow", "Flow"],
-      "extensions": [".nflow"],
-      "configuration": "./language-configuration.json"
-    }],
-    "snippets": [{
-      "language": "nexss-flow",
-      "path": "./snippets/flow.code-snippets"
-    }],
-    "grammars": [{
-      "language": "nexss-flow",
-      "scopeName": "source.nflow",
-      "path": "./syntaxes/flow.tmLanguage.json"
-    }],
+    "languages": [
+      {
+        "id": "nexss-flow",
+        "aliases": [
+          "Nexss Flow",
+          "Flow"
+        ],
+        "extensions": [
+          ".nflow"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "nexss-flow",
+        "path": "./snippets/flow.code-snippets"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "nexss-flow",
+        "scopeName": "source.nflow",
+        "path": "./syntaxes/flow.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.python.nflow": "python",
+          "meta.embedded.inline.python.nflow": "python",
+          "meta.embedded.block.rust.nflow": "rust",
+          "meta.embedded.inline.rust.nflow": "rust",
+          "meta.embedded.block.php.nflow": "php",
+          "meta.embedded.inline.php.nflow": "php",
+          "meta.embedded.block.typescript.nflow": "typescript",
+          "meta.embedded.inline.typescript.nflow": "typescript",
+          "meta.embedded.block.javascript.nflow": "javascript",
+          "meta.embedded.inline.javascript.nflow": "javascript",
+          "meta.embedded.block.go.nflow": "go",
+          "meta.embedded.inline.go.nflow": "go"
+        }
+      }
+    ],
     "configuration": {
       "title": "Nexss Flow",
       "properties": {
@@ -48,7 +79,9 @@
         },
         "nexssFlow.languageServer.args": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "description": "Arguments passed to the custom language-server executable."
         }

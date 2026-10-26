@@ -1,0 +1,22 @@
+@require lang
+
+{ "values": [1, 2, 3] } -> py {
+import json
+import sys
+
+#brace in this comment must not end the language block: }
+label = "Braces in Python text are not Flow delimiters: { and }"
+greater_than = 'greater_than>'
+single_char_punctuation = 'a, ) : &'
+data = json.load(sys.stdin)
+summary = {
+    "count": len(data["values"]),
+    "mean": sum(data["values"]) / len(data["values"]),
+}
+label = f"count: {summary['count']} }}"
+print(json.dumps(summary))
+}
+-> runtime.noop
+
+{ "value": 2 } -> py"import json, sys; print(json.dumps({'value': json.load(sys.stdin)['value'] + 1}))"
+py.file "scripts/analysis.py"
