@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-VERSION=0.44.2
+# Pinned core used by CI and real-provider smoke tests.
+VERSION=0.52.0
+# Separate launcher compatibility floor; this does not imply newer LSP features.
 MINIMUM_VERSION=0.44.2
 ASSET="nflow_${VERSION}_linux_amd64.tar.gz"
 MANIFEST="nflow_${VERSION}_checksums.txt"
 RELEASE_URL="https://github.com/nexssp/flow/releases/download/v${VERSION}"
-EXPECTED_MANIFEST_SHA256=21d006367ad5b3584765f7908552c4f9846055bdaf72e99858928609ee711626
+EXPECTED_MANIFEST_SHA256=8d04191a3ca487996f8580ee082014da95909671b933e5d0cee15bec4c8967ef
 
 usage() {
   echo "Usage: $0 [install [INSTALL_DIR] | --check]" >&2

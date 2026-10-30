@@ -23,12 +23,7 @@ function templateLiteral(source) {
   assert.ok(match, 'expected the template field to remain one quoted string');
   return match[1];
 }
-test('released Flow v0.44.2 formats multiline template.render input with --check and preserves its text', { skip: !RELEASED_CORE }, () => {
-  const version = spawnSync(RELEASED_CORE, ['--version'], { encoding: 'utf8', timeout: 5000 });
-  assert.ifError(version.error);
-  assert.equal(version.status, 0, version.stderr);
-  assert.match(version.stdout, /version:\s+v0\.44\.2\b/);
-
+test('Flow core formats multiline template.render input with --check and preserves its text', { skip: !RELEASED_CORE }, () => {
   const check = spawnSync(RELEASED_CORE, ['fmt', '--check', inputPath], {
     encoding: 'utf8',
     timeout: 5000,

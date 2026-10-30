@@ -21,8 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install and verify Flow core v0.44.2
-        run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.44.2" >/dev/null
+      - name: Install and verify the pinned Flow core
+        run: bash scripts/install-flow-core.sh install >/dev/null
       - uses: dtolnay/rust-toolchain@stable
       - name: Install JavaScript test dependencies
         run: npm ci
@@ -53,8 +53,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install and verify Flow core v0.44.2
-        run: bash scripts/install-flow-core.sh install "$RUNNER_TEMP/nflow-v0.44.2" >/dev/null
+      - name: Install and verify the pinned Flow core
+        run: bash scripts/install-flow-core.sh install >/dev/null
       - name: Package release assets
         run: bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist" "$RELEASE_TAG"
       - name: Publish GitHub release

@@ -12,7 +12,7 @@ required = [
     'test/fixtures/template-render-input.nflow', 'test/fixtures/template-render-expected.nflow',
     'test/fixtures/template-render-contexts.nflow', 'test/fixtures/python-inline.nflow',
     'test/fixtures/embedded-languages.nflow', 'test/template-textmate.test.js', 'test/nflow-lsp.test.js',
-    'test/helpers/process-tree.js', 'test/process-tree.test.js',
+    'test/zed-adapter-smoke.test.js', 'test/helpers/process-tree.js', 'test/process-tree.test.js',
     'fmt/index.js', 'fmt/cli.js', 'fmt/test/helpers.js', 'fmt/test/formatter.test.js',
     'fmt/test/core-integration.test.js', 'fmt/test/real-core-lsp.test.js', 'fmt/test/template-render-core.test.js',
     'fmt/test/fixtures/pipeline.nflow', 'fmt/test/fixtures/pipeline.expected.nflow',
@@ -32,7 +32,8 @@ required = [
     'vscode/package.json', 'vscode/package-lock.json', 'vscode/icon.png', 'vscode/extension.js',
     'vscode/.vscodeignore', 'vscode/lsp/nflow-lsp.js', 'vscode/fmt/index.js',
     'vscode/language-configuration.json', 'vscode/syntaxes/flow.tmLanguage.json',
-    'vscode/snippets/flow.code-snippets', 'vscode/test/extension.test.js', 'vscode/test/real-core.test.js',
+    'vscode/snippets/flow.code-snippets', 'vscode/test/extension.test.js',
+    'vscode/test/adapter-smoke.test.js', 'vscode/test/real-core.test.js',
     '.zed/snippets/nexss-flow.json', 'notepadpp/flow-udl.xml', 'notepadpp/README.md', 'notepadpp/nexss-logo.png',
     'notepadpp/fmt/cli.js', 'notepadpp/fmt/index.js', 'notepadpp/flowfmt.cmd',
     'notepadpp/nppexec/Format-Flow.npes', 'claude/.claude-plugin/plugin.json', 'claude/.lsp.json',
@@ -257,25 +258,37 @@ workflow = (ROOT / '.github/workflows/release.yml').read_text()
 assert 'package-release.sh' in workflow and 'softprops/action-gh-release' in workflow
 assert 'run: npm ci' in workflow
 assert workflow.count('install-flow-core.sh install') == 2
-assert 'nflow-v0.44.2' in workflow and 'node --check lsp/nflow-lsp.js' in workflow
+assert 'bash scripts/install-flow-core.sh install >/dev/null' in workflow
+assert 'nflow-v0.' not in workflow and 'node --check lsp/nflow-lsp.js' in workflow
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
-assert 'VERSION=0.44.2' in core_installer and 'MINIMUM_VERSION=0.44.2' in core_installer
+assert 'VERSION=0.52.0' in core_installer and 'MINIMUM_VERSION=0.44.2' in core_installer
 assert 'actual_patch < 2' in core_installer
+assert 'nflow-v${VERSION}' in core_installer
 real_core_lsp_test = (ROOT / 'fmt/test/real-core-lsp.test.js').read_text()
 assert 'FLOW_NFLOW_PATCHED_BIN' not in real_core_lsp_test
 assert 'if (TEST_TEMPLATE_FIX)' not in real_core_lsp_test
 assert 'templateFormatted.result[0].newText, TEMPLATE_EXPECTED' in real_core_lsp_test
-assert 'EXPECTED_MANIFEST_SHA256=21d006367ad5b3584765f7908552c4f9846055bdaf72e99858928609ee711626' in core_installer
+assert 'EXPECTED_MANIFEST_SHA256=8d04191a3ca487996f8580ee082014da95909671b933e5d0cee15bec4c8967ef' in core_installer
 for variable in ['NFLOW_BIN', 'FLOW_NFLOW_BIN', 'FLOW_NFLOW_LSP_BIN']:
     assert f'printf \'{variable}=%s\\n\'' in core_installer
 
 readme = (ROOT / 'README.md').read_text()
+assert readme.splitlines()[:2] == ['# Nexss Flow editor support', '<small>Nexss Flow 🌀 ready</small>']
 for editor in ['VS Code', 'Zed', 'Notepad++', 'JetBrains', 'Claude Code']:
     assert editor in readme, f'root README lacks {editor} integration documentation'
-for token in ['nflow lsp', 'nflow lint', 'nflow fmt', 'v0.44.2 or newer', 'NFLOW_BIN',
-              'editor.formatOnSave', 'format_on_save', 'File Watcher', '/flowfmt',
-              'Invalid source is rejected', 'external `@require` bundles']:
+for token in ['Nexss Flow', 'nflow', 'Available LSP features depend on the installed Nexss Flow version.',
+              'NFLOW_BIN', 'nflow --version', 'nflow lint', 'nflow fmt']:
     assert token in readme, f'root README lacks {token}'
-assert 'v0.43.0' not in readme and 'Flow v0.43.0' not in readme
-assert 'Go templates in `template.render`' in readme
-print(f'validated {len(required)} required files; core-native LSP routing, v0.44.2+ selection, editor fallbacks, and package safety=OK')
+assert 'v0.44.2' not in readme and 'v0.52.0' not in readme
+for rel, tokens in [
+    ('vscode/test/adapter-smoke.test.js', [
+        'textDocument/definition', 'textDocument/references', 'textDocument/rename',
+        'textDocument/documentSymbol', 'workspace/symbol', 'textDocument/foldingRange',
+        'textDocument/semanticTokens/full', 'textDocument/codeAction',
+    ]),
+    ('test/zed-adapter-smoke.test.js', ['textDocument/documentSymbol']),
+]:
+    smoke = (ROOT / rel).read_text()
+    for token in tokens:
+        assert token in smoke, f'{rel} lacks real-provider request {token}'
+print(f'validated {len(required)} required files; real-core v0.52.0 pin, v0.44.2 compatibility floor, editor docs, and package safety=OK')

@@ -24,6 +24,20 @@
     "vscode-languageclient": "9.0.1"
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "nexssFlow.showLanguageServerOutput",
+        "title": "Nexss Flow: Show Language Server Output"
+      },
+      {
+        "command": "nexssFlow.showLanguageServerTrace",
+        "title": "Nexss Flow: Show LSP Trace"
+      },
+      {
+        "command": "nexssFlow.showFlowExecutable",
+        "title": "Nexss Flow: Show Flow Executable and Version"
+      }
+    ],
     "languages": [
       {
         "id": "nexss-flow",
@@ -71,6 +85,16 @@
           "type": "string",
           "default": "",
           "description": "Optional path to nflow v0.44.2 or newer; leave blank to use NFLOW_BIN or nflow on PATH."
+        },
+        "nexssFlow.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "LSP protocol trace level. Verbose tracing can include document contents; view it with Nexss Flow: Show LSP Trace."
         },
         "nexssFlow.languageServer.command": {
           "type": "string",

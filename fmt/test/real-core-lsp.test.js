@@ -76,7 +76,7 @@ function request(child, id, method, params) {
   child.stdin.write(frame({ jsonrpc: '2.0', id, method, params }));
 }
 
-test('Flow v0.44.2+ native LSP publishes diagnostics and formats valid source', { skip: !CORE, timeout: 60000 }, async t => {
+test('native Flow LSP publishes diagnostics and formats valid source', { skip: !CORE, timeout: 60000 }, async t => {
   const managed = spawnCaptured(process.execPath, [LAUNCHER], {
     env: { ...process.env, NFLOW_BIN: CORE },
   });
@@ -98,9 +98,7 @@ test('Flow v0.44.2+ native LSP publishes diagnostics and formats valid source', 
   });
   const initialized = await nextMessage(message => message.id === 1);
   assert.equal(initialized.error, undefined, initialized.error?.message);
-  assert.ok(initialized.result.serverInfo.version === 'dev'
-    || /^v0\.44\.2(?:\+.*)?$/.test(initialized.result.serverInfo.version),
-  `unexpected Flow LSP version ${initialized.result.serverInfo.version}`);
+  assert.equal(typeof initialized.result.serverInfo.version, 'string', 'Flow LSP did not report its version');
   assert.equal(initialized.result.capabilities.documentFormattingProvider, true);
   assert.ok(initialized.result.capabilities.completionProvider);
   assert.equal(initialized.result.capabilities.hoverProvider, true);
