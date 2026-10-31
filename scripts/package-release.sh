@@ -32,8 +32,9 @@ for item in README.md LICENSE assets grammar.js src examples fmt lsp zed zed-leg
 done
 rm -rf -- "$SRC/zed/target" "$SRC/zed-legacy-0.230.2/target"
 if [[ -n "$RELEASE_TAG" ]]; then
-  node "$SRC/scripts/stamp-vscode-version.js" "$RELEASE_TAG" "$SRC/vscode"
+  node "$SRC/scripts/stamp-release-versions.js" "$RELEASE_TAG" "$SRC"
 fi
+EXPECTED_RELEASE_VERSION="$(node -p "require('$SRC/vscode/package.json').version")"
 
 mkdir -p "$SRC/vscode/lsp" "$SRC/vscode/fmt" \
   "$SRC/zed/lsp" "$SRC/zed/fmt" \
@@ -85,8 +86,8 @@ if ! command -v npx >/dev/null 2>&1; then
 fi
 (cd "$SRC/vscode" && npm ci --omit=dev --no-audit --no-fund)
 (cd "$SRC/vscode" && npx --yes @vscode/vsce package --out "$STAGE/nexss-flow-vscode.vsix")
-EXPECTED_VSCODE_VERSION="$(node -p "require('$SRC/vscode/package.json').version")"
-node "$SRC/scripts/verify-vsix-manifest.js" "$STAGE/nexss-flow-vscode.vsix" "$EXPECTED_VSCODE_VERSION"
+node "$SRC/scripts/verify-vsix-manifest.js" "$STAGE/nexss-flow-vscode.vsix" "$EXPECTED_RELEASE_VERSION"
+node "$SRC/scripts/verify-release-versions.js" "$EXPECTED_RELEASE_VERSION" "$STAGE"
 
 if command -v sha256sum >/dev/null 2>&1; then
   (cd "$STAGE" && sha256sum nexss-flow*.zip nexss-flow*.vsix > SHA256SUMS)

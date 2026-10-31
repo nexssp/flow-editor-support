@@ -33,7 +33,10 @@ module.exports = grammar({
       $.fallback,
       optional(seq('?', $.fallback, optional(seq(':', $.fallback)))),
     )),
-    fallback: $ => prec.left(1, seq($.pipe, repeat(seq('||', $.pipe)))),
+    fallback: $ => prec.left(1, seq($.pipe, repeat(choice(
+      seq('||', $.pipe),
+      seq('??', $.pipe),
+    )))),
     pipe: $ => prec.left(2, seq($.parallel, repeat(seq(choice('->', '|'), $.parallel)))),
     parallel: $ => prec.left(3, seq($.primary, repeat(seq('&', $.primary)))),
 
@@ -177,7 +180,7 @@ module.exports = grammar({
     template_brace: _ => token(prec(-1, /[{}]/)),
     template_escape: _ => token(/\\./),
     number: $ => /-?[0-9]+(?:\.[0-9]+)?/,
-    operator: $ => choice('->', '||', '&&', '==', '!=', '>=', '<=', '|', '&', '?', '+', '-', '*', '/', '%', '>', '<', '=', '!'),
+    operator: $ => choice('->', '||', '&&', '==', '!=', '>=', '<=', '|', '&', '??', '?', '+', '-', '*', '/', '%', '>', '<', '=', '!'),
     punctuation: $ => choice(':', ',', '.', ';', '$'),
     comment: $ => token(seq('//', /[^\n]*/)),
     raw_char: $ => token(prec(-1, /[^\s]/)),

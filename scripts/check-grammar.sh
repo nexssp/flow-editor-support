@@ -48,6 +48,18 @@ for query in \
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
+  coalesce_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
+    printf 'Tree-sitter ?? query failed for %s:\n%s\n' "$query" "$coalesce_output" >&2
+    exit 1
+  }
+  grep -Fq 'text: `??`' <<<"$coalesce_output" || {
+    printf 'The ?? operator was not captured as one token by %s:\n%s\n' "$query" "$coalesce_output" >&2
+    exit 1
+  }
+  printf 'Tree-sitter ?? operator capture is correct in %s\n' "$query"
+done
+
+for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
   python_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/python-inline.nflow 2>&1)" || {
     printf 'Tree-sitter Python-injection query failed for %s:\n%s\n' "$query" "$python_output" >&2
     exit 1

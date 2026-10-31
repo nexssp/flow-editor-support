@@ -182,15 +182,33 @@
           {
             "type": "REPEAT",
             "content": {
-              "type": "SEQ",
+              "type": "CHOICE",
               "members": [
                 {
-                  "type": "STRING",
-                  "value": "||"
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "||"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "pipe"
+                    }
+                  ]
                 },
                 {
-                  "type": "SYMBOL",
-                  "name": "pipe"
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "??"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "pipe"
+                    }
+                  ]
                 }
               ]
             }
@@ -1725,6 +1743,10 @@
         {
           "type": "STRING",
           "value": "&"
+        },
+        {
+          "type": "STRING",
+          "value": "??"
         },
         {
           "type": "STRING",

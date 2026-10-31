@@ -247,6 +247,7 @@
 (loop ")" @punctuation.bracket)
 
 "->" @operator
+"??" @operator
 "|" @operator
 "||" @operator
 "&&" @operator
