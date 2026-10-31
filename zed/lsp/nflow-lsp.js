@@ -4,12 +4,8 @@
 const { spawn, spawnSync } = require('node:child_process');
 
 const MINIMUM_VERSION = [0, 44, 2];
-const executable = [
-  process.env.NFLOW_BIN,
-  process.env.FLOW_NFLOW_LSP_BIN,
-  process.env.FLOW_NFLOW_BIN,
-  'nflow',
-].find(value => typeof value === 'string' && value.trim())?.trim();
+const { nflowExecutable } = require('./nflow-command');
+const executable = nflowExecutable();
 
 function fail(message) {
   process.stderr.write(`[Nexss Flow LSP] ${message}\n`);

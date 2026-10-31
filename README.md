@@ -18,6 +18,7 @@ Available LSP features depend on the installed Nexss Flow version.
 ## Install
 
 Install `nflow` from the [Nexss Flow releases](https://github.com/nexssp/flow/releases). Set `NFLOW_BIN` if your editor cannot find it; VS Code also supports `nexssFlow.nflowCommand`.
+The shell-based language-server launchers use `NEXSS_NFLOW_NODE` to select a Node.js executable when `node` is not on `PATH`.
 
 ```sh
 nflow --version
@@ -27,7 +28,7 @@ nflow lint
 
 ## Validate
 
-Point `NFLOW_BIN`, `FLOW_NFLOW_BIN`, and `FLOW_NFLOW_LSP_BIN` at the same `nflow` executable, then run:
+If `nflow` is not on `PATH`, set the single executable override `NFLOW_BIN`, then run:
 
 ```sh
 npm ci

@@ -18,7 +18,7 @@ fi
 # missing/incompatible cores from silently skipping the real-core test suite.
 CORE_ENV="$(bash "$ROOT/scripts/install-flow-core.sh" --check)"
 eval "$CORE_ENV"
-echo "Verified Flow core v0.44.2 or newer: $FLOW_NFLOW_BIN" >&2
+echo "Verified Flow core v0.44.2 or newer: $NFLOW_BIN" >&2
 
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/nexss-flow-release.XXXXXX")"
 trap 'rm -rf -- "$STAGE"' EXIT
@@ -42,9 +42,13 @@ mkdir -p "$SRC/vscode/lsp" "$SRC/vscode/fmt" \
   "$SRC/notepadpp/fmt" "$SRC/jetbrains/fmt"
 cp "$SRC/LICENSE" "$SRC/vscode/LICENSE"
 cp "$SRC/lsp/nflow-lsp.js" "$SRC/vscode/lsp/nflow-lsp.js"
+cp "$SRC/lsp/nflow-command.js" "$SRC/vscode/lsp/nflow-command.js"
 cp "$SRC/lsp/nflow-lsp.js" "$SRC/zed/lsp/nflow-lsp.js"
+cp "$SRC/lsp/nflow-command.js" "$SRC/zed/lsp/nflow-command.js"
 cp "$SRC/lsp/nflow-lsp.js" "$SRC/zed-legacy-0.230.2/lsp/nflow-lsp.js"
+cp "$SRC/lsp/nflow-command.js" "$SRC/zed-legacy-0.230.2/lsp/nflow-command.js"
 cp "$SRC/lsp/nflow-lsp.js" "$SRC/claude/lsp/nflow-lsp.js"
+cp "$SRC/lsp/nflow-command.js" "$SRC/claude/lsp/nflow-command.js"
 cp "$SRC/fmt/index.js" "$SRC/vscode/fmt/index.js"
 cp "$SRC/fmt/index.js" "$SRC/zed/fmt/index.js"
 cp "$SRC/fmt/index.js" "$SRC/zed-legacy-0.230.2/fmt/index.js"

@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { spawnCaptured } = require('./helpers/process-tree');
-const CORE = process.env.NFLOW_BIN || process.env.FLOW_NFLOW_LSP_BIN || process.env.FLOW_NFLOW_BIN || '';
+const CORE = process.env.NFLOW_BIN || '';
 const LAUNCHER = path.resolve(__dirname, '../zed/lsp/nflow-lsp.js');
 
 function frame(message) {

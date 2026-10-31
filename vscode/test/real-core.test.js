@@ -6,7 +6,7 @@ const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const CORE = process.env.FLOW_NFLOW_BIN || '';
+const CORE = process.env.NFLOW_BIN || '';
 const packageRoot = path.resolve(__dirname, '..');
 
 test('VS Code package includes the native LSP launcher and a tested v0.44.2+ Flow core', { skip: !CORE }, () => {

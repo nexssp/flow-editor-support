@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnCaptured } = require('../../test/helpers/process-tree');
 
-const CORE = process.env.FLOW_NFLOW_LSP_BIN || process.env.FLOW_NFLOW_BIN || '';
+const CORE = process.env.NFLOW_BIN || '';
 const LAUNCHER = path.resolve(__dirname, '../../lsp/nflow-lsp.js');
 const TEMPLATE_INPUT = fs.readFileSync(path.resolve(__dirname, '../../test/fixtures/template-render-input.nflow'), 'utf8');
 const TEMPLATE_EXPECTED = fs.readFileSync(path.resolve(__dirname, '../../test/fixtures/template-render-expected.nflow'), 'utf8');

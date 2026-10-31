@@ -56,19 +56,16 @@ emit_environment() {
   if [[ -n "${GITHUB_ENV:-}" ]]; then
     {
       printf 'NFLOW_BIN=%s\n' "$binary"
-      printf 'FLOW_NFLOW_BIN=%s\n' "$binary"
-      printf 'FLOW_NFLOW_LSP_BIN=%s\n' "$binary"
     } >> "$GITHUB_ENV"
   fi
   printf 'export NFLOW_BIN=%q\n' "$binary"
-  printf 'export FLOW_NFLOW_BIN=%q\n' "$binary"
-  printf 'export FLOW_NFLOW_LSP_BIN=%q\n' "$binary"
 }
 
 MODE="${1:-install}"
 if [[ "$MODE" == "--check" ]]; then
   if [[ $# -gt 2 ]]; then usage; exit 2; fi
-  candidate="${2:-${FLOW_NFLOW_BIN:-${NFLOW_BIN:-nflow}}}"
+  # NFLOW_BIN is canonical; old names remain accepted as input fallbacks.
+  candidate="${2:-${NFLOW_BIN:-${FLOW_NFLOW_LSP_BIN:-${FLOW_NFLOW_BIN:-nflow}}}}"
   verified="$(verify_binary "$candidate")"
   emit_environment "$verified"
   exit 0

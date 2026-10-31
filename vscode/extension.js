@@ -5,6 +5,7 @@ const path = require('node:path');
 const { execFile } = require('node:child_process');
 const vscode = require('vscode');
 const { LanguageClient, RevealOutputChannelOn, Trace } = require('vscode-languageclient/node');
+const { nflowExecutable } = require('./lsp/nflow-command');
 
 const traceLevels = {
   off: Trace.Off,
@@ -19,8 +20,7 @@ function configuredTraceLevel(configuration) {
 function configuredFlowExecutable(configuration, env = process.env) {
   const configured = (configuration.get('nflowCommand') || '').trim();
   if (configured) return configured;
-  return [env.NFLOW_BIN, env.FLOW_NFLOW_LSP_BIN, env.FLOW_NFLOW_BIN, 'nflow']
-    .find(value => typeof value === 'string' && value.trim())?.trim();
+  return nflowExecutable(env);
 }
 
 function reportFlowExecutable(outputChannel, configuration) {

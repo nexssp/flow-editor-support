@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-exec "${NEXSS_FLOW_NODE:-node}" "$ROOT/nflow-lsp.js" "$@"
+exec "${NEXSS_NFLOW_NODE:-${NEXSS_FLOW_NODE:-node}}" "$ROOT/nflow-lsp.js" "$@"

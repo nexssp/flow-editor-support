@@ -153,7 +153,7 @@ test('VS Code reports the configured Flow executable and its version', async () 
   }
 });
 
-test('VS Code executable diagnostic follows environment fallback order and reports failures', async () => {
+test('VS Code executable diagnostic preserves legacy environment fallback aliases and reports failures', async () => {
   reset();
   settings = { nflowCommand: '' };
   const savedEnvironment = Object.fromEntries(
