@@ -15,6 +15,7 @@ module.exports = grammar({
   ],
   rules: {
     source_file: $ => repeat(choice(
+      $.function_declaration,
       $.directive_block,
       $.directive,
       $.expression,
@@ -184,5 +185,29 @@ module.exports = grammar({
     punctuation: $ => choice(':', ',', '.', ';', '$'),
     comment: $ => token(seq('//', /[^\n]*/)),
     raw_char: $ => token(prec(-1, /[^\s]/)),
+    function_declaration: $ => prec(10, seq(
+      '@',
+      'func',
+      $.function_name,
+      '(',
+      optional(seq($.function_parameter, repeat(seq(',', $.function_parameter)), optional(','))),
+      ')',
+      $.function_type,
+      choice(
+        seq('=', $.expression),
+        $.function_body,
+      ),
+    )),
+    function_name: $ => $.identifier,
+    function_parameter: $ => seq($.identifier, $.function_type),
+    function_type: $ => $.identifier,
+    function_body: $ => seq('{', repeat(choice(
+      $.expression,
+      $.argument_block,
+      $.modifier,
+      $.operator,
+      $.punctuation,
+      $.raw_char,
+    )), '}'),
   },
 });

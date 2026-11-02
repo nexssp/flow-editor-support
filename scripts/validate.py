@@ -103,10 +103,11 @@ for grammar_rule in ['templateRender', 'templateRenderStringDouble', 'goTemplate
                      'rustInline', 'rustBlock', 'rustNestedBlock', 'phpInline', 'phpBlock', 'phpNestedBlock',
                      'typescriptInline', 'typescriptBlock', 'typescriptNestedBlock',
                      'javascriptInline', 'javascriptBlock', 'javascriptNestedBlock',
-                     'goInline', 'goBlock', 'goNestedBlock']:
+                     'goInline', 'goBlock', 'goNestedBlock', 'funcDeclaration']:
     assert grammar_rule in tm['repository'], f'TextMate grammar lacks {grammar_rule}'
 grammar_source = (ROOT / 'grammar.js').read_text()
-for token in ['language_inline:', 'language_block:', 'language_block_content', 'rust_language_block_content', 'language_inline_double_content',
+for token in ['function_declaration:', 'function_parameter:', 'function_type:', 'function_body:',
+              'language_inline:', 'language_block:', 'language_block_content', 'rust_language_block_content', 'language_inline_double_content',
               'language_inline_single_content', 'language_inline_backtick_content']:
     assert token in grammar_source, f'Tree-sitter grammar lacks {token}'
 for language_tag in ['rust', 'rs', 'php', 'typescript', 'ts', 'javascript', 'js', 'go', 'golang']:
@@ -154,6 +155,9 @@ for rel in ['zed/language-servers/nexss-flow-language-server.toml',
 udl = ET.parse(ROOT / 'notepadpp/flow-udl.xml').getroot()
 user_lang = udl.find('UserLang')
 assert user_lang is not None and user_lang.attrib['ext'] == 'nflow'
+udl_keywords = {entry.attrib['name']: (entry.text or '').split() for entry in user_lang.findall('./KeywordLists/Keywords')}
+assert {'func', 'test'} <= set(udl_keywords['Keywords2']), 'Notepad++ UDL lacks @func/@test directives'
+assert {'&&', '==', '!=', '>=', '<=', '+', '-', '*', '/', '%', '>', '<', '!'} <= set(udl_keywords['Operators1']), 'Notepad++ UDL lacks Flow expression operators'
 comments = user_lang.find("./KeywordLists/Keywords[@name='Comments']")
 assert comments is not None and comments.text.strip().startswith('00//')
 np_exec = (ROOT / 'notepadpp/nppexec/Format-Flow.npes').read_text()
@@ -162,7 +166,7 @@ cmd = (ROOT / 'notepadpp/flowfmt.cmd').read_text()
 assert 'fmt --write' in cmd and 'NFLOW_BIN' in cmd and 'fmt\\cli.js' not in cmd
 claude_command = (ROOT / 'claude/commands/flowfmt.md').read_text()
 assert 'fmt/cli.js" --write' in claude_command and 'NFLOW_BIN' in claude_command
-assert 'v0.44.2 or newer' in claude_command
+assert 'v0.44.2 is the minimum supported core' in claude_command
 assert 'File Watcher' in (ROOT / 'jetbrains/README.md').read_text()
 assert 'fmt --write' in (ROOT / 'jetbrains/README.md').read_text()
 assert 'nflow lint' in (ROOT / 'jetbrains/README.md').read_text()
@@ -237,6 +241,8 @@ assert json.loads((ROOT / 'package.json').read_text())['bin']['flowfmt'] == './f
 highlights = (ROOT / 'zed/languages/flow/highlights.scm').read_text()
 for token in ['@operator', '@function', '@property', '@keyword.control', '@string', '@number', '(array "["']:
     assert token in highlights, f'Zed highlight query lacks {token}'
+for token in ['(function_declaration', '(function_name) @function', '(identifier) @variable.parameter', '(function_type) @type']:
+    assert token in highlights, f'Zed query lacks @func capture {token}'
 for token in ['(template_keyword) @keyword.control', '(template_variable) @variable.member',
               '(template_dot) @variable.builtin', '(template_action_open) @punctuation.special']:
     assert token in highlights, f'Zed query lacks template scope {token}'
@@ -252,7 +258,8 @@ assert '@pipeline' in example and '@assert' in example and '@end' in example
 assert '@{' in example and '.nflow' in example
 fixture = (ROOT / 'test/fixtures/current-syntax.nflow').read_text()
 for token in ['@nflow_version', 'parallel', 'race', 'match', 'loop(', 'until(', '@{', 'schema', '#', '~', '`',
-              '@assert:', '@assert {', 'assert(']:
+              '@assert:', '@assert {', 'assert(', '@func commerce.shippingFeeMinor', 'destinationZone ==',
+              'subtotalMinor int', 'ratePercent int']:
     assert token in fixture, f'current-syntax fixture lacks {token}'
 python_fixture = (ROOT / 'test/fixtures/python-inline.nflow').read_text()
 for token in ['@require lang', 'py {', 'import json', 'py.file',
@@ -276,14 +283,14 @@ assert workflow.count('install-flow-core.sh install') == 2
 assert 'bash scripts/install-flow-core.sh install >/dev/null' in workflow
 assert 'nflow-v0.' not in workflow and 'node --check lsp/nflow-lsp.js' in workflow
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
-assert 'VERSION=0.52.0' in core_installer and 'MINIMUM_VERSION=0.44.2' in core_installer
+assert 'VERSION=0.64.0' in core_installer and 'MINIMUM_VERSION=0.44.2' in core_installer
 assert 'actual_patch < 2' in core_installer
 assert 'nflow-v${VERSION}' in core_installer
 real_core_lsp_test = (ROOT / 'fmt/test/real-core-lsp.test.js').read_text()
 assert 'FLOW_NFLOW_PATCHED_BIN' not in real_core_lsp_test
 assert 'if (TEST_TEMPLATE_FIX)' not in real_core_lsp_test
 assert 'templateFormatted.result[0].newText, TEMPLATE_EXPECTED' in real_core_lsp_test
-assert 'EXPECTED_MANIFEST_SHA256=8d04191a3ca487996f8580ee082014da95909671b933e5d0cee15bec4c8967ef' in core_installer
+assert 'EXPECTED_MANIFEST_SHA256=32a786f97ba883d5a8ec92437b96ea6d129d6ef5e1399cdd78121792eda6d5b2' in core_installer
 assert "printf 'NFLOW_BIN=%s\\n' \"$binary\"" in core_installer
 for variable in ['FLOW_NFLOW_BIN', 'FLOW_NFLOW_LSP_BIN']:
     assert f"printf '{variable}=%s\\n'" not in core_installer
@@ -298,7 +305,7 @@ for token in ['Nexss Flow', 'nflow', 'Available LSP features depend on the insta
     assert token in readme, f'root README lacks {token}'
 assert 'NEXSS_NFLOW_NODE' in readme, 'root README must document the canonical Node.js override'
 assert 'NEXSS_FLOW_NODE' not in readme, 'root README must not document the legacy Node.js override'
-assert 'v0.44.2' not in readme and 'v0.52.0' not in readme
+assert 'v0.64.0' in readme and 'v0.44.2 compatibility floor' in readme and 'v0.52.0' not in readme
 for rel, tokens in [
     ('vscode/test/adapter-smoke.test.js', [
         'textDocument/definition', 'textDocument/references', 'textDocument/rename',
@@ -310,4 +317,4 @@ for rel, tokens in [
     smoke = (ROOT / rel).read_text()
     for token in tokens:
         assert token in smoke, f'{rel} lacks real-provider request {token}'
-print(f'validated {len(required)} required files; real-core v0.52.0 pin, v0.44.2 compatibility floor, editor docs, and package safety=OK')
+print(f'validated {len(required)} required files; real-core v0.64.0 pin, v0.44.2 compatibility floor, editor docs, and package safety=OK')

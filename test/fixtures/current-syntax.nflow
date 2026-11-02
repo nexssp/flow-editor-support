@@ -1,5 +1,5 @@
 // Representative syntax from the current Flow language reference.
-@nflow_version ">=0.44.2"
+@nflow_version ">=0.64.0"
 @description "Editor grammar coverage"
 @require retry as helpers {
   default_max: "2",
@@ -8,6 +8,13 @@
   max_backoff: "1ns",
   retry_all: "true"
 }
+@func commerce.shippingFeeMinor(subtotalMinor int, destinationZone string) int {
+  destinationZone == "domestic" && subtotalMinor >= 5000
+    ? 0
+    : (destinationZone == "domestic" ? 599 : 1299)
+}
+@func commerce.taxMinor(subtotalMinor int, ratePercent int) int = subtotalMinor * ratePercent / 100
+
 @schema Request {
   Name string `json:"name" default:"standard" validate:"required"`
   Depth int `json:"depth" default:"1" validate:"gte=1"`

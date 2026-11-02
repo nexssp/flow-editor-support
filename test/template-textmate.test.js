@@ -162,6 +162,16 @@ for (const editor of Object.keys(grammarPaths)) {
     assert.ok(!flowArrow.scopes.includes('meta.embedded.block.rust.nflow'));
   });
 
+  test(`${editor}: latest @func declarations highlight names, parameters, and result types`, () => {
+    const source = fs.readFileSync(path.join(ROOT, 'test/fixtures/current-syntax.nflow'), 'utf8');
+    const tokens = tokenize(source, grammars[editor]);
+    assertScope(tokens, source, 'func', 'keyword.control.directive.nflow');
+    assertScope(tokens, source, 'commerce.shippingFeeMinor', 'entity.name.function.nflow');
+    assertScope(tokens, source, 'subtotalMinor', 'variable.parameter.nflow');
+    assertScope(tokens, source, 'string', 'storage.type.nflow');
+    assertScope(tokens, source, '&&', 'keyword.operator.nflow');
+  });
+
   test(`${editor}: supplied template.render sample has distinct embedded Go template scopes`, () => {
     const source = fs.readFileSync(INPUT_FIXTURE, 'utf8');
     const tokens = tokenize(source, grammars[editor]);

@@ -48,6 +48,9 @@
       "include": "#templateRender"
     },
     {
+      "include": "#funcDeclaration"
+    },
+    {
       "include": "#directives"
     },
     {
@@ -414,6 +417,50 @@
         },
         {
           "include": "#operators"
+        }
+      ]
+    },
+    "funcDeclaration": {
+      "patterns": [
+        {
+          "name": "meta.function.declaration.nflow",
+          "begin": "(^\\s*)(@)(func)\\b",
+          "beginCaptures": {
+            "2": {
+              "name": "punctuation.definition.directive.nflow"
+            },
+            "3": {
+              "name": "keyword.control.directive.nflow"
+            }
+          },
+          "end": "$",
+          "patterns": [
+            {
+              "name": "entity.name.function.nflow",
+              "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?=\\s*\\()"
+            },
+            {
+              "name": "variable.parameter.nflow",
+              "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s+[A-Za-z_][A-Za-z0-9_]*\\s*(?:,|\\)))"
+            },
+            {
+              "name": "storage.type.nflow",
+              "match": "\\b(?:int|int64|float64|string|bool)\\b"
+            },
+            {
+              "name": "punctuation.section.block.begin.nflow",
+              "match": "\\{"
+            },
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "include": "#operators"
+            }
+          ]
         }
       ]
     },

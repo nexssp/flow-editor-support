@@ -1,6 +1,18 @@
 (comment) @comment
 (identifier) @variable
 
+(function_declaration
+  "@" @punctuation.special
+  "func" @keyword.control
+  (function_name) @function)
+(function_parameter
+  (identifier) @variable.parameter
+  (function_type) @type)
+(function_declaration
+  (function_type) @type)
+(function_body "{" @punctuation.bracket)
+(function_body "}" @punctuation.bracket)
+
 (directive
   "@" @keyword
   (directive_name) @keyword)

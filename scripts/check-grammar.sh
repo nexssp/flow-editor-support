@@ -15,6 +15,10 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
     printf 'Tree-sitter parse failed for %s:\n%s\n' "$file" "$output" >&2
     exit 1
   fi
+  if [[ "$file" == "test/fixtures/current-syntax.nflow" ]] && ! grep -Fq '(function_declaration ' <<<"$output"; then
+    printf 'Tree-sitter did not recognize the latest @func declaration:\n%s\n' "$output" >&2
+    exit 1
+  fi
   printf 'Tree-sitter accepted %s\n' "$file"
 done
 
@@ -102,4 +106,18 @@ for query in \
     exit 1
   fi
   printf 'Tree-sitter query accepted %s\n' "$query"
+done
+
+for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
+  function_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
+    printf 'Tree-sitter @func query failed for %s:\n%s\n' "$query" "$function_output" >&2
+    exit 1
+  }
+  for capture in 'text: `func`' 'text: `commerce.shippingFeeMinor`' 'variable.parameter' 'text: `string`'; do
+    grep -Fq "$capture" <<<"$function_output" || {
+      printf 'Expected @func capture %s is missing from %s:\n%s\n' "$capture" "$query" "$function_output" >&2
+      exit 1
+    }
+  done
+  printf 'Tree-sitter @func captures are scoped correctly in %s\n' "$query"
 done

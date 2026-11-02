@@ -18,6 +18,7 @@ Available LSP features depend on the installed Nexss Flow version.
 ## Install
 
 Install `nflow` from the [Nexss Flow releases](https://github.com/nexssp/flow/releases). Set `NFLOW_BIN` if your editor cannot find it; VS Code also supports `nexssFlow.nflowCommand`.
+Use the latest stable release for current language syntax; this editor-support revision is tested against Nexss Flow v0.64.0. The shared LSP launcher keeps a v0.44.2 compatibility floor, but older cores may not expose newer language-server features.
 The shell-based language-server launchers use `NEXSS_NFLOW_NODE` to select a Node.js executable when `node` is not on `PATH`.
 
 ```sh
