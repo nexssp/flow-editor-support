@@ -39,6 +39,10 @@
           "named": true
         },
         {
+          "type": "local_binding",
+          "named": true
+        },
+        {
           "type": "modifier",
           "named": true
         },
@@ -211,6 +215,10 @@
           "named": true
         },
         {
+          "type": "local_binding",
+          "named": true
+        },
+        {
           "type": "modifier",
           "named": true
         },
@@ -224,6 +232,25 @@
         },
         {
           "type": "raw_char",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "function_call",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "function_call_name",
+          "named": true
+        },
+        {
+          "type": "group",
           "named": true
         }
       ]
@@ -334,6 +361,10 @@
           "named": true
         },
         {
+          "type": "local_binding",
+          "named": true
+        },
+        {
           "type": "modifier",
           "named": true
         },
@@ -395,6 +426,29 @@
     }
   },
   {
+    "type": "local_binding",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "binding_keyword",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "loop",
     "named": true,
     "fields": {},
@@ -416,6 +470,10 @@
         },
         {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "local_binding",
           "named": true
         },
         {
@@ -606,6 +664,10 @@
           "named": true
         },
         {
+          "type": "function_call",
+          "named": true
+        },
+        {
           "type": "group",
           "named": true
         },
@@ -674,6 +736,10 @@
         },
         {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "local_binding",
           "named": true
         },
         {
@@ -973,6 +1039,10 @@
           "named": true
         },
         {
+          "type": "local_binding",
+          "named": true
+        },
+        {
           "type": "modifier",
           "named": true
         },
@@ -1210,6 +1280,10 @@
     "named": false
   },
   {
+    "type": "binding_keyword",
+    "named": true
+  },
+  {
     "type": "comment",
     "named": true,
     "extra": true
@@ -1221,6 +1295,10 @@
   {
     "type": "func",
     "named": false
+  },
+  {
+    "type": "function_call_name",
+    "named": true
   },
   {
     "type": "go",

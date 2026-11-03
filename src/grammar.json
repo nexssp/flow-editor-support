@@ -354,6 +354,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "function_call"
+        },
+        {
+          "type": "SYMBOL",
           "name": "atom"
         },
         {
@@ -424,6 +428,28 @@
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    "function_call": {
+      "type": "PREC",
+      "value": 11,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "identifier"
+            },
+            "named": true,
+            "value": "function_call_name"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "group"
           }
         ]
       }
@@ -972,6 +998,35 @@
         ]
       }
     },
+    "local_binding": {
+      "type": "PREC",
+      "value": 5,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "binding_keyword"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "identifier"
+          },
+          {
+            "type": "STRING",
+            "value": "="
+          },
+          {
+            "type": "SYMBOL",
+            "name": "expression"
+          }
+        ]
+      }
+    },
+    "binding_keyword": {
+      "type": "STRING",
+      "value": "let"
+    },
     "parallel_block": {
       "type": "PREC",
       "value": 3,
@@ -1228,6 +1283,10 @@
         {
           "type": "SYMBOL",
           "name": "directive"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "local_binding"
         },
         {
           "type": "SYMBOL",
@@ -2106,6 +2165,10 @@
           "content": {
             "type": "CHOICE",
             "members": [
+              {
+                "type": "SYMBOL",
+                "name": "local_binding"
+              },
               {
                 "type": "SYMBOL",
                 "name": "expression"

@@ -10,6 +10,8 @@
   "@" @punctuation.special
   "func" @keyword.control
   (function_name) @function)
+(function_call (function_call_name) @function)
+(binding_keyword) @keyword.control
 (function_parameter
   (identifier) @variable.parameter
   (function_type) @type)
@@ -241,7 +243,9 @@
 (language_inline "go"
   (language_inline_backtick_content) @injection.content
   (#set! injection.language "go"))
-(atom (identifier) @function)
+(atom
+  (identifier) @function
+  (argument_block))
 (projection_field (identifier) @property)
 (modifier ":" @punctuation.delimiter)
 (modifier (modifier_name) @property)

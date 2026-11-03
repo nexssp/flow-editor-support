@@ -5,6 +5,7 @@ cd "$ROOT"
 
 npx --yes tree-sitter-cli generate grammar.js
 for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
+  test/fixtures/zed-highlight-regression.nflow \
   test/fixtures/template-render-input.nflow test/fixtures/template-render-contexts.nflow \
   test/fixtures/python-inline.nflow test/fixtures/embedded-languages.nflow; do
   output="$(npx --yes tree-sitter-cli parse "$file" 2>&1)" || {
@@ -23,6 +24,14 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
     for node in path_shorthand_field named_binding spread_field input_rooted_spread; do
       grep -Fq "($node" <<<"$output" || {
         printf 'Tree-sitter did not recognize the Flow v0.67 syntax node %s:\n%s\n' "$node" "$output" >&2
+        exit 1
+      }
+    done
+  fi
+  if [[ "$file" == "test/fixtures/zed-highlight-regression.nflow" ]]; then
+    for node in function_call function_call_name local_binding binding_keyword; do
+      grep -Fq "($node" <<<"$output" || {
+        printf 'Tree-sitter did not recognize the Zed highlighting regression node %s:\n%s\n' "$node" "$output" >&2
         exit 1
       }
     done
@@ -142,4 +151,23 @@ for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow
     }
   done
   printf 'Tree-sitter Flow v0.67 syntax captures are correct in %s\n' "$query"
+done
+
+for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
+  output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/zed-highlight-regression.nflow 2>&1)" || {
+    printf 'Tree-sitter Zed regression query failed for %s:\n%s\n' "$query" "$output" >&2
+    exit 1
+  }
+  for capture in 'keyword.control' 'text: `let`' 'variable' 'text: `tier`' \
+    'function' 'text: `pricing.discountMinor`' 'property' 'text: `discount_minor`'; do
+    grep -Fq "$capture" <<<"$output" || {
+      printf 'Expected Zed regression capture %s is missing from %s:\n%s\n' "$capture" "$query" "$output" >&2
+      exit 1
+    }
+  done
+  if grep -E ' - function, .*text: `(tier|subtotal|let)`' <<<"$output"; then
+    printf 'A variable or keyword was incorrectly highlighted as a function by %s:\n%s\n' "$query" "$output" >&2
+    exit 1
+  fi
+  printf 'Zed variable, keyword, field, and function captures are correct in %s\n' "$query"
 done

@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 required = [
     'README.md', 'LICENSE', 'package.json', 'package-lock.json', 'grammar.js', 'src/parser.c', 'src/node-types.json', 'src/scanner.c',
     'assets/nexss-logo.png', 'examples/complete.nflow', 'test/fixtures/current-syntax.nflow',
+    'test/fixtures/zed-highlight-regression.nflow',
     'test/fixtures/template-render-input.nflow', 'test/fixtures/template-render-expected.nflow',
     'test/fixtures/template-render-contexts.nflow', 'test/fixtures/python-inline.nflow',
     'test/fixtures/embedded-languages.nflow', 'test/template-textmate.test.js', 'test/nflow-lsp.test.js',
@@ -107,6 +108,7 @@ for grammar_rule in ['templateRender', 'templateRenderStringDouble', 'goTemplate
     assert grammar_rule in tm['repository'], f'TextMate grammar lacks {grammar_rule}'
 grammar_source = (ROOT / 'grammar.js').read_text()
 for token in ['function_declaration:', 'function_parameter:', 'function_type:', 'function_body:',
+              'function_call:', 'local_binding:', 'binding_keyword:',
               'language_inline:', 'language_block:', 'language_block_content', 'rust_language_block_content', 'language_inline_double_content',
               'language_inline_single_content', 'language_inline_backtick_content']:
     assert token in grammar_source, f'Tree-sitter grammar lacks {token}'

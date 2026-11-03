@@ -51,6 +51,7 @@ module.exports = grammar({
       $.language_inline,
       $.language_block,
       $.template_render,
+      $.function_call,
       $.atom,
       $.projection,
       $.array,
@@ -61,6 +62,10 @@ module.exports = grammar({
     atom: $ => prec.right(10, seq(
       choice($.identifier, $.path_reference),
       repeat(choice($.modifier, $.prompt, $.targets, $.excludes, $.argument_block)),
+    )),
+    function_call: $ => prec(11, seq(
+      alias($.identifier, $.function_call_name),
+      $.group,
     )),
 
     language_block: $ => prec(20, choice(
@@ -104,6 +109,8 @@ module.exports = grammar({
     excludes: $ => prec.right(seq('~', $.identifier, repeat(seq(',', $.identifier)))),
 
     argument_block: $ => prec(4, seq('@', $.projection)),
+    local_binding: $ => prec(5, seq($.binding_keyword, $.identifier, '=', $.expression)),
+    binding_keyword: _ => 'let',
     parallel_block: $ => prec(3, seq('parallel', $.projection)),
     race_block: $ => prec(3, seq('race', $.projection)),
     match_block: $ => prec(3, seq('match', optional($.group), $.projection)),
@@ -124,6 +131,7 @@ module.exports = grammar({
     _block_item: $ => choice(
       $.directive_block,
       $.directive,
+      $.local_binding,
       $.expression,
       $.argument_block,
       $.modifier,
@@ -216,6 +224,7 @@ module.exports = grammar({
     function_parameter: $ => seq($.identifier, $.function_type),
     function_type: $ => $.identifier,
     function_body: $ => seq('{', repeat(choice(
+      $.local_binding,
       $.expression,
       $.argument_block,
       $.modifier,

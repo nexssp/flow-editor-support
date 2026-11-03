@@ -1,0 +1,18 @@
+@description "Offline golden: calculate tier discount and payable total"
+@func pricing.discountMinor(subtotal int, tier string) int {
+  tier == "gold"
+    ? subtotal * 10 / 100
+    : (tier == "silver" ? subtotal * 5 / 100 : 0)
+}
+{
+  let subtotal_minor = .subtotal_minor ?? 3897;
+  let tier = .tier ?? "gold";
+  subtotal_minor: subtotal_minor,
+  discount_minor: pricing.discountMinor(subtotal_minor, tier),
+  total_minor: subtotal_minor - pricing.discountMinor(subtotal_minor, tier)
+}
+@assert {
+  result.subtotal_minor == 3897
+  result.discount_minor == 389
+  result.total_minor == 3508
+}
