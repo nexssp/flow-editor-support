@@ -1,6 +1,8 @@
 # Nexss Flow for Notepad++
 
-Import `flow-udl.xml` through **Language → Define your language → Import**. If required, associate `.nflow` files with **Nexss Flow**. The profile colors Flow syntax but does not validate it or provide LSP diagnostics.
+Import `flow-udl.xml` through **Language → Define your language → Import**. If required, associate `.nflow` files with **Nexss Flow**. The syntax colors use the active editor background and are tuned for light themes; common object fields are highlighted in teal. The profile does not validate source or provide LSP diagnostics.
+
+Field highlighting uses a built-in list of common Flow fields, so custom field names remain in the default text color. To replace an already imported profile, remove the old **Nexss Flow** entry in **Language → User Defined Language → Define your language…**, then import this XML again. For dark themes, adjust the foreground colors in the UDL to suit the theme.
 
 ## Formatting with NppExec
 

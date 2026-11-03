@@ -157,7 +157,16 @@ for rel in ['zed/language-servers/nexss-flow-language-server.toml',
 udl = ET.parse(ROOT / 'notepadpp/flow-udl.xml').getroot()
 user_lang = udl.find('UserLang')
 assert user_lang is not None and user_lang.attrib['ext'] == 'nflow'
+udl_styles = {style.attrib['name']: style.attrib for style in user_lang.findall('./Styles/WordsStyle')}
+assert udl_styles['DEFAULT']['colorStyle'] == '0', 'Notepad++ UDL default style should inherit the active theme colors'
+assert all(style.get('colorStyle') == '1' for name, style in udl_styles.items() if name != 'DEFAULT'), 'Notepad++ UDL token backgrounds should inherit the active theme background'
+assert udl_styles['KEYWORDS5']['fgColor'] != udl_styles['KEYWORDS3']['fgColor'], 'Notepad++ UDL fields should use a distinct color from type names'
 udl_keywords = {entry.attrib['name']: (entry.text or '').split() for entry in user_lang.findall('./KeywordLists/Keywords')}
+delimiter_slots = udl_keywords['Delimiters']
+expected_delimiter_slots = ['00"', '01' + chr(92), '02"', "03'", '04' + chr(92), "05'", '06`', '07' + chr(92), '08`']
+assert delimiter_slots[:9] == expected_delimiter_slots, 'Notepad++ UDL quote delimiters must use open/escape/close slot order'
+assert delimiter_slots[9:] == [f'{index:02d}' for index in range(9, 24)], 'Notepad++ UDL should not define extra paired delimiters that color code blocks as strings'
+assert {'request', 'test_cases', 'name', 'input', 'expected', 'suite_id', 'suite_name', 'passed_programs', 'refund_eligible', 'days_since_purchase', 'item_returned', 'final_sale', 'estimated_cost_currency', 'source_path'} <= set(udl_keywords['Keywords5']), 'Notepad++ UDL lacks common field-name highlighting'
 assert {'func', 'test'} <= set(udl_keywords['Keywords2']), 'Notepad++ UDL lacks @func/@test directives'
 assert {'&&', '==', '!=', '>=', '<=', '+', '-', '*', '/', '%', '>', '<', '!'} <= set(udl_keywords['Operators1']), 'Notepad++ UDL lacks Flow expression operators'
 comments = user_lang.find("./KeywordLists/Keywords[@name='Comments']")
