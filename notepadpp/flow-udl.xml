@@ -13,7 +13,7 @@
       <Keywords name="Numbers, suffix1">s m h ms us</Keywords>
       <Keywords name="Numbers, suffix2"></Keywords>
       <Keywords name="Numbers, range"></Keywords>
-      <Keywords name="Operators1">-&gt; || | &amp; ? ~ &amp;&amp; == != &gt;= &lt;= + - * / % &gt; &lt; !</Keywords>
+      <Keywords name="Operators1">... ?? -&gt; || | &amp; ? ~ &amp;&amp; == != &gt;= &lt;= + - * / % &gt; &lt; !</Keywords>
       <Keywords name="Operators2">= : ,</Keywords>
       <Keywords name="Folders in code1, open">( {</Keywords>
       <Keywords name="Folders in code1, middle"></Keywords>
@@ -25,7 +25,7 @@
       <Keywords name="Folders in comment, middle"></Keywords>
       <Keywords name="Folders in comment, close"></Keywords>
       <Keywords name="Keywords1">parallel race match loop until when else</Keywords>
-      <Keywords name="Keywords2">config config.load assert func test pipeline include description require end const const.load nflow_version symbols schema scope profile macro hook pool on approval on_error embed</Keywords>
+      <Keywords name="Keywords2">config config.load assert func test pipeline include description require end as const const.load nflow_version symbols schema scope profile macro hook pool on approval on_error embed</Keywords>
       <Keywords name="Keywords3">timeout retry concurrency cache coalesce dedup idempotent rate_limit auth role perm feature name desc description status tag scope read_only audit debug deprecated strict lenient request-schema response-schema route model int int64 float64 string bool any</Keywords>
       <Keywords name="Keywords4">true false null</Keywords>
       <Keywords name="Keywords5"></Keywords>

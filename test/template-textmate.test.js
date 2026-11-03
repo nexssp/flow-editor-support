@@ -172,6 +172,15 @@ for (const editor of Object.keys(grammarPaths)) {
     assertScope(tokens, source, '&&', 'keyword.operator.nflow');
   });
 
+  test(`${editor}: Flow v0.67 syntax highlights path shorthand, named bindings, and spreads`, () => {
+    const source = fs.readFileSync(path.join(ROOT, 'test/fixtures/current-syntax.nflow'), 'utf8');
+    const tokens = tokenize(source, grammars[editor]);
+    assertScope(tokens, source, 'as estimate', 'keyword.control.nflow');
+    assertScope(tokens, source, '.customer.id', 'variable.other.member.nflow');
+    assertScope(tokens, source, '...input.state', 'keyword.operator.nflow');
+    assertScope(tokens, source, '??', 'keyword.operator.nflow');
+  });
+
   test(`${editor}: supplied template.render sample has distinct embedded Go template scopes`, () => {
     const source = fs.readFileSync(INPUT_FIXTURE, 'utf8');
     const tokens = tokenize(source, grammars[editor]);

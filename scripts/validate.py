@@ -243,6 +243,10 @@ for token in ['@operator', '@function', '@property', '@keyword.control', '@strin
     assert token in highlights, f'Zed highlight query lacks {token}'
 for token in ['(function_declaration', '(function_name) @function', '(identifier) @variable.parameter', '(function_type) @type']:
     assert token in highlights, f'Zed query lacks @func capture {token}'
+for token in ['(path_reference) @variable.member', '(input_rooted_spread) @operator',
+              '(spread_operator) @operator', '(named_binding "as" @keyword.control)',
+              '(path_shorthand_field (path_reference) @property)']:
+    assert token in highlights, f'Zed query lacks Flow v0.67 capture {token}'
 for token in ['(template_keyword) @keyword.control', '(template_variable) @variable.member',
               '(template_dot) @variable.builtin', '(template_action_open) @punctuation.special']:
     assert token in highlights, f'Zed query lacks template scope {token}'
@@ -257,9 +261,10 @@ example = (ROOT / 'examples/complete.nflow').read_text()
 assert '@pipeline' in example and '@assert' in example and '@end' in example
 assert '@{' in example and '.nflow' in example
 fixture = (ROOT / 'test/fixtures/current-syntax.nflow').read_text()
-for token in ['@nflow_version', 'parallel', 'race', 'match', 'loop(', 'until(', '@{', 'schema', '#', '~', '`',
+for token in ['@nflow_version ">=0.67.0"', 'parallel', 'race', 'match', 'loop(', 'until(', '@{', 'schema', '#', '~', '`',
               '@assert:', '@assert {', 'assert(', '@func commerce.shippingFeeMinor', 'destinationZone ==',
-              'subtotalMinor int', 'ratePercent int']:
+              'subtotalMinor int', 'ratePercent int', 'as estimate', '.customer.id',
+              '... .state', '...input.state']:
     assert token in fixture, f'current-syntax fixture lacks {token}'
 python_fixture = (ROOT / 'test/fixtures/python-inline.nflow').read_text()
 for token in ['@require lang', 'py {', 'import json', 'py.file',
@@ -279,18 +284,20 @@ assert 'npm ci --omit=dev' in release and '--no-dependencies' not in release
 workflow = (ROOT / '.github/workflows/release.yml').read_text()
 assert 'package-release.sh' in workflow and 'softprops/action-gh-release' in workflow
 assert 'run: npm ci' in workflow
+assert workflow.count("go-version: '1.27.3'") == 2
 assert workflow.count('install-flow-core.sh install') == 2
 assert 'bash scripts/install-flow-core.sh install >/dev/null' in workflow
 assert 'nflow-v0.' not in workflow and 'node --check lsp/nflow-lsp.js' in workflow
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
-assert 'VERSION=0.64.0' in core_installer and 'MINIMUM_VERSION=0.44.2' in core_installer
+assert 'VERSION=0.67.0' in core_installer and 'FLOW_MODULE=github.com/nexssp/flow/cmd/nflow' in core_installer
+assert 'MINIMUM_VERSION=0.44.2' in core_installer and 'GOTOOLCHAIN=auto' in core_installer
 assert 'actual_patch < 2' in core_installer
 assert 'nflow-v${VERSION}' in core_installer
+assert 'go install "${FLOW_MODULE}@v${VERSION}"' in core_installer
 real_core_lsp_test = (ROOT / 'fmt/test/real-core-lsp.test.js').read_text()
 assert 'FLOW_NFLOW_PATCHED_BIN' not in real_core_lsp_test
 assert 'if (TEST_TEMPLATE_FIX)' not in real_core_lsp_test
 assert 'templateFormatted.result[0].newText, TEMPLATE_EXPECTED' in real_core_lsp_test
-assert 'EXPECTED_MANIFEST_SHA256=32a786f97ba883d5a8ec92437b96ea6d129d6ef5e1399cdd78121792eda6d5b2' in core_installer
 assert "printf 'NFLOW_BIN=%s\\n' \"$binary\"" in core_installer
 for variable in ['FLOW_NFLOW_BIN', 'FLOW_NFLOW_LSP_BIN']:
     assert f"printf '{variable}=%s\\n'" not in core_installer
@@ -305,7 +312,7 @@ for token in ['Nexss Flow', 'nflow', 'Available LSP features depend on the insta
     assert token in readme, f'root README lacks {token}'
 assert 'NEXSS_NFLOW_NODE' in readme, 'root README must document the canonical Node.js override'
 assert 'NEXSS_FLOW_NODE' not in readme, 'root README must not document the legacy Node.js override'
-assert 'v0.64.0' in readme and 'v0.44.2 compatibility floor' in readme and 'v0.52.0' not in readme
+assert 'v0.67.0' in readme and 'v0.44.2 compatibility floor' in readme and 'Go 1.27.3 or newer' in readme
 for rel, tokens in [
     ('vscode/test/adapter-smoke.test.js', [
         'textDocument/definition', 'textDocument/references', 'textDocument/rename',
@@ -317,4 +324,4 @@ for rel, tokens in [
     smoke = (ROOT / rel).read_text()
     for token in tokens:
         assert token in smoke, f'{rel} lacks real-provider request {token}'
-print(f'validated {len(required)} required files; real-core v0.64.0 pin, v0.44.2 compatibility floor, editor docs, and package safety=OK')
+print(f'validated {len(required)} required files; source-built Flow v0.67.0 pin, v0.44.2 compatibility floor, editor docs, and package safety=OK')

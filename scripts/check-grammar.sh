@@ -19,6 +19,14 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
     printf 'Tree-sitter did not recognize the latest @func declaration:\n%s\n' "$output" >&2
     exit 1
   fi
+  if [[ "$file" == "test/fixtures/current-syntax.nflow" ]]; then
+    for node in path_shorthand_field named_binding spread_field input_rooted_spread; do
+      grep -Fq "($node" <<<"$output" || {
+        printf 'Tree-sitter did not recognize the Flow v0.67 syntax node %s:\n%s\n' "$node" "$output" >&2
+        exit 1
+      }
+    done
+  fi
   printf 'Tree-sitter accepted %s\n' "$file"
 done
 
@@ -120,4 +128,18 @@ for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow
     }
   done
   printf 'Tree-sitter @func captures are scoped correctly in %s\n' "$query"
+done
+
+for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
+  current_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
+    printf 'Tree-sitter v0.67 syntax query failed for %s:\n%s\n' "$query" "$current_output" >&2
+    exit 1
+  }
+  for capture in 'text: `as`' 'text: `...input.state`' 'text: `.customer.id`'; do
+    grep -Fq "$capture" <<<"$current_output" || {
+      printf 'Expected Flow v0.67 capture %s is missing from %s:\n%s\n' "$capture" "$query" "$current_output" >&2
+      exit 1
+    }
+  done
+  printf 'Tree-sitter Flow v0.67 syntax captures are correct in %s\n' "$query"
 done

@@ -38,7 +38,9 @@ module.exports = grammar({
       seq('||', $.pipe),
       seq('??', $.pipe),
     )))),
-    pipe: $ => prec.left(2, seq($.parallel, repeat(seq(choice('->', '|'), $.parallel)))),
+    pipe: $ => prec.left(2, seq($.pipeline_step, repeat(seq(choice('->', '|'), $.pipeline_step)))),
+    pipeline_step: $ => seq($.parallel, optional($.named_binding)),
+    named_binding: $ => seq('as', $.identifier),
     parallel: $ => prec.left(3, seq($.primary, repeat(seq('&', $.primary)))),
 
     primary: $ => choice(
@@ -57,7 +59,7 @@ module.exports = grammar({
       $.number,
     ),
     atom: $ => prec.right(10, seq(
-      $.identifier,
+      choice($.identifier, $.path_reference),
       repeat(choice($.modifier, $.prompt, $.targets, $.excludes, $.argument_block)),
     )),
 
@@ -87,6 +89,7 @@ module.exports = grammar({
     template_render_argument_block: $ => seq('@', $.template_render_projection),
     template_render_projection: $ => seq('{', repeat(choice(
       $.template_render_template_field,
+      $.spread_field,
       $.projection_field,
       $._block_item,
     )), '}'),
@@ -104,8 +107,16 @@ module.exports = grammar({
     parallel_block: $ => prec(3, seq('parallel', $.projection)),
     race_block: $ => prec(3, seq('race', $.projection)),
     match_block: $ => prec(3, seq('match', optional($.group), $.projection)),
-    projection: $ => seq('{', repeat(choice($.projection_field, $._block_item)), '}'),
-    projection_field: $ => prec(2, seq($.identifier, ':', repeat1($._value_item))),
+    projection: $ => seq('{', repeat(choice($.spread_field, $.projection_field, $._block_item)), '}'),
+    projection_field: $ => choice(
+      prec(2, seq($.identifier, ':', repeat1($._value_item))),
+      $.path_shorthand_field,
+    ),
+    path_shorthand_field: $ => prec(11, $.path_reference),
+    spread_field: $ => prec(3, choice(
+      $.input_rooted_spread,
+      seq($.spread_operator, $.path_reference),
+    )),
     array: $ => seq('[', repeat($._block_item), ']'),
     group: $ => seq('(', repeat($._block_item), ')'),
     loop: $ => seq('loop', '(', repeat($._block_item), ')', 'until', '(', repeat($._block_item), ')'),
@@ -129,6 +140,9 @@ module.exports = grammar({
       $.raw_char,
     ),
 
+    path_reference: _ => token(prec(2, /\.[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*/)),
+    input_rooted_spread: _ => token(prec(5, /\.\.\.input(?:\.[A-Za-z_][A-Za-z0-9_]*)*/)),
+    spread_operator: _ => token(prec(4, '...')),
     identifier: $ => /[A-Za-z_\.][A-Za-z0-9_\.\/-]*/,
     modifier_name: $ => /[A-Za-z_][A-Za-z0-9_]*/,
     directive_name: $ => /[A-Za-z_][A-Za-z0-9_.-]*/,

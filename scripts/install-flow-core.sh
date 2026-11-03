@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Pinned core used by CI and real-provider smoke tests.
-VERSION=0.64.0
+# Pinned core used by CI and real-provider smoke tests. The v0.67.0 source tag is
+# public but has no published binary assets yet, so build its CLI from the Go module.
+VERSION=0.67.0
+FLOW_MODULE=github.com/nexssp/flow/cmd/nflow
 # Separate launcher compatibility floor; this does not imply newer LSP features.
 MINIMUM_VERSION=0.44.2
-ASSET="nflow_${VERSION}_linux_amd64.tar.gz"
-MANIFEST="nflow_${VERSION}_checksums.txt"
-RELEASE_URL="https://github.com/nexssp/flow/releases/download/v${VERSION}"
-EXPECTED_MANIFEST_SHA256=32a786f97ba883d5a8ec92437b96ea6d129d6ef5e1399cdd78121792eda6d5b2
 
 usage() {
   echo "Usage: $0 [install [INSTALL_DIR] | --check]" >&2
@@ -76,34 +74,25 @@ if [[ "$MODE" != "install" || $# -gt 2 ]]; then
   exit 2
 fi
 if [[ "$(uname -s)" != "Linux" || "$(uname -m)" != "x86_64" ]]; then
-  echo "The pinned release installer supports Linux amd64 runners only." >&2
+  echo "The pinned source installer supports Linux amd64 runners only." >&2
   exit 2
+fi
+if ! command -v go >/dev/null 2>&1; then
+  echo "Go 1.27.3 or newer is required to build Flow v${VERSION} from its source tag." >&2
+  exit 1
 fi
 
 INSTALL_DIR="${2:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/nflow-v${VERSION}}"
 mkdir -p "$INSTALL_DIR"
-curl --fail --location --retry 3 --silent --show-error \
-  --output "$INSTALL_DIR/$ASSET" "$RELEASE_URL/$ASSET"
-curl --fail --location --retry 3 --silent --show-error \
-  --output "$INSTALL_DIR/$MANIFEST" "$RELEASE_URL/$MANIFEST"
-if ! printf '%s  %s\n' "$EXPECTED_MANIFEST_SHA256" "$INSTALL_DIR/$MANIFEST" | sha256sum --check --status; then
-  echo "Official Flow v${VERSION} checksum manifest SHA-256 did not match the pinned digest." >&2
-  exit 1
-fi
-if ! awk -v asset="$ASSET" '$2 == asset && length($1) == 64 { found++ } END { exit !(found == 1) }' "$INSTALL_DIR/$MANIFEST"; then
-  echo "Official checksum manifest has no unique SHA-256 entry for $ASSET" >&2
-  exit 1
-fi
-if ! (cd "$INSTALL_DIR" && sha256sum --check --ignore-missing "$MANIFEST"); then
-  echo "Flow v${VERSION} Linux amd64 archive failed its official checksum check." >&2
-  exit 1
-fi
-if ! tar -tzf "$INSTALL_DIR/$ASSET" | grep -Fxq nflow; then
-  echo "Flow v${VERSION} archive does not contain the expected nflow executable." >&2
-  exit 1
-fi
-tar -xzf "$INSTALL_DIR/$ASSET" -C "$INSTALL_DIR" nflow
-chmod +x "$INSTALL_DIR/nflow"
+INSTALL_DIR="$(cd "$INSTALL_DIR" && pwd)"
+GOTOOLCHAIN=auto GOBIN="$INSTALL_DIR" go install "${FLOW_MODULE}@v${VERSION}"
 verified="$(verify_binary "$INSTALL_DIR/nflow")"
-echo "Installed and verified Flow core v${VERSION} at $verified" >&2
+version_output="$("$verified" --version 2>&1)"
+exact_version_pattern="version:[[:space:]]+v?${VERSION//./\\.}([[:space:]]|$)"
+if [[ ! "$version_output" =~ $exact_version_pattern ]]; then
+  echo "Built Flow CLI did not report the pinned v${VERSION}:" >&2
+  printf '%s\n' "$version_output" >&2
+  exit 1
+fi
+echo "Built and verified Flow core v${VERSION} from ${FLOW_MODULE}@v${VERSION} at $verified" >&2
 emit_environment "$verified"

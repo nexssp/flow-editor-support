@@ -1,5 +1,10 @@
 (comment) @comment
 (identifier) @variable
+(path_reference) @variable.member
+(input_rooted_spread) @operator
+(spread_operator) @operator
+(named_binding "as" @keyword.control)
+(path_shorthand_field (path_reference) @property)
 
 (function_declaration
   "@" @punctuation.special

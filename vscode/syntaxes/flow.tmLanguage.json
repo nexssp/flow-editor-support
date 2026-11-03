@@ -484,7 +484,7 @@
       "patterns": [
         {
           "name": "keyword.control.nflow",
-          "match": "\\b(parallel|race|match)\\b"
+          "match": "\\b(parallel|race|match|as)\\b"
         },
         {
           "name": "keyword.control.loop.nflow",
@@ -496,7 +496,7 @@
       "patterns": [
         {
           "name": "keyword.operator.nflow",
-          "match": "->|\\|\\||&&|\\||&|\\?|==|!=|>=|<=|[+*/%<>!=]"
+          "match": "\\.\\.\\.|->|\\|\\||&&|\\?\\?|\\||&|\\?|==|!=|>=|<=|[+*/%<>!=]"
         }
       ]
     },
@@ -552,8 +552,12 @@
     "atoms": {
       "patterns": [
         {
+          "name": "variable.other.member.nflow",
+          "match": "\\.[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*"
+        },
+        {
           "name": "entity.name.function.nflow",
-          "match": "(?<![A-Za-z0-9_./-])[A-Za-z_\\.][A-Za-z0-9_\\.\\/-]*(?=(?:\\s|:|@|#|~|\\)|\\}|\\]|&|\\?|,|$))"
+          "match": "(?<![A-Za-z0-9_./-])(?!\\.\\.\\.)[A-Za-z_\\.][A-Za-z0-9_\\.\\/-]*(?=(?:\\s|:|@|#|~|\\)|\\}|\\]|&|\\?|,|$))"
         }
       ]
     },
