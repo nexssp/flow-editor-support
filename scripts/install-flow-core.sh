@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Pinned core used by CI and real-provider smoke tests. The v0.67.0 source tag is
+# Pinned core used by CI and real-provider smoke tests. The v0.95.0 source tag is
 # public but has no published binary assets yet, so build its CLI from the Go module.
-VERSION=0.67.0
+VERSION=0.95.0
 FLOW_MODULE=github.com/nexssp/flow/cmd/nflow
 # Separate launcher compatibility floor; this does not imply newer LSP features.
 MINIMUM_VERSION=0.44.2
@@ -78,7 +78,7 @@ if [[ "$(uname -s)" != "Linux" || "$(uname -m)" != "x86_64" ]]; then
   exit 2
 fi
 if ! command -v go >/dev/null 2>&1; then
-  echo "Go 1.27.3 or newer is required to build Flow v${VERSION} from its source tag." >&2
+  echo "Go 1.27.4 or newer is required to build Flow v${VERSION} from its source tag." >&2
   exit 1
 fi
 

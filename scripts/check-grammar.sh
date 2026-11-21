@@ -21,9 +21,10 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
     exit 1
   fi
   if [[ "$file" == "test/fixtures/current-syntax.nflow" ]]; then
-    for node in path_shorthand_field named_binding spread_field input_rooted_spread; do
+    for node in path_shorthand_field named_binding spread_field input_rooted_spread \
+      function_call function_call_name argument_list if_block each_block; do
       grep -Fq "($node" <<<"$output" || {
-        printf 'Tree-sitter did not recognize the Flow v0.67 syntax node %s:\n%s\n' "$node" "$output" >&2
+        printf 'Tree-sitter did not recognize the Flow v0.95 syntax node %s:\n%s\n' "$node" "$output" >&2
         exit 1
       }
     done
@@ -38,6 +39,23 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
   fi
   printf 'Tree-sitter accepted %s\n' "$file"
 done
+
+call_file="$(mktemp "${TMPDIR:-/tmp}/flow-call-XXXXXX.nflow")"
+trap 'rm -f "$call_file"' EXIT
+printf '%s\n' 'runtime.noop :timeout=1s :retry=1 ( value: "x" )' > "$call_file"
+call_output="$(npx --yes tree-sitter-cli parse "$call_file" 2>&1)" || {
+  printf 'Tree-sitter rejected a v0.95 action call with repeated modifiers:\n%s\n' "$call_output" >&2
+  exit 1
+}
+modifier_count="$(grep -c '(modifier ' <<<"$call_output" || true)"
+if grep -Eq '\(ERROR|\(MISSING' <<<"$call_output" || \
+   ! grep -Fq '(function_call ' <<<"$call_output" || \
+   ! grep -Fq '(argument_list ' <<<"$call_output" || \
+   [[ "$modifier_count" -ne 2 ]]; then
+  printf 'Tree-sitter failed the repeated-modifier action-call regression:\n%s\n' "$call_output" >&2
+  exit 1
+fi
+printf 'Tree-sitter accepted a v0.95 action call with two modifiers and parenthesized arguments\n'
 
 for query in \
   zed/languages/flow/highlights.scm \
@@ -141,16 +159,17 @@ done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
   current_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
-    printf 'Tree-sitter v0.67 syntax query failed for %s:\n%s\n' "$query" "$current_output" >&2
+    printf 'Tree-sitter v0.95 syntax query failed for %s:\n%s\n' "$query" "$current_output" >&2
     exit 1
   }
-  for capture in 'text: `as`' 'text: `...input.state`' 'text: `.customer.id`'; do
+  for capture in 'text: `as`' 'text: `...input.state`' 'text: `.customer.id`' \
+    'text: `if`' 'text: `else`' 'text: `each`'; do
     grep -Fq "$capture" <<<"$current_output" || {
-      printf 'Expected Flow v0.67 capture %s is missing from %s:\n%s\n' "$capture" "$query" "$current_output" >&2
+      printf 'Expected Flow v0.95 capture %s is missing from %s:\n%s\n' "$capture" "$query" "$current_output" >&2
       exit 1
     }
   done
-  printf 'Tree-sitter Flow v0.67 syntax captures are correct in %s\n' "$query"
+  printf 'Tree-sitter Flow v0.95 syntax captures are correct in %s\n' "$query"
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do

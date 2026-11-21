@@ -233,7 +233,7 @@ test('VS Code adapter launches real Flow LSP and forwards editor feature request
     '}',
     '',
     '@pipeline editor_smoke',
-    '  runtime.const @{ value: "ok" }',
+    '  runtime.noop',
     '@end',
     '',
   ].join('\n');

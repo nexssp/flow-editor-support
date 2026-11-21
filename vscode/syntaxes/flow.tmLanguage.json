@@ -178,22 +178,19 @@
     },
     "templateRender": {
       "name": "meta.function-call.template-render.nflow",
-      "begin": "\\b(template\\.render)(\\s*)(@)(\\{)",
+      "begin": "\\b(template\\.render)(\\s*)(\\()",
       "beginCaptures": {
         "1": {
           "name": "entity.name.function.nflow"
         },
         "3": {
           "name": "punctuation.section.argument.begin.nflow"
-        },
-        "4": {
-          "name": "punctuation.section.projection.begin.nflow"
         }
       },
-      "end": "\\}",
+      "end": "\\)",
       "endCaptures": {
         "0": {
-          "name": "punctuation.section.projection.end.nflow"
+          "name": "punctuation.section.argument.end.nflow"
         }
       },
       "patterns": [
@@ -484,7 +481,7 @@
       "patterns": [
         {
           "name": "keyword.control.nflow",
-          "match": "\\b(parallel|race|match|as)\\b"
+          "match": "\\b(parallel|race|match|as|let|if|else|each)\\b"
         },
         {
           "name": "keyword.control.loop.nflow",
@@ -596,11 +593,14 @@
     "arguments": {
       "patterns": [
         {
-          "name": "meta.argument-block.nflow",
-          "begin": "@\\{",
-          "end": "\\}",
+          "name": "meta.argument-list.nflow",
+          "begin": "\\b([A-Za-z_][A-Za-z0-9_.]*)(\\s*)(\\()",
+          "end": "\\)",
           "beginCaptures": {
-            "0": {
+            "1": {
+              "name": "entity.name.function.nflow"
+            },
+            "3": {
               "name": "punctuation.section.argument.begin.nflow"
             }
           },

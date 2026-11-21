@@ -30,6 +30,9 @@
 (parallel_block "parallel" @keyword.control)
 (race_block "race" @keyword.control)
 (match_block "match" @keyword.control)
+(if_block "if" @keyword.control)
+(if_block "else" @keyword.control)
+(each_block "each" @keyword.control)
 (loop "loop" @keyword.control)
 (loop "until" @keyword.control)
 
@@ -243,9 +246,6 @@
 (language_inline "go"
   (language_inline_backtick_content) @injection.content
   (#set! injection.language "go"))
-(atom
-  (identifier) @function
-  (argument_block))
 (projection_field (identifier) @property)
 (modifier ":" @punctuation.delimiter)
 (modifier (modifier_name) @property)
@@ -257,7 +257,8 @@
 (excludes "~" @punctuation.special)
 (excludes (identifier) @label)
 
-(argument_block "@" @punctuation.special)
+(argument_list "(" @punctuation.bracket)
+(argument_list ")" @punctuation.bracket)
 (projection "{" @punctuation.bracket)
 (projection "}" @punctuation.bracket)
 (array "[" @punctuation.bracket)
@@ -281,9 +282,8 @@
 (operator) @operator
 
 (template_render "template.render" @function)
-(template_render_argument_block "@" @punctuation.special)
-(template_render_projection "{" @punctuation.bracket)
-(template_render_projection "}" @punctuation.bracket)
+(template_render_arguments "(" @punctuation.bracket)
+(template_render_arguments ")" @punctuation.bracket)
 (template_render_template_field
   "template" @property
   (template_string) @string)

@@ -19,7 +19,6 @@ module.exports = grammar({
       $.directive_block,
       $.directive,
       $.expression,
-      $.argument_block,
       $.modifier,
       $.operator,
       $.punctuation,
@@ -47,6 +46,8 @@ module.exports = grammar({
       $.parallel_block,
       $.race_block,
       $.match_block,
+      $.if_block,
+      $.each_block,
       $.loop,
       $.language_inline,
       $.language_block,
@@ -59,13 +60,14 @@ module.exports = grammar({
       $.string,
       $.number,
     ),
-    atom: $ => prec.right(10, seq(
+    atom: $ => prec.right(seq(
       choice($.identifier, $.path_reference),
-      repeat(choice($.modifier, $.prompt, $.targets, $.excludes, $.argument_block)),
+      repeat(choice($.modifier, $.prompt, $.targets, $.excludes)),
     )),
-    function_call: $ => prec(11, seq(
+    function_call: $ => prec.dynamic(1, seq(
       alias($.identifier, $.function_call_name),
-      $.group,
+      repeat(choice($.modifier, $.prompt, $.targets, $.excludes)),
+      $.argument_list,
     )),
 
     language_block: $ => prec(20, choice(
@@ -89,34 +91,37 @@ module.exports = grammar({
 
     template_render: $ => prec(20, seq(
       token(prec(2, 'template.render')),
-      $.template_render_argument_block,
+      $.template_render_arguments,
     )),
-    template_render_argument_block: $ => seq('@', $.template_render_projection),
-    template_render_projection: $ => seq('{', repeat(choice(
+    template_render_arguments: $ => seq('(', repeat(choice(
       $.template_render_template_field,
       $.spread_field,
       $.projection_field,
       $._block_item,
-    )), '}'),
-    template_render_template_field: $ => prec(3, seq(
-      'template', ':', repeat1(choice($.template_string, $._value_item)),
+    )), ')'),
+    template_render_template_field: $ => prec(10, seq(
+      'template', ':', $.template_string,
     )),
 
-    modifier: $ => prec.right(seq(':', $.modifier_name, optional(seq('=', $.modifier_value)))),
+    modifier: $ => prec.right(20, seq(':', $.modifier_name, optional(seq('=', $.modifier_value)))),
     modifier_value: $ => choice($.string, token(/[^\s:(){}&?|,]+/)),
     prompt: $ => prec(2, seq('@', /[^\s:(){}&?|,]+/)),
     targets: $ => prec.right(2, seq('#', $.identifier, repeat(seq(',', $.identifier)))),
     excludes: $ => prec.right(seq('~', $.identifier, repeat(seq(',', $.identifier)))),
 
-    argument_block: $ => prec(4, seq('@', $.projection)),
     local_binding: $ => prec(5, seq($.binding_keyword, $.identifier, '=', $.expression)),
     binding_keyword: _ => 'let',
     parallel_block: $ => prec(3, seq('parallel', $.projection)),
     race_block: $ => prec(3, seq('race', $.projection)),
     match_block: $ => prec(3, seq('match', optional($.group), $.projection)),
+    if_block: $ => prec.right(5, seq(
+      'if', $.group, $.projection,
+      optional(seq('else', choice($.if_block, $.projection))),
+    )),
+    each_block: $ => prec(4, seq('each', repeat($.modifier), $.projection)),
     projection: $ => seq('{', repeat(choice($.spread_field, $.projection_field, $._block_item)), '}'),
     projection_field: $ => choice(
-      prec(2, seq($.identifier, ':', repeat1($._value_item))),
+      prec(40, seq($.identifier, ':', repeat1($._value_item))),
       $.path_shorthand_field,
     ),
     path_shorthand_field: $ => prec(11, $.path_reference),
@@ -124,6 +129,7 @@ module.exports = grammar({
       $.input_rooted_spread,
       seq($.spread_operator, $.path_reference),
     )),
+    argument_list: $ => prec(4, seq('(', repeat(choice($.projection_field, $.spread_field, $._block_item)), ')')),
     array: $ => seq('[', repeat($._block_item), ']'),
     group: $ => seq('(', repeat($._block_item), ')'),
     loop: $ => seq('loop', '(', repeat($._block_item), ')', 'until', '(', repeat($._block_item), ')'),
@@ -133,7 +139,6 @@ module.exports = grammar({
       $.directive,
       $.local_binding,
       $.expression,
-      $.argument_block,
       $.modifier,
       $.operator,
       $.punctuation,
@@ -141,7 +146,6 @@ module.exports = grammar({
     ),
     _value_item: $ => choice(
       $.expression,
-      $.argument_block,
       $.modifier,
       $.operator,
       $.punctuation,
@@ -226,7 +230,6 @@ module.exports = grammar({
     function_body: $ => seq('{', repeat(choice(
       $.local_binding,
       $.expression,
-      $.argument_block,
       $.modifier,
       $.operator,
       $.punctuation,

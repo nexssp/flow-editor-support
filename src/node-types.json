@@ -1,14 +1,50 @@
 [
   {
-    "type": "argument_block",
+    "type": "argument_list",
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
-      "required": true,
+      "multiple": true,
+      "required": false,
       "types": [
         {
-          "type": "projection",
+          "type": "directive",
+          "named": true
+        },
+        {
+          "type": "directive_block",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "local_binding",
+          "named": true
+        },
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "operator",
+          "named": true
+        },
+        {
+          "type": "projection_field",
+          "named": true
+        },
+        {
+          "type": "punctuation",
+          "named": true
+        },
+        {
+          "type": "raw_char",
+          "named": true
+        },
+        {
+          "type": "spread_field",
           "named": true
         }
       ]
@@ -22,10 +58,6 @@
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "argument_block",
-          "named": true
-        },
         {
           "type": "directive",
           "named": true
@@ -69,10 +101,6 @@
       "multiple": true,
       "required": true,
       "types": [
-        {
-          "type": "argument_block",
-          "named": true
-        },
         {
           "type": "excludes",
           "named": true
@@ -150,6 +178,25 @@
     }
   },
   {
+    "type": "each_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "projection",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "excludes",
     "named": true,
     "fields": {},
@@ -207,10 +254,6 @@
       "required": false,
       "types": [
         {
-          "type": "argument_block",
-          "named": true
-        },
-        {
           "type": "expression",
           "named": true
         },
@@ -246,11 +289,27 @@
       "required": true,
       "types": [
         {
+          "type": "argument_list",
+          "named": true
+        },
+        {
+          "type": "excludes",
+          "named": true
+        },
+        {
           "type": "function_call_name",
           "named": true
         },
         {
-          "type": "group",
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "prompt",
+          "named": true
+        },
+        {
+          "type": "targets",
           "named": true
         }
       ]
@@ -345,10 +404,6 @@
       "required": false,
       "types": [
         {
-          "type": "argument_block",
-          "named": true
-        },
-        {
           "type": "directive",
           "named": true
         },
@@ -378,6 +433,29 @@
         },
         {
           "type": "raw_char",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "if_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "group",
+          "named": true
+        },
+        {
+          "type": "if_block",
+          "named": true
+        },
+        {
+          "type": "projection",
           "named": true
         }
       ]
@@ -456,10 +534,6 @@
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "argument_block",
-          "named": true
-        },
         {
           "type": "directive",
           "named": true
@@ -664,11 +738,19 @@
           "named": true
         },
         {
+          "type": "each_block",
+          "named": true
+        },
+        {
           "type": "function_call",
           "named": true
         },
         {
           "type": "group",
+          "named": true
+        },
+        {
+          "type": "if_block",
           "named": true
         },
         {
@@ -723,10 +805,6 @@
       "required": false,
       "types": [
         {
-          "type": "argument_block",
-          "named": true
-        },
-        {
           "type": "directive",
           "named": true
         },
@@ -777,10 +855,6 @@
       "multiple": true,
       "required": true,
       "types": [
-        {
-          "type": "argument_block",
-          "named": true
-        },
         {
           "type": "expression",
           "named": true
@@ -846,10 +920,6 @@
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "argument_block",
-          "named": true
-        },
         {
           "type": "directive",
           "named": true
@@ -993,39 +1063,20 @@
       "required": true,
       "types": [
         {
-          "type": "template_render_argument_block",
+          "type": "template_render_arguments",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "template_render_argument_block",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "template_render_projection",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "template_render_projection",
+    "type": "template_render_arguments",
     "named": true,
     "fields": {},
     "children": {
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "argument_block",
-          "named": true
-        },
         {
           "type": "directive",
           "named": true
@@ -1078,33 +1129,9 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": true,
       "types": [
-        {
-          "type": "argument_block",
-          "named": true
-        },
-        {
-          "type": "expression",
-          "named": true
-        },
-        {
-          "type": "modifier",
-          "named": true
-        },
-        {
-          "type": "operator",
-          "named": true
-        },
-        {
-          "type": "punctuation",
-          "named": true
-        },
-        {
-          "type": "raw_char",
-          "named": true
-        },
         {
           "type": "template_string",
           "named": true
@@ -1293,6 +1320,14 @@
     "named": true
   },
   {
+    "type": "each",
+    "named": false
+  },
+  {
+    "type": "else",
+    "named": false
+  },
+  {
     "type": "func",
     "named": false
   },
@@ -1311,6 +1346,10 @@
   {
     "type": "identifier",
     "named": true
+  },
+  {
+    "type": "if",
+    "named": false
   },
   {
     "type": "input_rooted_spread",

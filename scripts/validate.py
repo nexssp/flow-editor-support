@@ -130,10 +130,12 @@ assert required_assert_snippets <= {snippet['prefix'] for snippet in vscode_snip
 assert required_assert_snippets <= set(zed_snippets)
 
 vscode_by_prefix = {snippet['prefix']: snippet for snippet in vscode_snippets.values()}
-for prefix in ['flow-node', 'flow-pipeline']:
+for prefix in ['flow-node', 'flow-pipeline', 'flow-if', 'flow-each']:
     assert prefix in vscode_by_prefix and prefix in zed_snippets
 assert ' :timeout=' in ' '.join(vscode_by_prefix['flow-node']['body'])
 assert ' :timeout=' in ' '.join(zed_snippets['flow-node']['body'])
+assert 'if (' in ' '.join(vscode_by_prefix['flow-if']['body'])
+assert 'each :concurrency=' in ' '.join(vscode_by_prefix['flow-each']['body'])
 for body in [vscode_by_prefix['flow-pipeline']['body'], zed_snippets['flow-pipeline']['body']]:
     rendered = '\n'.join(body)
     assert '  :timeout=10s\n  :retry=2\n\n' in rendered
@@ -168,6 +170,7 @@ assert delimiter_slots[:9] == expected_delimiter_slots, 'Notepad++ UDL quote del
 assert delimiter_slots[9:] == [f'{index:02d}' for index in range(9, 24)], 'Notepad++ UDL should not define extra paired delimiters that color code blocks as strings'
 assert {'request', 'test_cases', 'name', 'input', 'expected', 'suite_id', 'suite_name', 'passed_programs', 'refund_eligible', 'days_since_purchase', 'item_returned', 'final_sale', 'estimated_cost_currency', 'source_path'} <= set(udl_keywords['Keywords5']), 'Notepad++ UDL lacks common field-name highlighting'
 assert {'func', 'test'} <= set(udl_keywords['Keywords2']), 'Notepad++ UDL lacks @func/@test directives'
+assert {'if', 'else', 'each'} <= set(udl_keywords['Keywords1']), 'Notepad++ UDL lacks v0.95 control keywords'
 assert {'&&', '==', '!=', '>=', '<=', '+', '-', '*', '/', '%', '>', '<', '!'} <= set(udl_keywords['Operators1']), 'Notepad++ UDL lacks Flow expression operators'
 comments = user_lang.find("./KeywordLists/Keywords[@name='Comments']")
 assert comments is not None and comments.text.strip().startswith('00//')
@@ -257,7 +260,7 @@ for token in ['(function_declaration', '(function_name) @function', '(identifier
 for token in ['(path_reference) @variable.member', '(input_rooted_spread) @operator',
               '(spread_operator) @operator', '(named_binding "as" @keyword.control)',
               '(path_shorthand_field (path_reference) @property)']:
-    assert token in highlights, f'Zed query lacks Flow v0.67 capture {token}'
+    assert token in highlights, f'Zed query lacks current Flow syntax capture {token}'
 for token in ['(template_keyword) @keyword.control', '(template_variable) @variable.member',
               '(template_dot) @variable.builtin', '(template_action_open) @punctuation.special']:
     assert token in highlights, f'Zed query lacks template scope {token}'
@@ -270,13 +273,14 @@ assert '"[" @open "]" @close' in brackets
 
 example = (ROOT / 'examples/complete.nflow').read_text()
 assert '@pipeline' in example and '@assert' in example and '@end' in example
-assert '@{' in example and '.nflow' in example
+assert '@{' not in example and 'const ' not in example and '.nflow' in example
 fixture = (ROOT / 'test/fixtures/current-syntax.nflow').read_text()
-for token in ['@nflow_version ">=0.67.0"', 'parallel', 'race', 'match', 'loop(', 'until(', '@{', 'schema', '#', '~', '`',
-              '@assert:', '@assert {', 'assert(', '@func commerce.shippingFeeMinor', 'destinationZone ==',
+for token in ['@nflow_version ">=0.95.0"', 'parallel', 'race', 'match', 'if ', 'else', 'each ', 'loop(', 'until(', 'schema', '#', '~', '`',
+              '@assert:', '@assert {', 'assert (', '@func commerce.shippingFeeMinor', 'destinationZone ==',
               'subtotalMinor int', 'ratePercent int', 'as estimate', '.customer.id',
-              '... .state', '...input.state']:
+              '... .state', '...input.state', ':timeout=1s :retry=1 ( value: "readable" )']:
     assert token in fixture, f'current-syntax fixture lacks {token}'
+assert '@{' not in fixture and 'const ' not in fixture, 'current fixture retains removed runtime syntax'
 python_fixture = (ROOT / 'test/fixtures/python-inline.nflow').read_text()
 for token in ['@require lang', 'py {', 'import json', 'py.file',
               "'greater_than>'", "'a, ) : &'"]:
@@ -295,12 +299,12 @@ assert 'npm ci --omit=dev' in release and '--no-dependencies' not in release
 workflow = (ROOT / '.github/workflows/release.yml').read_text()
 assert 'package-release.sh' in workflow and 'softprops/action-gh-release' in workflow
 assert 'run: npm ci' in workflow
-assert workflow.count("go-version: '1.27.3'") == 2
+assert workflow.count("go-version: '1.27.4'") == 2
 assert workflow.count('install-flow-core.sh install') == 2
 assert 'bash scripts/install-flow-core.sh install >/dev/null' in workflow
 assert 'nflow-v0.' not in workflow and 'node --check lsp/nflow-lsp.js' in workflow
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
-assert 'VERSION=0.67.0' in core_installer and 'FLOW_MODULE=github.com/nexssp/flow/cmd/nflow' in core_installer
+assert 'VERSION=0.95.0' in core_installer and 'FLOW_MODULE=github.com/nexssp/flow/cmd/nflow' in core_installer
 assert 'MINIMUM_VERSION=0.44.2' in core_installer and 'GOTOOLCHAIN=auto' in core_installer
 assert 'actual_patch < 2' in core_installer
 assert 'nflow-v${VERSION}' in core_installer
@@ -323,7 +327,7 @@ for token in ['Nexss Flow', 'nflow', 'Available LSP features depend on the insta
     assert token in readme, f'root README lacks {token}'
 assert 'NEXSS_NFLOW_NODE' in readme, 'root README must document the canonical Node.js override'
 assert 'NEXSS_FLOW_NODE' not in readme, 'root README must not document the legacy Node.js override'
-assert 'v0.67.0' in readme and 'v0.44.2 compatibility floor' in readme and 'Go 1.27.3 or newer' in readme
+assert 'v0.95.0' in readme and 'v0.44.2 compatibility floor' in readme and 'Go 1.27.4 or newer' in readme
 for rel, tokens in [
     ('vscode/test/adapter-smoke.test.js', [
         'textDocument/definition', 'textDocument/references', 'textDocument/rename',
@@ -335,4 +339,4 @@ for rel, tokens in [
     smoke = (ROOT / rel).read_text()
     for token in tokens:
         assert token in smoke, f'{rel} lacks real-provider request {token}'
-print(f'validated {len(required)} required files; source-built Flow v0.67.0 pin, v0.44.2 compatibility floor, editor docs, and package safety=OK')
+print(f'validated {len(required)} required files; source-built Flow v0.95.0 pin, v0.44.2 compatibility floor, editor docs, and package safety=OK')

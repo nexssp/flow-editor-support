@@ -6,8 +6,8 @@
   },
   "Structured arguments": {
     "prefix": "flow-args",
-    "body": ["${1:action.node} @{ ${2:value}: ${3:.input} }"],
-    "description": "Pass structured data using an action argument block"
+    "body": ["${1:action.node} ( ${2:value}: ${3:.input} )"],
+    "description": "Pass named values using a Flow action call"
   },
   "Named parallel branches": {
     "prefix": "flow-parallel",
@@ -38,6 +38,16 @@
     "prefix": "flow-conditional",
     "body": ["${1:condition} ? ${2:when_true} : ${3:when_false}"],
     "description": "Create a Flow conditional expression"
+  },
+  "If/else block": {
+    "prefix": "flow-if",
+    "body": ["if (${1:condition}) {", "  ${2:action.node}", "} else {", "  ${3:action.node}", "}"],
+    "description": "Run one Flow branch based on a condition"
+  },
+  "Each block": {
+    "prefix": "flow-each",
+    "body": ["${1:items} -> each :concurrency=${2:4} {", "  ${3:action.node}", "}"],
+    "description": "Run a Flow expression for each list item"
   },
   "Projection": {
     "prefix": "flow-projection",

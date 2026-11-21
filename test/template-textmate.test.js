@@ -172,13 +172,16 @@ for (const editor of Object.keys(grammarPaths)) {
     assertScope(tokens, source, '&&', 'keyword.operator.nflow');
   });
 
-  test(`${editor}: Flow v0.67 syntax highlights path shorthand, named bindings, and spreads`, () => {
+  test(`${editor}: Flow v0.95 syntax highlights control flow, path shorthand, named bindings, and spreads`, () => {
     const source = fs.readFileSync(path.join(ROOT, 'test/fixtures/current-syntax.nflow'), 'utf8');
     const tokens = tokenize(source, grammars[editor]);
     assertScope(tokens, source, 'as estimate', 'keyword.control.nflow');
     assertScope(tokens, source, '.customer.id', 'variable.other.member.nflow');
     assertScope(tokens, source, '...input.state', 'keyword.operator.nflow');
     assertScope(tokens, source, '??', 'keyword.operator.nflow');
+    for (const keyword of ['if', 'else', 'each']) {
+      assertScope(tokens, source, keyword, 'keyword.control.nflow');
+    }
   });
 
   test(`${editor}: supplied template.render sample has distinct embedded Go template scopes`, () => {
@@ -224,8 +227,8 @@ for (const editor of Object.keys(grammarPaths)) {
   });
 
   test(`${editor}: single-quoted and backtick template values support actions and trim markers`, () => {
-    const source = "template.render @{ template: 'Hello {{- if .ok -}}yes{{else}}no{{end}}' }\n"
-      + 'template.render @{ template: `Hello {{.value}}` }\n';
+    const source = "template.render ( template: 'Hello {{- if .ok -}}yes{{else}}no{{end}}' )\n"
+      + 'template.render ( template: `Hello {{.value}}` )\n';
     const tokens = tokenize(source, grammars[editor]);
     assertScope(tokens, source, '{{', 'punctuation.section.embedded.begin.go-template');
     assertScope(tokens, source, 'if', 'keyword.control.go-template');

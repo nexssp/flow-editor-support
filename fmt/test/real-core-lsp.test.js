@@ -89,7 +89,7 @@ test('native Flow LSP publishes diagnostics and formats valid source', { skip: !
 
   const uri = 'file:///tmp/native-flow-diagnostic.nflow';
   const invalid = '@pipeline broken\n  (\n@end\n';
-  const valid = '@pipeline work:timeout=2s:retry=3\n  runtime.const:retry=2\n@end\n';
+  const valid = '@pipeline work:timeout=2s:retry=3\n  runtime.noop :retry=2\n@end\n';
 
   request(child, 1, 'initialize', {
     processId: process.pid,
@@ -139,7 +139,7 @@ test('native Flow LSP publishes diagnostics and formats valid source', { skip: !
   assert.equal(formatted.error, undefined, formatted.error?.message);
   assert.equal(formatted.result.length, 1);
   assert.equal(formatted.result[0].newText,
-    '@pipeline work\n  :timeout=2s\n  :retry=3\n  runtime.const :retry=2\n@end\n');
+    '@pipeline work\n  :timeout=2s\n  :retry=3\n  runtime.noop :retry=2\n@end\n');
 
   notify(child, 'textDocument/didChange', {
     textDocument: { uri, version: 3 },

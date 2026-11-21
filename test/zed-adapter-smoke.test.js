@@ -123,7 +123,7 @@ test('Zed adapter launches the real Flow LSP and serves a Flow document', {
     '}',
     '',
     '@pipeline zed_adapter_smoke',
-    '  runtime.const @{ value: "ok" }',
+    '  runtime.noop',
     '@end',
     '',
   ].join('\n');

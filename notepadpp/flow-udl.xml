@@ -24,11 +24,11 @@
       <Keywords name="Folders in comment, open"></Keywords>
       <Keywords name="Folders in comment, middle"></Keywords>
       <Keywords name="Folders in comment, close"></Keywords>
-      <Keywords name="Keywords1">parallel race match loop until when else</Keywords>
-      <Keywords name="Keywords2">config config.load assert func test pipeline include require end as const const.load nflow_version symbols schema profile macro hook pool on approval on_error embed</Keywords>
+      <Keywords name="Keywords1">parallel race match if else each let loop until when</Keywords>
+      <Keywords name="Keywords2">config config.load assert func test pipeline include require end as const const.load nflow_version symbols schema description enum scope profile macro hook pool on approval on_error embed</Keywords>
       <Keywords name="Keywords3">int int64 float64 string bool any</Keywords>
       <Keywords name="Keywords4">true false null</Keywords>
-      <Keywords name="Keywords5">timeout retry concurrency cache coalesce dedup idempotent rate_limit auth role perm feature name desc description status tag scope read_only audit debug deprecated strict lenient request-schema response-schema route model request test_cases input expected suite_id suite_name suite_passed passed_programs total_programs total_cases programs provider prompt_tokens cached_prompt_tokens completion_tokens total_tokens token_usage_available provider_call_duration_ns estimated_cost_known estimated_cost_micros estimated_cost_currency passed lint_passed evaluation_duration_ms source_path tests error days_since_purchase item_returned final_sale refund_eligible subtotal_minor discount_minor total_minor service_name env trace_exporter sample_ratio workdir api_key_env user system max_tokens temperature</Keywords>
+      <Keywords name="Keywords5">timeout retry concurrency cache coalesce dedup idempotent rate_limit auth role perm feature name desc status tag read_only audit debug deprecated strict lenient request-schema response-schema route model request test_cases input expected suite_id suite_name suite_passed passed_programs total_programs total_cases programs provider prompt_tokens cached_prompt_tokens completion_tokens total_tokens token_usage_available provider_call_duration_ns estimated_cost_known estimated_cost_micros estimated_cost_currency passed lint_passed evaluation_duration_ms source_path tests error days_since_purchase item_returned final_sale refund_eligible subtotal_minor discount_minor total_minor service_name env trace_exporter sample_ratio workdir api_key_env user system max_tokens temperature</Keywords>
       <Keywords name="Keywords6"></Keywords>
       <Keywords name="Delimiters">00&quot; 01\ 02&quot; 03' 04\ 05' 06` 07\ 08` 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23</Keywords>
     </KeywordLists>
