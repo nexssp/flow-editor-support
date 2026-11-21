@@ -1,5 +1,26 @@
 (comment) @comment
 (identifier) @variable
+(pipeline_header
+  "@" @keyword.control
+  "pipeline" @keyword.control
+  (pipeline_name) @function)
+(schema_declaration
+  "@" @keyword.control
+  "schema" @keyword.control
+  (schema_name) @type)
+(schema_field
+  (schema_field_name) @property
+  (schema_field_type) @type)
+((schema_field_name) @property.builtin
+  (#match? @property.builtin "^(xerr|on_error|input|result)$"))
+(schema_tag_key
+  (schema_tag_key_name) @attribute
+  ":" @punctuation.delimiter)
+(schema_tag_value) @string
+(qualified_identifier
+  (identifier) @namespace
+  "." @punctuation.delimiter
+  (identifier) @function)
 (path_reference) @variable.member
 (input_rooted_spread) @operator
 (spread_operator) @operator
@@ -21,11 +42,11 @@
 (function_body "}" @punctuation.bracket)
 
 (directive
-  "@" @keyword
-  (directive_name) @keyword)
+  "@" @keyword.control
+  (directive_name) @keyword.control)
 (directive_block
-  "@" @keyword
-  (directive_name) @keyword)
+  "@" @keyword.control
+  (directive_name) @keyword.control)
 
 (parallel_block "parallel" @keyword.control)
 (race_block "race" @keyword.control)
@@ -246,16 +267,16 @@
 (language_inline "go"
   (language_inline_backtick_content) @injection.content
   (#set! injection.language "go"))
-(projection_field (identifier) @property)
+(projection_field (identifier_reference) @property)
 (modifier ":" @punctuation.delimiter)
-(modifier (modifier_name) @property)
+(modifier (modifier_name) @attribute)
 (modifier (modifier_value) @string)
 (prompt "@" @punctuation.special)
 (prompt) @string.special
 (targets "#" @punctuation.special)
-(targets (identifier) @label)
+(targets (identifier_reference) @label)
 (excludes "~" @punctuation.special)
-(excludes (identifier) @label)
+(excludes (identifier_reference) @label)
 
 (argument_list "(" @punctuation.bracket)
 (argument_list ")" @punctuation.bracket)

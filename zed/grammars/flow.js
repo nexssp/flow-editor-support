@@ -16,6 +16,8 @@ module.exports = grammar({
   rules: {
     source_file: $ => repeat(choice(
       $.function_declaration,
+      $.schema_declaration,
+      $.pipeline_header,
       $.directive_block,
       $.directive,
       $.expression,
@@ -27,6 +29,28 @@ module.exports = grammar({
 
     directive_block: $ => prec(2, seq('@', $.directive_name, optional(':'), $.projection)),
     directive: $ => seq('@', $.directive_name, optional(':')),
+    pipeline_header: $ => prec.right(10, seq('@', 'pipeline', $.pipeline_name, repeat($.modifier))),
+    pipeline_name: $ => $.identifier,
+    schema_declaration: $ => prec(10, seq('@', 'schema', $.schema_name, $.schema_body)),
+    schema_name: $ => $.identifier,
+    schema_body: $ => seq('{', repeat(choice($.schema_field, $.raw_char)), '}'),
+    schema_field: $ => seq(
+      $.schema_field_name,
+      optional('!'),
+      $.schema_field_type,
+      optional($.schema_tag),
+    ),
+    schema_field_name: $ => $.identifier,
+    schema_field_type: _ => token(prec(2, /(?:\[\]|map\[[^\]]+\])?\*?[A-Za-z_][A-Za-z0-9_.\/-]*(?:\[[^\]]*\])?/)),
+    schema_tag: $ => seq('`', repeat(choice(
+      $.schema_tag_key,
+      $.schema_tag_value,
+      $.schema_tag_text,
+    )), '`'),
+    schema_tag_key: $ => seq($.schema_tag_key_name, ':'),
+    schema_tag_key_name: _ => token(prec(3, /[A-Za-z_][A-Za-z0-9_-]*/)),
+    schema_tag_value: _ => token(prec(2, /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/)),
+    schema_tag_text: _ => token(prec(-1, /[^`\s:"']+/)),
 
     expression: $ => choice($.conditional, $.fallback),
     conditional: $ => prec.right(1, seq(
@@ -61,11 +85,11 @@ module.exports = grammar({
       $.number,
     ),
     atom: $ => prec.right(seq(
-      choice($.identifier, $.path_reference),
+      choice($.identifier_reference, $.path_reference),
       repeat(choice($.modifier, $.prompt, $.targets, $.excludes)),
     )),
     function_call: $ => prec.dynamic(1, seq(
-      alias($.identifier, $.function_call_name),
+      alias($.identifier_reference, $.function_call_name),
       repeat(choice($.modifier, $.prompt, $.targets, $.excludes)),
       $.argument_list,
     )),
@@ -106,8 +130,8 @@ module.exports = grammar({
     modifier: $ => prec.right(20, seq(':', $.modifier_name, optional(seq('=', $.modifier_value)))),
     modifier_value: $ => choice($.string, token(/[^\s:(){}&?|,]+/)),
     prompt: $ => prec(2, seq('@', /[^\s:(){}&?|,]+/)),
-    targets: $ => prec.right(2, seq('#', $.identifier, repeat(seq(',', $.identifier)))),
-    excludes: $ => prec.right(seq('~', $.identifier, repeat(seq(',', $.identifier)))),
+    targets: $ => prec.right(2, seq('#', $.identifier_reference, repeat(seq(',', $.identifier_reference)))),
+    excludes: $ => prec.right(seq('~', $.identifier_reference, repeat(seq(',', $.identifier_reference)))),
 
     local_binding: $ => prec(5, seq($.binding_keyword, $.identifier, '=', $.expression)),
     binding_keyword: _ => 'let',
@@ -121,7 +145,7 @@ module.exports = grammar({
     each_block: $ => prec(4, seq('each', repeat($.modifier), $.projection)),
     projection: $ => seq('{', repeat(choice($.spread_field, $.projection_field, $._block_item)), '}'),
     projection_field: $ => choice(
-      prec(40, seq($.identifier, ':', repeat1($._value_item))),
+      prec(40, seq($.identifier_reference, ':', repeat1($._value_item))),
       $.path_shorthand_field,
     ),
     path_shorthand_field: $ => prec(11, $.path_reference),
@@ -152,10 +176,12 @@ module.exports = grammar({
       $.raw_char,
     ),
 
-    path_reference: _ => token(prec(2, /\.[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*/)),
+    path_reference: $ => prec.right(2, seq('.', $.identifier, repeat(seq('.', $.identifier)))),
     input_rooted_spread: _ => token(prec(5, /\.\.\.input(?:\.[A-Za-z_][A-Za-z0-9_]*)*/)),
     spread_operator: _ => token(prec(4, '...')),
-    identifier: $ => /[A-Za-z_\.][A-Za-z0-9_\.\/-]*/,
+    identifier: _ => /py\.file|[A-Za-z_][A-Za-z0-9_\/-]*/,
+    qualified_identifier: $ => prec.right(8, seq($.identifier, repeat1(seq('.', $.identifier)))),
+    identifier_reference: $ => choice($.qualified_identifier, $.identifier),
     modifier_name: $ => /[A-Za-z_][A-Za-z0-9_]*/,
     directive_name: $ => /[A-Za-z_][A-Za-z0-9_.-]*/,
     string: $ => choice(
@@ -224,9 +250,9 @@ module.exports = grammar({
         $.function_body,
       ),
     )),
-    function_name: $ => $.identifier,
+    function_name: $ => $.identifier_reference,
     function_parameter: $ => seq($.identifier, $.function_type),
-    function_type: $ => $.identifier,
+    function_type: $ => $.identifier_reference,
     function_body: $ => seq('{', repeat(choice(
       $.local_binding,
       $.expression,

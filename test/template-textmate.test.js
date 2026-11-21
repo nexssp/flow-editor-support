@@ -184,6 +184,27 @@ for (const editor of Object.keys(grammarPaths)) {
     }
   });
 
+  test(`${editor}: schema fields/tags, pipeline names, qualified names, and modifiers have distinct scopes`, () => {
+    const source = fs.readFileSync(path.join(ROOT, 'test/fixtures/syntax-colors.nflow'), 'utf8');
+    const tokens = tokenize(source, grammars[editor]);
+    assertScope(tokens, source, 'xerr', 'variable.other.property.special.schema.nflow');
+    assertScope(tokens, source, 'on_error', 'variable.other.property.special.schema.nflow');
+    assertScope(tokens, source, 'input', 'variable.other.property.special.schema.nflow');
+    assertScope(tokens, source, 'result', 'variable.other.property.special.schema.nflow');
+    assertScope(tokens, source, 'Message', 'variable.other.property.schema.nflow');
+    assertScope(tokens, source, 'Error', 'storage.type.nflow', 1);
+    for (const key of ['json', 'default', 'validate', 'validation']) {
+      assertScope(tokens, source, key, 'entity.other.attribute-name.tag.nflow');
+    }
+    assertScope(tokens, source, 'pipeline', 'keyword.control.directive.nflow');
+    assertScope(tokens, source, 'end', 'keyword.control.directive.nflow');
+    assertScope(tokens, source, 'on_timeout', 'entity.name.function.pipeline.nflow');
+    assertScope(tokens, source, 'on_timeout', 'entity.name.function.pipeline.nflow', 1);
+    assertScope(tokens, source, 'runtime', 'entity.name.namespace.nflow');
+    assertScope(tokens, source, 'fail', 'entity.name.function.nflow', 2);
+    assertScope(tokens, source, 'retry', 'entity.other.attribute-name.modifier.nflow');
+  });
+
   test(`${editor}: supplied template.render sample has distinct embedded Go template scopes`, () => {
     const source = fs.readFileSync(INPUT_FIXTURE, 'utf8');
     const tokens = tokenize(source, grammars[editor]);

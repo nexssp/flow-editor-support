@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 required = [
     'README.md', 'LICENSE', 'package.json', 'package-lock.json', 'grammar.js', 'src/parser.c', 'src/node-types.json', 'src/scanner.c',
     'assets/nexss-logo.png', 'examples/complete.nflow', 'test/fixtures/current-syntax.nflow',
-    'test/fixtures/zed-highlight-regression.nflow',
+    'test/fixtures/zed-highlight-regression.nflow', 'test/fixtures/syntax-colors.nflow',
     'test/fixtures/template-render-input.nflow', 'test/fixtures/template-render-expected.nflow',
     'test/fixtures/template-render-contexts.nflow', 'test/fixtures/python-inline.nflow',
     'test/fixtures/embedded-languages.nflow', 'test/template-textmate.test.js', 'test/nflow-lsp.test.js',
@@ -104,8 +104,14 @@ for grammar_rule in ['templateRender', 'templateRenderStringDouble', 'goTemplate
                      'rustInline', 'rustBlock', 'rustNestedBlock', 'phpInline', 'phpBlock', 'phpNestedBlock',
                      'typescriptInline', 'typescriptBlock', 'typescriptNestedBlock',
                      'javascriptInline', 'javascriptBlock', 'javascriptNestedBlock',
-                     'goInline', 'goBlock', 'goNestedBlock', 'funcDeclaration']:
+                     'goInline', 'goBlock', 'goNestedBlock', 'funcDeclaration', 'schemaDeclaration',
+                     'schemaTag', 'schemaFieldSpecial', 'schemaField', 'pipelineHeader', 'qualifiedNames', 'modifiers']:
     assert grammar_rule in tm['repository'], f'TextMate grammar lacks {grammar_rule}'
+textmate_rules = json.dumps(tm['repository'])
+for scope in ['variable.other.property.special.schema.nflow', 'entity.other.attribute-name.tag.nflow',
+              'entity.name.function.pipeline.nflow', 'entity.name.namespace.nflow',
+              'entity.other.attribute-name.modifier.nflow']:
+    assert scope in textmate_rules, f'TextMate grammar lacks {scope}'
 grammar_source = (ROOT / 'grammar.js').read_text()
 for token in ['function_declaration:', 'function_parameter:', 'function_type:', 'function_body:',
               'function_call:', 'local_binding:', 'binding_keyword:',
@@ -163,12 +169,14 @@ udl_styles = {style.attrib['name']: style.attrib for style in user_lang.findall(
 assert udl_styles['DEFAULT']['colorStyle'] == '0', 'Notepad++ UDL default style should inherit the active theme colors'
 assert all(style.get('colorStyle') == '1' for name, style in udl_styles.items() if name != 'DEFAULT'), 'Notepad++ UDL token backgrounds should inherit the active theme background'
 assert udl_styles['KEYWORDS5']['fgColor'] != udl_styles['KEYWORDS3']['fgColor'], 'Notepad++ UDL fields should use a distinct color from type names'
+assert udl_styles['KEYWORDS6']['fgColor'] not in {udl_styles['KEYWORDS3']['fgColor'], udl_styles['KEYWORDS5']['fgColor']}, 'Notepad++ UDL schema fields, tag keys, and modifiers should use a distinct color'
 udl_keywords = {entry.attrib['name']: (entry.text or '').split() for entry in user_lang.findall('./KeywordLists/Keywords')}
 delimiter_slots = udl_keywords['Delimiters']
 expected_delimiter_slots = ['00"', '01' + chr(92), '02"', "03'", '04' + chr(92), "05'", '06`', '07' + chr(92), '08`']
 assert delimiter_slots[:9] == expected_delimiter_slots, 'Notepad++ UDL quote delimiters must use open/escape/close slot order'
 assert delimiter_slots[9:] == [f'{index:02d}' for index in range(9, 24)], 'Notepad++ UDL should not define extra paired delimiters that color code blocks as strings'
-assert {'request', 'test_cases', 'name', 'input', 'expected', 'suite_id', 'suite_name', 'passed_programs', 'refund_eligible', 'days_since_purchase', 'item_returned', 'final_sale', 'estimated_cost_currency', 'source_path'} <= set(udl_keywords['Keywords5']), 'Notepad++ UDL lacks common field-name highlighting'
+assert {'request', 'test_cases', 'name', 'expected', 'suite_id', 'suite_name', 'passed_programs', 'refund_eligible', 'days_since_purchase', 'item_returned', 'final_sale', 'estimated_cost_currency', 'source_path'} <= set(udl_keywords['Keywords5']), 'Notepad++ UDL lacks common field-name highlighting'
+assert {'xerr', 'on_error', 'input', 'result', 'json', 'default', 'validate', 'validation', 'retry', 'runtime', 'timeout'} <= set(udl_keywords['Keywords6']), 'Notepad++ UDL lacks special schema fields, tag keys, namespace, and modifier highlighting'
 assert {'func', 'test'} <= set(udl_keywords['Keywords2']), 'Notepad++ UDL lacks @func/@test directives'
 assert {'if', 'else', 'each'} <= set(udl_keywords['Keywords1']), 'Notepad++ UDL lacks v0.95 control keywords'
 assert {'&&', '==', '!=', '>=', '<=', '+', '-', '*', '/', '%', '>', '<', '!'} <= set(udl_keywords['Operators1']), 'Notepad++ UDL lacks Flow expression operators'
@@ -264,6 +272,11 @@ for token in ['(path_reference) @variable.member', '(input_rooted_spread) @opera
 for token in ['(template_keyword) @keyword.control', '(template_variable) @variable.member',
               '(template_dot) @variable.builtin', '(template_action_open) @punctuation.special']:
     assert token in highlights, f'Zed query lacks template scope {token}'
+for token in ['(schema_field_name) @property', '(schema_field_name) @property.builtin',
+              '(schema_tag_key_name) @attribute', '(pipeline_header', '(pipeline_name) @function',
+              '(qualified_identifier', '(identifier) @namespace', '(directive_name) @keyword.control',
+              '(modifier (modifier_name) @attribute']:
+    assert token in highlights, f'Zed query lacks syntax-color capture {token}'
 for token in ['(language_block_content) @injection.content', '(rust_language_block_content) @injection.content', '(#set! injection.language "python")']:
     assert token in highlights, f'Zed query lacks embedded Python scope {token}'
 for language in ['rust', 'php', 'typescript', 'javascript', 'go']:
@@ -288,6 +301,10 @@ for token in ['@require lang', 'py {', 'import json', 'py.file',
 embedded_fixture = (ROOT / 'test/fixtures/embedded-languages.nflow').read_text()
 for token in ['rust {', 'php {', 'typescript {', 'javascript {', 'go {', 'rs"', "php'", 'ts`', 'js"', "go'", 'golang`']:
     assert token in embedded_fixture, f'Embedded-language highlighting fixture lacks {token}'
+syntax_color_fixture = (ROOT / 'test/fixtures/syntax-colors.nflow').read_text()
+for token in ['xerr Error', 'on_error string', 'input Input', 'result Result', 'default:', 'validation:',
+              '@pipeline on_timeout', '@end', 'runtime.fail', 'pipeline.on_timeout', ':retry=2', ':timeout=5s']:
+    assert token in syntax_color_fixture, f'Syntax-color fixture lacks {token}'
 
 release = (ROOT / 'scripts/package-release.sh').read_text()
 assert 'mktemp -d' in release and 'Refusing to use an unsafe release output directory' in release

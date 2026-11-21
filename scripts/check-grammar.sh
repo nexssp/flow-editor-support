@@ -5,7 +5,7 @@ cd "$ROOT"
 
 npx --yes tree-sitter-cli generate grammar.js
 for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
-  test/fixtures/zed-highlight-regression.nflow \
+  test/fixtures/zed-highlight-regression.nflow test/fixtures/syntax-colors.nflow \
   test/fixtures/template-render-input.nflow test/fixtures/template-render-contexts.nflow \
   test/fixtures/python-inline.nflow test/fixtures/embedded-languages.nflow; do
   output="$(npx --yes tree-sitter-cli parse "$file" 2>&1)" || {
@@ -37,7 +37,38 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
       }
     done
   fi
+  if [[ "$file" == "test/fixtures/syntax-colors.nflow" ]]; then
+    for node in schema_declaration schema_field schema_tag_key pipeline_header qualified_identifier modifier; do
+      grep -Fq "($node" <<<"$output" || {
+        printf 'Tree-sitter did not recognize syntax-color regression node %s:\n%s\n' "$node" "$output" >&2
+        exit 1
+      }
+    done
+  fi
   printf 'Tree-sitter accepted %s\n' "$file"
+done
+
+for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
+  color_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/syntax-colors.nflow 2>&1)" || {
+    printf 'Tree-sitter syntax-color query failed for %s:\n%s\n' "$query" "$color_output" >&2
+    exit 1
+  }
+  for capture in ' - property.builtin,' 'text: `xerr`' 'text: `on_error`' 'text: `input`' 'text: `result`' \
+    ' - attribute,' 'text: `default`' 'text: `validation`' ' - namespace,' 'text: `runtime`' \
+    'text: `pipeline`' ' - keyword.control,' 'text: `end`' 'text: `on_timeout`' \
+    ' - function,' ' - punctuation.delimiter,' 'text: `retry`' 'text: `timeout`'; do
+    grep -Fq "$capture" <<<"$color_output" || {
+      printf 'Expected syntax-color capture %s is missing from %s:\n%s\n' "$capture" "$query" "$color_output" >&2
+      exit 1
+    }
+  done
+  pipeline_name_functions="$(grep -F ' - function,' <<<"$color_output" | grep -F 'text: `on_timeout`' | wc -l)"
+  if [[ "$pipeline_name_functions" -ne 2 ]]; then
+    printf 'Expected declaration and reference to share the pipeline-name function capture in %s, found %s:\n%s\n' \
+      "$query" "$pipeline_name_functions" "$color_output" >&2
+    exit 1
+  fi
+  printf 'Tree-sitter schema, pipeline, namespace, and modifier captures are correct in %s\n' "$query"
 done
 
 call_file="$(mktemp "${TMPDIR:-/tmp}/flow-call-XXXXXX.nflow")"

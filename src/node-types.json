@@ -106,7 +106,7 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_reference",
           "named": true
         },
         {
@@ -205,7 +205,7 @@
       "required": true,
       "types": [
         {
-          "type": "identifier",
+          "type": "identifier_reference",
           "named": true
         }
       ]
@@ -316,6 +316,25 @@
     }
   },
   {
+    "type": "function_call_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "qualified_identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "function_declaration",
     "named": true,
     "fields": {},
@@ -355,7 +374,7 @@
       "required": true,
       "types": [
         {
-          "type": "identifier",
+          "type": "identifier_reference",
           "named": true
         }
       ]
@@ -389,7 +408,7 @@
       "required": true,
       "types": [
         {
-          "type": "identifier",
+          "type": "identifier_reference",
           "named": true
         }
       ]
@@ -433,6 +452,25 @@
         },
         {
           "type": "raw_char",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "identifier_reference",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "qualified_identifier",
           "named": true
         }
       ]
@@ -673,6 +711,21 @@
     }
   },
   {
+    "type": "path_reference",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "path_shorthand_field",
     "named": true,
     "fields": {},
@@ -697,6 +750,40 @@
       "types": [
         {
           "type": "pipeline_step",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pipeline_header",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "modifier",
+          "named": true
+        },
+        {
+          "type": "pipeline_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pipeline_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
           "named": true
         }
       ]
@@ -860,7 +947,7 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "identifier_reference",
           "named": true
         },
         {
@@ -897,6 +984,21 @@
     "fields": {}
   },
   {
+    "type": "qualified_identifier",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "race_block",
     "named": true,
     "fields": {},
@@ -906,6 +1008,135 @@
       "types": [
         {
           "type": "projection",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_body",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "raw_char",
+          "named": true
+        },
+        {
+          "type": "schema_field",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_declaration",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "schema_body",
+          "named": true
+        },
+        {
+          "type": "schema_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_field",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "schema_field_name",
+          "named": true
+        },
+        {
+          "type": "schema_field_type",
+          "named": true
+        },
+        {
+          "type": "schema_tag",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_field_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_tag",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "schema_tag_key",
+          "named": true
+        },
+        {
+          "type": "schema_tag_text",
+          "named": true
+        },
+        {
+          "type": "schema_tag_value",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_tag_key",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "schema_tag_key_name",
           "named": true
         }
       ]
@@ -945,11 +1176,19 @@
           "named": true
         },
         {
+          "type": "pipeline_header",
+          "named": true
+        },
+        {
           "type": "punctuation",
           "named": true
         },
         {
           "type": "raw_char",
+          "named": true
+        },
+        {
+          "type": "schema_declaration",
           "named": true
         }
       ]
@@ -992,7 +1231,7 @@
       "required": true,
       "types": [
         {
-          "type": "identifier",
+          "type": "identifier_reference",
           "named": true
         }
       ]
@@ -1332,10 +1571,6 @@
     "named": false
   },
   {
-    "type": "function_call_name",
-    "named": true
-  },
-  {
     "type": "go",
     "named": false
   },
@@ -1400,11 +1635,11 @@
     "named": false
   },
   {
-    "type": "path_reference",
-    "named": true
+    "type": "php",
+    "named": false
   },
   {
-    "type": "php",
+    "type": "pipeline",
     "named": false
   },
   {
@@ -1449,6 +1684,26 @@
   },
   {
     "type": "rust_language_block_content",
+    "named": true
+  },
+  {
+    "type": "schema",
+    "named": false
+  },
+  {
+    "type": "schema_field_type",
+    "named": true
+  },
+  {
+    "type": "schema_tag_key_name",
+    "named": true
+  },
+  {
+    "type": "schema_tag_text",
+    "named": true
+  },
+  {
+    "type": "schema_tag_value",
     "named": true
   },
   {

@@ -1,0 +1,16 @@
+@schema ErrorEnvelope {
+  xerr Error `json:"xerr" validate:"required"`
+  on_error string `json:"on_error" validate:"omitempty,oneof=fail recover"`
+  input Input `json:"input"`
+  result Result `json:"result"`
+  Message string `json:"message" default:"failed" validation:"required"`
+}
+
+@pipeline on_timeout
+  :retry=2
+  runtime.fail ( kind: "Timeout", message: "slow upstream" )
+@end
+
+runtime.fail ( kind: "Timeout" )
+  -> pipeline.on_timeout
+:timeout=5s
