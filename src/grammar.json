@@ -2580,12 +2580,16 @@
   },
   "extras": [
     {
-      "type": "PATTERN",
-      "value": "\\s+"
+      "type": "SYMBOL",
+      "name": "comment"
     },
     {
       "type": "SYMBOL",
-      "name": "comment"
+      "name": "hash_comment"
+    },
+    {
+      "type": "PATTERN",
+      "value": "\\s+"
     }
   ],
   "conflicts": [],
@@ -2610,6 +2614,10 @@
     {
       "type": "SYMBOL",
       "name": "language_inline_backtick_content"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "hash_comment"
     }
   ],
   "inline": [],

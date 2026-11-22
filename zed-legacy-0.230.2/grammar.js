@@ -4,7 +4,7 @@
 // type incomplete or extension-defined actions.
 module.exports = grammar({
   name: 'flow',
-  extras: $ => [/\s+/, $.comment],
+  extras: $ => [$.comment, $.hash_comment, /\s+/],
   word: $ => $.identifier,
   externals: $ => [
     $.rust_language_block_content,
@@ -12,6 +12,7 @@ module.exports = grammar({
     $.language_inline_double_content,
     $.language_inline_single_content,
     $.language_inline_backtick_content,
+    $.hash_comment,
   ],
   rules: {
     source_file: $ => repeat(choice(

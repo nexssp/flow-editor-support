@@ -10,6 +10,7 @@ enum TokenType {
   LANGUAGE_INLINE_DOUBLE_CONTENT,
   LANGUAGE_INLINE_SINGLE_CONTENT,
   LANGUAGE_INLINE_BACKTICK_CONTENT,
+  HASH_COMMENT,
 };
 
 void *tree_sitter_flow_external_scanner_create(void) { return NULL; }
@@ -29,6 +30,7 @@ void tree_sitter_flow_external_scanner_deserialize(void *payload, const char *bu
 }
 
 static void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
+static void advance_skipped(TSLexer *lexer) { lexer->advance(lexer, true); }
 
 static bool identifier_start(uint32_t character) {
   return (character >= 'a' && character <= 'z') ||
@@ -273,6 +275,29 @@ static bool scan_block_content(TSLexer *lexer, bool rust_language) {
   return true;
 }
 
+static bool scan_hash_comment(TSLexer *lexer) {
+  bool at_line_start = lexer->get_column(lexer) == 0;
+  if (lexer->lookahead == '\r' || lexer->lookahead == '\n') {
+    if (lexer->lookahead == '\r') {
+      advance_skipped(lexer);
+      if (lexer->lookahead == '\n') advance_skipped(lexer);
+    } else {
+      advance_skipped(lexer);
+    }
+    at_line_start = true;
+  }
+  if (!at_line_start) return false;
+  while (lexer->lookahead == ' ' || lexer->lookahead == '\t') advance_skipped(lexer);
+  if (lexer->lookahead != '#') return false;
+  advance(lexer);
+  while (!lexer->eof(lexer) && lexer->lookahead != '\r' && lexer->lookahead != '\n') {
+    advance(lexer);
+  }
+  lexer->mark_end(lexer);
+  lexer->result_symbol = HASH_COMMENT;
+  return true;
+}
+
 bool tree_sitter_flow_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
   (void)payload;
   if (valid_symbols[RUST_LANGUAGE_BLOCK_CONTENT]) return scan_block_content(lexer, true);
@@ -286,5 +311,5 @@ bool tree_sitter_flow_external_scanner_scan(void *payload, TSLexer *lexer, const
   if (valid_symbols[LANGUAGE_INLINE_BACKTICK_CONTENT]) {
     return scan_inline_content(lexer, '`', LANGUAGE_INLINE_BACKTICK_CONTENT);
   }
-  return false;
+  return valid_symbols[HASH_COMMENT] && scan_hash_comment(lexer);
 }

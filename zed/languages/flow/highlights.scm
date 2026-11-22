@@ -1,4 +1,5 @@
 (comment) @comment
+(hash_comment) @comment
 (identifier) @variable
 (pipeline_header
   "@" @keyword.control

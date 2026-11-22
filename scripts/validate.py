@@ -10,6 +10,7 @@ required = [
     'README.md', 'LICENSE', 'package.json', 'package-lock.json', 'grammar.js', 'src/parser.c', 'src/node-types.json', 'src/scanner.c',
     'assets/nexss-logo.png', 'examples/complete.nflow', 'test/fixtures/current-syntax.nflow',
     'test/fixtures/zed-highlight-regression.nflow', 'test/fixtures/syntax-colors.nflow',
+    'test/fixtures/comment-colors.nflow',
     'test/fixtures/template-render-input.nflow', 'test/fixtures/template-render-expected.nflow',
     'test/fixtures/template-render-contexts.nflow', 'test/fixtures/python-inline.nflow',
     'test/fixtures/embedded-languages.nflow', 'test/template-textmate.test.js', 'test/nflow-lsp.test.js',
@@ -74,6 +75,7 @@ claude_plugin = json.loads((ROOT / 'claude/.claude-plugin/plugin.json').read_tex
 claude_lsp = json.loads((ROOT / 'claude/.lsp.json').read_text())
 tm = json.loads((ROOT / 'vscode/syntaxes/flow.tmLanguage.json').read_text())
 jetbrains_tm = json.loads((ROOT / 'jetbrains/textmate/nexss-flow.tmLanguage.json').read_text())
+vscode_language = json.loads((ROOT / 'vscode/language-configuration.json').read_text())
 vscode_snippets = json.loads((ROOT / 'vscode/snippets/flow.code-snippets').read_text())
 zed_snippets = json.loads((ROOT / '.zed/snippets/nexss-flow.json').read_text())
 assert vscode['main'] == './extension.js' and vscode['publisher'] == 'nexssp'
@@ -100,6 +102,10 @@ assert 'bypasses the core version check' in properties['nexssFlow.languageServer
 assert 'nexssFlow.languageServer.args' in properties
 assert 'node_modules/' not in (ROOT / 'vscode/.vscodeignore').read_text()
 assert tm['scopeName'] == 'source.nflow' and tm['fileTypes'] == ['nflow']
+comment_rules = tm['repository']['comments']['patterns']
+assert any(rule.get('name') == 'comment.line.nflow' and '//' in rule.get('match', '') for rule in comment_rules), 'TextMate grammar lacks slash comments'
+assert any(rule.get('name') == 'comment.line.nflow' and '#' in rule.get('match', '') for rule in comment_rules), 'TextMate grammar lacks hash comments'
+assert vscode_language['comments']['lineComment'] == '#', 'VS Code comment toggle should insert whole-line hash comments'
 for grammar_rule in ['templateRender', 'templateRenderStringDouble', 'goTemplate', 'pythonInline', 'pythonBlock', 'pythonNestedBlock',
                      'rustInline', 'rustBlock', 'rustNestedBlock', 'phpInline', 'phpBlock', 'phpNestedBlock',
                      'typescriptInline', 'typescriptBlock', 'typescriptNestedBlock',
@@ -115,9 +121,12 @@ for scope in ['variable.other.property.special.schema.nflow', 'entity.other.attr
 grammar_source = (ROOT / 'grammar.js').read_text()
 for token in ['function_declaration:', 'function_parameter:', 'function_type:', 'function_body:',
               'function_call:', 'local_binding:', 'binding_keyword:',
+              '$.hash_comment',
               'language_inline:', 'language_block:', 'language_block_content', 'rust_language_block_content', 'language_inline_double_content',
               'language_inline_single_content', 'language_inline_backtick_content']:
     assert token in grammar_source, f'Tree-sitter grammar lacks {token}'
+scanner_source = (ROOT / 'src/scanner.c').read_text()
+assert 'static bool scan_hash_comment' in scanner_source and 'lexer->get_column(lexer) == 0' in scanner_source
 for language_tag in ['rust', 'rs', 'php', 'typescript', 'ts', 'javascript', 'js', 'go', 'golang']:
     assert f"'{language_tag}'" in grammar_source, f'Tree-sitter grammar lacks {language_tag} language blocks'
 python_rules = json.dumps({key: tm['repository'][key] for key in ['pythonInline', 'pythonBlock', 'pythonNestedBlock']})
@@ -150,7 +159,7 @@ for rel in ['zed/languages/flow/config.toml', 'zed-legacy-0.230.2/languages/flow
     language = tomllib.loads((ROOT / rel).read_text())
     assert language['name'] == 'Nexss Flow' and language['grammar'] == 'flow'
     assert language['path_suffixes'] == ['nflow']
-    assert language['line_comments'] == ['//']
+    assert language['line_comments'] == ['#', '//']
 for rel in ['zed/extension.toml', 'zed-legacy-0.230.2/extension.toml']:
     manifest = tomllib.loads((ROOT / rel).read_text())
     assert manifest['grammars']['flow']['repository'] == 'https://github.com/nexssp/flow-editor-support'
@@ -165,6 +174,8 @@ for rel in ['zed/language-servers/nexss-flow-language-server.toml',
 udl = ET.parse(ROOT / 'notepadpp/flow-udl.xml').getroot()
 user_lang = udl.find('UserLang')
 assert user_lang is not None and user_lang.attrib['ext'] == 'nflow'
+udl_global = user_lang.find('./Settings/Global')
+assert udl_global is not None and udl_global.attrib.get('forcePureLC') == '2', 'Notepad++ comments must require line start or leading whitespace'
 udl_styles = {style.attrib['name']: style.attrib for style in user_lang.findall('./Styles/WordsStyle')}
 assert udl_styles['DEFAULT']['colorStyle'] == '0', 'Notepad++ UDL default style should inherit the active theme colors'
 assert all(style.get('colorStyle') == '1' for name, style in udl_styles.items() if name != 'DEFAULT'), 'Notepad++ UDL token backgrounds should inherit the active theme background'
@@ -181,7 +192,7 @@ assert {'func', 'test'} <= set(udl_keywords['Keywords2']), 'Notepad++ UDL lacks 
 assert {'if', 'else', 'each'} <= set(udl_keywords['Keywords1']), 'Notepad++ UDL lacks v0.95 control keywords'
 assert {'&&', '==', '!=', '>=', '<=', '+', '-', '*', '/', '%', '>', '<', '!'} <= set(udl_keywords['Operators1']), 'Notepad++ UDL lacks Flow expression operators'
 comments = user_lang.find("./KeywordLists/Keywords[@name='Comments']")
-assert comments is not None and comments.text.strip().startswith('00//')
+assert comments is not None and comments.text.strip().split()[:2] == ['00//', '01#']
 np_exec = (ROOT / 'notepadpp/nppexec/Format-Flow.npes').read_text()
 assert 'flowfmt.cmd' in np_exec and 'NPP_SAVE' in np_exec and 'NPP_OPEN' in np_exec
 cmd = (ROOT / 'notepadpp/flowfmt.cmd').read_text()
@@ -261,6 +272,7 @@ assert "spawnSync(executable, ['fmt', ...process.argv.slice(2)]" in cli and "std
 assert json.loads((ROOT / 'package.json').read_text())['bin']['flowfmt'] == './fmt/cli.js'
 
 highlights = (ROOT / 'zed/languages/flow/highlights.scm').read_text()
+assert '(hash_comment) @comment' in highlights, 'Zed query lacks the whole-line hash comment capture'
 for token in ['@operator', '@function', '@property', '@keyword.control', '@string', '@number', '(array "["']:
     assert token in highlights, f'Zed highlight query lacks {token}'
 for token in ['(function_declaration', '(function_name) @function', '(identifier) @variable.parameter', '(function_type) @type']:
@@ -305,6 +317,9 @@ syntax_color_fixture = (ROOT / 'test/fixtures/syntax-colors.nflow').read_text()
 for token in ['xerr Error', 'on_error string', 'input Input', 'result Result', 'default:', 'validation:',
               '@pipeline on_timeout', '@end', 'runtime.fail', 'pipeline.on_timeout', ':retry=2', ':timeout=5s']:
     assert token in syntax_color_fixture, f'Syntax-color fixture lacks {token}'
+comment_fixture = (ROOT / 'test/fixtures/comment-colors.nflow').read_text()
+for token in ['# distribute.map', '  # The text', '// Slash comments', 'runtime.noop @review #fast']:
+    assert token in comment_fixture, f'Comment-color fixture lacks {token}'
 
 release = (ROOT / 'scripts/package-release.sh').read_text()
 assert 'mktemp -d' in release and 'Refusing to use an unsafe release output directory' in release

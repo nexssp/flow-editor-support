@@ -1579,6 +1579,11 @@
     "named": false
   },
   {
+    "type": "hash_comment",
+    "named": true,
+    "extra": true
+  },
+  {
     "type": "identifier",
     "named": true
   },

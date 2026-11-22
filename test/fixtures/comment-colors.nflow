@@ -1,0 +1,6 @@
+# distribute.map runs an action over each item with bounded concurrency.
+@pipeline comment_colors
+  # The text in this line should stay muted, including if, let, and runtime.noop.
+  // Slash comments remain supported as well.
+  runtime.noop @review #fast ( value: "x" )
+@end

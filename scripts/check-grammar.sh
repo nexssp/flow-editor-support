@@ -6,9 +6,10 @@ cd "$ROOT"
 npx --yes tree-sitter-cli generate grammar.js
 for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
   test/fixtures/zed-highlight-regression.nflow test/fixtures/syntax-colors.nflow \
+  test/fixtures/comment-colors.nflow \
   test/fixtures/template-render-input.nflow test/fixtures/template-render-contexts.nflow \
   test/fixtures/python-inline.nflow test/fixtures/embedded-languages.nflow; do
-  output="$(npx --yes tree-sitter-cli parse "$file" 2>&1)" || {
+  output="$(npx --yes tree-sitter-cli parse --grammar-path . "$file" 2>&1)" || {
     printf '%s\n' "$output" >&2
     exit 1
   }
@@ -49,7 +50,7 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
-  color_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/syntax-colors.nflow 2>&1)" || {
+  color_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/syntax-colors.nflow 2>&1)" || {
     printf 'Tree-sitter syntax-color query failed for %s:\n%s\n' "$query" "$color_output" >&2
     exit 1
   }
@@ -74,7 +75,7 @@ done
 call_file="$(mktemp "${TMPDIR:-/tmp}/flow-call-XXXXXX.nflow")"
 trap 'rm -f "$call_file"' EXIT
 printf '%s\n' 'runtime.noop :timeout=1s :retry=1 ( value: "x" )' > "$call_file"
-call_output="$(npx --yes tree-sitter-cli parse "$call_file" 2>&1)" || {
+call_output="$(npx --yes tree-sitter-cli parse --grammar-path . "$call_file" 2>&1)" || {
   printf 'Tree-sitter rejected a v0.95 action call with repeated modifiers:\n%s\n' "$call_output" >&2
   exit 1
 }
@@ -91,7 +92,7 @@ printf 'Tree-sitter accepted a v0.95 action call with two modifiers and parenthe
 for query in \
   zed/languages/flow/highlights.scm \
   zed-legacy-0.230.2/languages/flow/highlights.scm; do
-  sample_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/template-render-input.nflow 2>&1)" || {
+  sample_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/template-render-input.nflow 2>&1)" || {
     printf 'Tree-sitter query failed for %s on the supplied sample:\n%s\n' "$query" "$sample_output" >&2
     exit 1
   }
@@ -102,7 +103,7 @@ for query in \
       exit 1
     }
   done
-  context_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/template-render-contexts.nflow 2>&1)" || {
+  context_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/template-render-contexts.nflow 2>&1)" || {
     printf 'Tree-sitter query failed for %s on context fixture:\n%s\n' "$query" "$context_output" >&2
     exit 1
   }
@@ -118,7 +119,7 @@ for query in \
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
-  coalesce_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
+  coalesce_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
     printf 'Tree-sitter ?? query failed for %s:\n%s\n' "$query" "$coalesce_output" >&2
     exit 1
   }
@@ -130,7 +131,7 @@ for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
-  python_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/python-inline.nflow 2>&1)" || {
+  python_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/python-inline.nflow 2>&1)" || {
     printf 'Tree-sitter Python-injection query failed for %s:\n%s\n' "$query" "$python_output" >&2
     exit 1
   }
@@ -146,7 +147,7 @@ for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
-  embedded_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/embedded-languages.nflow 2>&1)" || {
+  embedded_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/embedded-languages.nflow 2>&1)" || {
     printf 'Tree-sitter embedded-language query failed for %s:\n%s\n' "$query" "$embedded_output" >&2
     exit 1
   }
@@ -163,7 +164,7 @@ for query in \
   zed/languages/flow/brackets.scm \
   zed-legacy-0.230.2/languages/flow/highlights.scm \
   zed-legacy-0.230.2/languages/flow/brackets.scm; do
-  output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
+  output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
     printf 'Tree-sitter query failed for %s:\n%s\n' "$query" "$output" >&2
     exit 1
   }
@@ -175,7 +176,7 @@ for query in \
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
-  function_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
+  function_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
     printf 'Tree-sitter @func query failed for %s:\n%s\n' "$query" "$function_output" >&2
     exit 1
   }
@@ -189,7 +190,7 @@ for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
-  current_output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
+  current_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/current-syntax.nflow 2>&1)" || {
     printf 'Tree-sitter v0.95 syntax query failed for %s:\n%s\n' "$query" "$current_output" >&2
     exit 1
   }
@@ -204,7 +205,32 @@ for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow
 done
 
 for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
-  output="$(npx --yes tree-sitter-cli query "$query" test/fixtures/zed-highlight-regression.nflow 2>&1)" || {
+  comment_output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/comment-colors.nflow 2>&1)" || {
+    printf 'Tree-sitter comment query failed for %s:\n%s\n' "$query" "$comment_output" >&2
+    exit 1
+  }
+  for capture in 'comment' 'distribute.map' 'Slash comments remain supported'; do
+    grep -Fq "$capture" <<<"$comment_output" || {
+      printf 'Expected comment capture %s is missing from %s:\n%s\n' "$capture" "$query" "$comment_output" >&2
+      exit 1
+    }
+  done
+  grep -Fq ' - label,' <<<"$comment_output" && grep -Fq 'text: `fast`' <<<"$comment_output" || {
+    printf 'Inline #fast selector was not kept as code in %s:\n%s\n' "$query" "$comment_output" >&2
+    exit 1
+  }
+  comment_parse="$(npx --yes tree-sitter-cli parse --grammar-path . test/fixtures/comment-colors.nflow 2>&1)"
+  hash_comment_count="$(grep -c '(hash_comment ' <<<"$comment_parse" || true)"
+  if [[ "$hash_comment_count" -ne 2 ]] || grep -Eq '\(hash_comment \[4,' <<<"$comment_parse"; then
+    printf 'Expected exactly the two whole-line hash comments and no inline selector comment in %s:\n%s\n' \
+      "$query" "$comment_parse" >&2
+    exit 1
+  fi
+  printf 'Tree-sitter hash and slash comment captures are correct in %s\n' "$query"
+done
+
+for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow/highlights.scm; do
+  output="$(npx --yes tree-sitter-cli query --grammar-path . "$query" test/fixtures/zed-highlight-regression.nflow 2>&1)" || {
     printf 'Tree-sitter Zed regression query failed for %s:\n%s\n' "$query" "$output" >&2
     exit 1
   }

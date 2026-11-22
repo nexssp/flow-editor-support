@@ -205,6 +205,16 @@ for (const editor of Object.keys(grammarPaths)) {
     assertScope(tokens, source, 'retry', 'entity.other.attribute-name.modifier.nflow');
   });
 
+  test(`${editor}: whole-line hash/slash comments are comments but inline selectors remain code`, () => {
+    const source = fs.readFileSync(path.join(ROOT, 'test/fixtures/comment-colors.nflow'), 'utf8');
+    const tokens = tokenize(source, grammars[editor]);
+    for (const text of ['distribute.map', 'runtime.noop', 'Slash comments remain supported']) {
+      assertScope(tokens, source, text, 'comment.line.nflow');
+    }
+    const selector = assertScope(tokens, source, '#fast', 'variable.parameter.target.nflow');
+    assert.ok(!selector.scopes.includes('comment.line.nflow'));
+  });
+
   test(`${editor}: supplied template.render sample has distinct embedded Go template scopes`, () => {
     const source = fs.readFileSync(INPUT_FIXTURE, 'utf8');
     const tokens = tokenize(source, grammars[editor]);
