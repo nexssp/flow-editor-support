@@ -9,7 +9,7 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '../..');
 const CORE = process.env.NFLOW_BIN || '';
 const source = [
-  '@nflow_version ">=0.95.0"',
+  '@nflow_version ">=0.97.1"',
   '@description "Formatter integration"',
   '@pipeline editor:timeout=2s:retry=3',
   '  editor.sample :retry=1 ( value: "ok" )',
@@ -20,6 +20,9 @@ const source = [
   '@assert: result.ok == true',
   '',
 ].join('\n');
+// File commands resolve @nflow_version ranges through release metadata; these
+// filesystem checks cover local formatter I/O, so keep the range on stdin only.
+const sourceWithoutVersion = source.replace(/^@nflow_version "[^"]+"\n/, '');
 const adapters = [
   'fmt/index.js',
   'vscode/fmt/index.js',
@@ -57,6 +60,7 @@ test('all editor formatter adapters match the actual Flow core formatter', { ski
 
 test('all editor CLI wrappers pass stdin and atomic file writes to nflow fmt', { skip: !CORE }, t => {
   const expected = runCore(['--stdin'], source);
+  const expectedFile = runCore(['--stdin'], sourceWithoutVersion);
   const env = { ...process.env, NFLOW_BIN: CORE };
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'flow fmt real core '));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
@@ -69,21 +73,21 @@ test('all editor CLI wrappers pass stdin and atomic file writes to nflow fmt', {
     assert.equal(stdin.stdout, expected, relativePath);
 
     const file = path.join(directory, `sample ${index}.nflow`);
-    fs.writeFileSync(file, source);
+    fs.writeFileSync(file, sourceWithoutVersion);
     const write = spawnSync(process.execPath, [script, '--write', file], { encoding: 'utf8', env });
     assert.equal(write.status, 0, `${relativePath}: ${write.stderr}`);
-    assert.equal(fs.readFileSync(file, 'utf8'), expected, relativePath);
+    assert.equal(fs.readFileSync(file, 'utf8'), expectedFile, relativePath);
     const check = spawnSync(process.execPath, [script, '--check', file], { encoding: 'utf8', env });
     assert.equal(check.status, 0, `${relativePath}: ${check.stderr}`);
   }
 });
 
 test('JetBrains External Tool command formats a named file with the real Flow core', { skip: !CORE }, t => {
-  const expected = runCore(['--stdin'], source);
+  const expected = runCore(['--stdin'], sourceWithoutVersion);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'jetbrains flow formatter '));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const file = path.join(directory, 'sample file.nflow');
-  fs.writeFileSync(file, source);
+  fs.writeFileSync(file, sourceWithoutVersion);
   const write = spawnSync(CORE, ['fmt', '--write', file], { encoding: 'utf8' });
   assert.equal(write.status, 0, write.stderr);
   assert.equal(fs.readFileSync(file, 'utf8'), expected);

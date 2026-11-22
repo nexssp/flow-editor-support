@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Pinned core used by CI and real-provider smoke tests. The v0.95.0 source tag is
-# public but has no published binary assets yet, so build its CLI from the Go module.
-VERSION=0.95.0
+# Pinned core used by CI and real-provider smoke tests, built from its tagged Go module.
+VERSION=0.97.1
 FLOW_MODULE=github.com/nexssp/flow/cmd/nflow
 # Separate launcher compatibility floor; this does not imply newer LSP features.
 MINIMUM_VERSION=0.44.2
