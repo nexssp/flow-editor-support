@@ -6,7 +6,7 @@ Field highlighting uses a built-in list of common Flow fields, so custom field n
 
 ## Formatting with NppExec
 
-1. Install Flow v0.97.1, the core version tested by this editor-support revision, and the **NppExec** plugin; v0.44.2 is the separate shared tooling compatibility floor. Confirm the installed version with `nflow --version`.
+1. Install Flow v0.103.0, the latest stable core tested by this editor-support revision, and the **NppExec** plugin; v0.44.2 is the separate shared tooling compatibility floor. Confirm the installed version with `nflow --version`.
 2. Ensure `nflow` is on `PATH`, or set `NFLOW_BIN` in the environment Notepad++ inherits.
 3. Copy `flowfmt.cmd` to `<Notepad++>\\plugins\\Config\\flowfmt.cmd`.
 4. Open `nppexec/Format-Flow.npes` in NppExec and run it, or paste its contents into **Plugins → NppExec → Execute...**. Bind the command to a shortcut if desired.

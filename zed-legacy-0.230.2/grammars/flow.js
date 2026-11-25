@@ -30,8 +30,21 @@ module.exports = grammar({
 
     directive_block: $ => prec(2, seq('@', $.directive_name, optional(':'), $.projection)),
     directive: $ => seq('@', $.directive_name, optional(':')),
-    pipeline_header: $ => prec.right(10, seq('@', 'pipeline', $.pipeline_name, repeat($.modifier))),
+    pipeline_header: $ => prec.right(10, seq('@', 'pipeline', $.pipeline_name, optional($.pipeline_signature), repeat($.modifier))),
     pipeline_name: $ => $.identifier,
+    pipeline_signature: $ => prec.right(seq(
+      '(', optional($.pipeline_input), ')',
+      optional($.pipeline_output),
+    )),
+    pipeline_input: $ => seq($.pipeline_input_name, ':', $.pipeline_type),
+    pipeline_input_name: $ => $.identifier,
+    pipeline_output: $ => seq(':', $.pipeline_output_type),
+    pipeline_output_type: $ => choice(
+      seq(token.immediate(/[ \t]+/), $.pipeline_type),
+      seq('!', optional('[]'), $.identifier_reference),
+      seq('[]', $.identifier_reference),
+    ),
+    pipeline_type: $ => seq(optional('!'), optional('[]'), $.identifier_reference),
     schema_declaration: $ => prec(10, seq('@', 'schema', $.schema_name, $.schema_body)),
     schema_name: $ => $.identifier,
     schema_body: $ => seq('{', repeat(choice($.schema_field, $.raw_char)), '}'),

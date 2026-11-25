@@ -1,3 +1,4 @@
+@nflow_version ">=0.103.0"
 @schema ErrorEnvelope {
   xerr Error `json:"xerr" validate:"required"`
   on_error string `json:"on_error" validate:"omitempty,oneof=fail recover"`
@@ -9,6 +10,21 @@
 @pipeline on_timeout
   :retry=2
   runtime.fail ( kind: "Timeout", message: "slow upstream" )
+@end
+
+@schema TypedRequest {
+  Name string `json:"name"`
+}
+@schema TypedResponse {
+  Name string `json:"name"`
+}
+@pipeline typed_order(order_req: !TypedRequest): !TypedResponse
+  :retry=2
+  { name: order_req.name }
+@end
+
+@pipeline typed_status(): TypedResponse
+  { name: "ready" }
 @end
 
 runtime.fail ( kind: "Timeout" )

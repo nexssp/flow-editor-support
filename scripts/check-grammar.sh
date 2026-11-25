@@ -39,7 +39,9 @@ for file in examples/complete.nflow test/fixtures/current-syntax.nflow \
     done
   fi
   if [[ "$file" == "test/fixtures/syntax-colors.nflow" ]]; then
-    for node in schema_declaration schema_field schema_tag_key pipeline_header qualified_identifier modifier; do
+    for node in schema_declaration schema_field schema_tag_key pipeline_header pipeline_signature \
+      pipeline_input pipeline_input_name pipeline_type pipeline_output pipeline_output_type \
+      qualified_identifier modifier; do
       grep -Fq "($node" <<<"$output" || {
         printf 'Tree-sitter did not recognize syntax-color regression node %s:\n%s\n' "$node" "$output" >&2
         exit 1
@@ -57,7 +59,8 @@ for query in zed/languages/flow/highlights.scm zed-legacy-0.230.2/languages/flow
   for capture in ' - property.builtin,' 'text: `xerr`' 'text: `on_error`' 'text: `input`' 'text: `result`' \
     ' - attribute,' 'text: `default`' 'text: `validation`' ' - namespace,' 'text: `runtime`' \
     'text: `pipeline`' ' - keyword.control,' 'text: `end`' 'text: `on_timeout`' \
-    ' - function,' ' - punctuation.delimiter,' 'text: `retry`' 'text: `timeout`'; do
+    ' - function,' ' - punctuation.delimiter,' ' - variable.parameter,' 'text: `order_req`' \
+    ' - type,' 'text: `TypedRequest`' 'text: `TypedResponse`' 'text: `retry`' 'text: `timeout`'; do
     grep -Fq "$capture" <<<"$color_output" || {
       printf 'Expected syntax-color capture %s is missing from %s:\n%s\n' "$capture" "$query" "$color_output" >&2
       exit 1

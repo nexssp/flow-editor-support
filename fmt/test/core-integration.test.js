@@ -9,7 +9,7 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '../..');
 const CORE = process.env.NFLOW_BIN || '';
 const source = [
-  '@nflow_version ">=0.97.1"',
+  '@nflow_version ">=0.103.0"',
   '@description "Formatter integration"',
   '@pipeline editor:timeout=2s:retry=3',
   '  editor.sample :retry=1 ( value: "ok" )',

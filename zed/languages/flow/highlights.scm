@@ -5,6 +5,9 @@
   "@" @keyword.control
   "pipeline" @keyword.control
   (pipeline_name) @function)
+(pipeline_input_name) @variable.parameter
+(pipeline_type) @type
+(pipeline_output_type) @type
 (schema_declaration
   "@" @keyword.control
   "schema" @keyword.control

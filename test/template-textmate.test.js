@@ -184,7 +184,7 @@ for (const editor of Object.keys(grammarPaths)) {
     }
   });
 
-  test(`${editor}: schema fields/tags, pipeline names, qualified names, and modifiers have distinct scopes`, () => {
+  test(`${editor}: schema fields/tags, typed pipeline signatures, qualified names, and modifiers have distinct scopes`, () => {
     const source = fs.readFileSync(path.join(ROOT, 'test/fixtures/syntax-colors.nflow'), 'utf8');
     const tokens = tokenize(source, grammars[editor]);
     assertScope(tokens, source, 'xerr', 'variable.other.property.special.schema.nflow');
@@ -200,9 +200,14 @@ for (const editor of Object.keys(grammarPaths)) {
     assertScope(tokens, source, 'end', 'keyword.control.directive.nflow');
     assertScope(tokens, source, 'on_timeout', 'entity.name.function.pipeline.nflow');
     assertScope(tokens, source, 'on_timeout', 'entity.name.function.pipeline.nflow', 1);
+    assertScope(tokens, source, 'order_req', 'variable.parameter.nflow');
+    assertScope(tokens, source, '!TypedRequest', 'storage.type.nflow');
+    assertScope(tokens, source, '!TypedResponse', 'storage.type.nflow');
+    assertScope(tokens, source, 'TypedResponse', 'storage.type.nflow', 2);
     assertScope(tokens, source, 'runtime', 'entity.name.namespace.nflow');
     assertScope(tokens, source, 'fail', 'entity.name.function.nflow', 2);
     assertScope(tokens, source, 'retry', 'entity.other.attribute-name.modifier.nflow');
+    assertScope(tokens, source, 'retry', 'entity.other.attribute-name.modifier.nflow', 1);
   });
 
   test(`${editor}: whole-line hash/slash comments are comments but inline selectors remain code`, () => {

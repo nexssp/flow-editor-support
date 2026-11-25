@@ -314,8 +314,10 @@ embedded_fixture = (ROOT / 'test/fixtures/embedded-languages.nflow').read_text()
 for token in ['rust {', 'php {', 'typescript {', 'javascript {', 'go {', 'rs"', "php'", 'ts`', 'js"', "go'", 'golang`']:
     assert token in embedded_fixture, f'Embedded-language highlighting fixture lacks {token}'
 syntax_color_fixture = (ROOT / 'test/fixtures/syntax-colors.nflow').read_text()
-for token in ['xerr Error', 'on_error string', 'input Input', 'result Result', 'default:', 'validation:',
-              '@pipeline on_timeout', '@end', 'runtime.fail', 'pipeline.on_timeout', ':retry=2', ':timeout=5s']:
+for token in ['@nflow_version ">=0.103.0"', 'xerr Error', 'on_error string', 'input Input', 'result Result', 'default:', 'validation:',
+              '@pipeline on_timeout', 'typed_order(order_req: !TypedRequest): !TypedResponse',
+              '@pipeline typed_status(): TypedResponse',
+              '@end', 'runtime.fail', 'pipeline.on_timeout', ':retry=2', ':timeout=5s']:
     assert token in syntax_color_fixture, f'Syntax-color fixture lacks {token}'
 comment_fixture = (ROOT / 'test/fixtures/comment-colors.nflow').read_text()
 for token in ['# distribute.map', '  # The text', '// Slash comments', 'runtime.noop @review #fast']:
@@ -343,7 +345,7 @@ assert 'files: dist/*' in release_job
 assert 'package-release.sh' not in release_job
 assert 'install-flow-core.sh install' not in release_job
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
-assert 'VERSION=0.97.1' in core_installer and 'FLOW_MODULE=github.com/nexssp/flow/cmd/nflow' in core_installer
+assert 'VERSION=0.103.0' in core_installer and 'FLOW_MODULE=github.com/nexssp/flow/cmd/nflow' in core_installer
 assert 'MINIMUM_VERSION=0.44.2' in core_installer and 'GOTOOLCHAIN=auto' in core_installer
 assert 'actual_patch < 2' in core_installer
 assert 'nflow-v${VERSION}' in core_installer
@@ -366,7 +368,7 @@ for token in ['Nexss Flow', 'nflow', 'Available LSP features depend on the insta
     assert token in readme, f'root README lacks {token}'
 assert 'NEXSS_NFLOW_NODE' in readme, 'root README must document the canonical Node.js override'
 assert 'NEXSS_FLOW_NODE' not in readme, 'root README must not document the legacy Node.js override'
-assert 'v0.97.1' in readme and 'v0.44.2 compatibility floor' in readme and 'Go 1.27.4 or newer' in readme
+assert 'v0.103.0' in readme and 'v0.44.2 compatibility floor' in readme and 'Go 1.27.4 or newer' in readme
 for rel, tokens in [
     ('vscode/test/adapter-smoke.test.js', [
         'textDocument/definition', 'textDocument/references', 'textDocument/rename',
@@ -378,4 +380,4 @@ for rel, tokens in [
     smoke = (ROOT / rel).read_text()
     for token in tokens:
         assert token in smoke, f'{rel} lacks real-provider request {token}'
-print(f'validated {len(required)} required files; source-built Flow v0.97.1 pin, v0.44.2 compatibility floor, editor docs, and package safety=OK')
+print(f'validated {len(required)} required files; source-built Flow v0.103.0 pin, typed pipeline signatures, v0.44.2 compatibility floor, editor docs, and package safety=OK')

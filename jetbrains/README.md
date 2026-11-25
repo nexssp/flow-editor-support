@@ -6,7 +6,7 @@ In **Settings/Preferences → Editor → TextMate Bundles → Add**, select the 
 
 ## Formatting and checks
 
-Install Flow v0.97.1, the core version tested by this editor-support revision; v0.44.2 is the separate shared tooling compatibility floor. Confirm the executable version with `nflow --version`. Configure an External Tool for manual formatting or a File Watcher for formatting on save. Set **Program** to `nflow` (if it is on `PATH`) or the full path of the Flow executable. Set **Arguments** to:
+Install Flow v0.103.0, the latest stable core tested by this editor-support revision; v0.44.2 is the separate shared tooling compatibility floor. Confirm the executable version with `nflow --version`. Configure an External Tool for manual formatting or a File Watcher for formatting on save. Set **Program** to `nflow` (if it is on `PATH`) or the full path of the Flow executable. Set **Arguments** to:
 
 ```text
 fmt --write "$FilePath$"

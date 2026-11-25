@@ -770,6 +770,44 @@
         {
           "type": "pipeline_name",
           "named": true
+        },
+        {
+          "type": "pipeline_signature",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pipeline_input",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "pipeline_input_name",
+          "named": true
+        },
+        {
+          "type": "pipeline_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pipeline_input_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
         }
       ]
     }
@@ -790,6 +828,59 @@
     }
   },
   {
+    "type": "pipeline_output",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "pipeline_output_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pipeline_output_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier_reference",
+          "named": true
+        },
+        {
+          "type": "pipeline_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pipeline_signature",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "pipeline_input",
+          "named": true
+        },
+        {
+          "type": "pipeline_output",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "pipeline_step",
     "named": true,
     "fields": {},
@@ -803,6 +894,21 @@
         },
         {
           "type": "parallel",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pipeline_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier_reference",
           "named": true
         }
       ]
@@ -1531,6 +1637,10 @@
   },
   {
     "type": "[",
+    "named": false
+  },
+  {
+    "type": "[]",
     "named": false
   },
   {

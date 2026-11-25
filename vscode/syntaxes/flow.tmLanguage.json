@@ -1430,8 +1430,8 @@
     },
     "pipelineHeader": {
       "name": "meta.pipeline.declaration.nflow",
-      "match": "(^\\s*)(@)(pipeline)(\\s+)([A-Za-z_][A-Za-z0-9_-]*)",
-      "captures": {
+      "begin": "(^\\s*)(@)(pipeline)(\\s+)([A-Za-z_][A-Za-z0-9_-]*)",
+      "beginCaptures": {
         "2": {
           "name": "punctuation.definition.directive.nflow"
         },
@@ -1441,7 +1441,52 @@
         "5": {
           "name": "entity.name.function.pipeline.nflow"
         }
-      }
+      },
+      "end": "$",
+      "patterns": [
+        {
+          "name": "meta.pipeline.signature.parameter.nflow",
+          "match": "([A-Za-z_][A-Za-z0-9_]*)(\\s*)(:)(\\s*)(!?([A-Za-z_][A-Za-z0-9_.]*|\\[\\][A-Za-z_][A-Za-z0-9_.]*))",
+          "captures": {
+            "1": {
+              "name": "variable.parameter.nflow"
+            },
+            "3": {
+              "name": "punctuation.separator.key-value.nflow"
+            },
+            "5": {
+              "name": "storage.type.nflow"
+            }
+          }
+        },
+        {
+          "name": "meta.pipeline.signature.output.nflow",
+          "match": "(:)([ \\t]+)(!?([A-Za-z_][A-Za-z0-9_.]*|\\[\\][A-Za-z_][A-Za-z0-9_.]*))",
+          "captures": {
+            "1": {
+              "name": "punctuation.separator.key-value.nflow"
+            },
+            "3": {
+              "name": "storage.type.nflow"
+            }
+          }
+        },
+        {
+          "name": "meta.pipeline.signature.output.nflow",
+          "match": "(:)(!([A-Za-z_][A-Za-z0-9_.]*|\\[\\][A-Za-z_][A-Za-z0-9_.]*)|\\[\\][A-Za-z_][A-Za-z0-9_.]*)",
+          "captures": {
+            "1": {
+              "name": "punctuation.separator.key-value.nflow"
+            },
+            "2": {
+              "name": "storage.type.nflow"
+            }
+          }
+        },
+        {
+          "include": "#modifiers"
+        }
+      ]
     },
     "qualifiedNames": {
       "patterns": [
