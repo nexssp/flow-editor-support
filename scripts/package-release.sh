@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)"
-OUT="${1:-$ROOT/dist}"
-if [[ $# -gt 2 ]]; then
-  echo "Usage: $0 [OUTPUT_DIR [vMAJOR.MINOR.PATCH_TAG]]" >&2
+SKIP_VALIDATION=0
+POSITIONAL_ARGS=()
+for argument in "$@"; do
+  if [[ "$argument" == "--skip-validation" ]]; then
+    SKIP_VALIDATION=1
+  else
+    POSITIONAL_ARGS+=("$argument")
+  fi
+done
+if [[ "${#POSITIONAL_ARGS[@]}" -gt 2 ]]; then
+  echo "Usage: $0 [OUTPUT_DIR [vMAJOR.MINOR.PATCH_TAG]] [--skip-validation]" >&2
   exit 2
 fi
-RELEASE_TAG="${2:-}"
+OUT="${POSITIONAL_ARGS[0]:-$ROOT/dist}"
+RELEASE_TAG="${POSITIONAL_ARGS[1]:-}"
 if [[ "$OUT" = /* ]]; then OUT_DIR="$OUT"; else OUT_DIR="$ROOT/$OUT"; fi
 OUT_DIR="$(python3 -c 'import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve())' "$OUT_DIR")"
 if [[ "$OUT_DIR" = "/" || "$OUT_DIR" = "$ROOT" ]]; then
@@ -68,11 +77,14 @@ chmod +x "$SRC/zed/lsp/nexss-flow-language-server" "$SRC/zed-legacy-0.230.2/lsp/
   "$SRC/scripts/package-release.sh" "$SRC/scripts/check-grammar.sh" "$SRC/scripts/install-flow-core.sh"
 
 # The temporary source copy must have the root dev dependencies used by tests.
-(cd "$SRC" && npm ci --no-audit --no-fund)
-(cd "$SRC" && python3 scripts/validate.py)
-(cd "$SRC" && node --test fmt/test/*.test.js vscode/test/*.test.js test/*.test.js)
-(cd "$SRC" && node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow)
-(cd "$SRC" && bash scripts/check-grammar.sh)
+# CI passes --skip-validation after running the full suite against this commit.
+if [[ "$SKIP_VALIDATION" -eq 0 ]]; then
+  (cd "$SRC" && npm ci --no-audit --no-fund)
+  (cd "$SRC" && python3 scripts/validate.py)
+  (cd "$SRC" && node --test fmt/test/*.test.js vscode/test/*.test.js test/*.test.js)
+  (cd "$SRC" && node fmt/cli.js --check examples/complete.nflow test/fixtures/current-syntax.nflow)
+  (cd "$SRC" && bash scripts/check-grammar.sh)
+fi
 
 (cd "$SRC" && zip -qr "$STAGE/nexss-flow-source.zip" README.md LICENSE assets grammar.js src examples fmt lsp zed zed-legacy-0.230.2 vscode notepadpp claude jetbrains package.json package-lock.json scripts test .zed .github)
 (cd "$SRC/zed" && zip -qr "$STAGE/nexss-flow-zed.zip" .)

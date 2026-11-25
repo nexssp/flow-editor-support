@@ -332,18 +332,23 @@ assert 'lsp/nflow-lsp.js' in release and 'vscode/lsp/nflow-lsp.js' in release
 assert 'npm ci --omit=dev' in release and '--no-dependencies' not in release
 workflow = (ROOT / '.github/workflows/release.yml').read_text()
 assert 'package-release.sh' in workflow and 'softprops/action-gh-release' in workflow
+assert "  push:\n    branches:\n      - '**'\n    tags:\n      - 'v*'" in workflow
+assert 'permissions:\n  contents: read' in workflow
 assert 'run: npm ci' in workflow
 assert workflow.count("go-version: '1.27.4'") == 1
 assert workflow.count('install-flow-core.sh install') == 1
 assert 'bash scripts/install-flow-core.sh install >/dev/null' in workflow
 assert 'nflow-v0.' not in workflow and 'node --check lsp/nflow-lsp.js' in workflow
 assert 'actions/upload-artifact@v4' in workflow
+assert 'bash scripts/package-release.sh "$GITHUB_WORKSPACE/dist" "$RELEASE_TAG" --skip-validation' in workflow
 release_job = workflow.split('  github-release:\n', 1)[1]
+assert '    permissions:\n      contents: write' in release_job
 assert 'actions/download-artifact@v4' in release_job
 assert 'nexss-flow-editor-artifacts' in release_job
 assert 'files: dist/*' in release_job
 assert 'package-release.sh' not in release_job
 assert 'install-flow-core.sh install' not in release_job
+assert '--skip-validation' in release and 'if [[ "$SKIP_VALIDATION" -eq 0 ]]; then' in release
 core_installer = (ROOT / 'scripts/install-flow-core.sh').read_text()
 assert 'VERSION=0.103.0' in core_installer and 'FLOW_MODULE=github.com/nexssp/flow/cmd/nflow' in core_installer
 assert 'MINIMUM_VERSION=0.44.2' in core_installer and 'GOTOOLCHAIN=auto' in core_installer
